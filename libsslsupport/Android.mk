@@ -112,7 +112,9 @@ LOCAL_SRC_FILES += $(crypto_sources) $(linux_$(LOCAL_ARCH)_sources)
 #ifeq ($(FIRST_BUILD_ID),O)
 LOCAL_C_INCLUDES += $(KERNELFLINGER_SSLSUPPORT_PATH)/borningssl
 LOCAL_CFLAGS += -I$(KERNELFLINGER_SSLSUPPORT_PATH)/borningssl
+LOCAL_CPP_EXTENSION := .cc
 LOCAL_CFLAGS += -Wno-error
+LOCAL_CFLAGS += -fno-exceptions
 #endif
 endif
 LOCAL_MODULE_TAGS := optional
@@ -128,8 +130,6 @@ LOCAL_CFLAGS_x86_64 :=
 
 #Workaround to disable __REMOVED_IN(23) in bionic stdio.h to avoid borningssl build failure
 KF_SSL_PATH := $(KERNELFLINGER_SSLSUPPORT_PATH)/borningssl
-$(shell cp bionic/libc/include/stdio.h $(KF_SSL_PATH))
-$(shell sed -i 's/__sF\[\] __REMOVED_IN(23)/__sF\[\]/g' $(KF_SSL_PATH)/stdio.h)
 LOCAL_CFLAGS += -I$(KF_SSL_PATH)
 LOCAL_CFLAGS += -I$(LOCAL_PATH)/include
 LOCAL_CFLAGS += -DOPENSSL_NO_THREADS_CORRUPT_MEMORY_AND_LEAK_SECRETS_IF_THREADED
@@ -139,6 +139,7 @@ LOCAL_CFLAGS += -Ibionic/libc/kernel/uapi
 LOCAL_CFLAGS += -Ibionic/libc/kernel/uapi/asm-x86
 LOCAL_CFLAGS += -Ibionic/libc/kernel/android/uapi
 LOCAL_CFLAGS += -D_LIBCPP_BUILDING_LIBRARY
+LOCAL_CFLAGS += -D_LIBCPP_HAS_NO_THREADS
 LOCAL_CFLAGS += -DOPENSSL_NO_THREADS
 LOCAL_CFLAGS += -U__linux__
 include $(BUILD_EFI_STATIC_LIBRARY)
