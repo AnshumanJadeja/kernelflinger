@@ -268,9 +268,9 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 #endif
 		change_device_state(UNLOCKED, TRUE);
 	} else {
-#ifdef USER
+/*#ifdef USER
 		fastboot_fail("Unlocking device not allowed");
-#else
+#else*/
 		/* user_build is from boot parameters to compatible for CIV and IVI */
 		if (user_build) {
 			fastboot_fail("Unlocking device not allowed");
@@ -279,7 +279,7 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 			fastboot_info("Unlocking anyway since this is not a User build");
 			change_device_state(UNLOCKED, TRUE);
 		}
-#endif
+//#endif
 	}
 }
 
