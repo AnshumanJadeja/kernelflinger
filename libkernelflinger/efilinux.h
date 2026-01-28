@@ -35,6 +35,7 @@
  * It's also a good place to document the EFI interface.
  */
 
+#include <log.h>
 #ifndef __EFILINUX_H__
 #define __EFILINUX_H__
 
@@ -65,7 +66,9 @@ static inline EFI_STATUS
 allocate_pages(EFI_ALLOCATE_TYPE atype, EFI_MEMORY_TYPE mtype,
                UINTN num_pages, EFI_PHYSICAL_ADDRESS *memory)
 {
-        return uefi_call_wrapper(BS->AllocatePages, 4, atype,
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->AllocatePages, 4, atype,
                                  mtype, num_pages, memory);
 }
 
@@ -79,7 +82,9 @@ allocate_pages(EFI_ALLOCATE_TYPE atype, EFI_MEMORY_TYPE mtype,
 static inline EFI_STATUS
 free_pages(EFI_PHYSICAL_ADDRESS memory, UINTN num_pages)
 {
-        return uefi_call_wrapper(BS->FreePages, 2, memory, num_pages);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->FreePages, 2, memory, num_pages);
 }
 
 /**
@@ -97,7 +102,9 @@ free_pages(EFI_PHYSICAL_ADDRESS memory, UINTN num_pages)
 static inline EFI_STATUS
 allocate_pool(EFI_MEMORY_TYPE type, UINTN size, void **buffer)
 {
-        return uefi_call_wrapper(BS->AllocatePool, 3, type, size, buffer);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->AllocatePool, 3, type, size, buffer);
 }
 
 /**
@@ -109,7 +116,9 @@ allocate_pool(EFI_MEMORY_TYPE type, UINTN size, void **buffer)
  */
 static inline EFI_STATUS free_pool(void *buffer)
 {
-        return uefi_call_wrapper(BS->FreePool, 1, buffer);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->FreePool, 1, buffer);
 }
 
 /**
@@ -144,7 +153,9 @@ static inline EFI_STATUS
 get_memory_map(UINTN *size, EFI_MEMORY_DESCRIPTOR *map, UINTN *key,
                UINTN *descr_size, UINT32 *descr_version)
 {
-        return uefi_call_wrapper(BS->GetMemoryMap, 5, size, map,
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->GetMemoryMap, 5, size, map,
                                  key, descr_size, descr_version);
 }
 
@@ -170,7 +181,9 @@ static const CHAR16 *memory_types[] = {
 
 static inline const CHAR16 *memory_type_to_str(UINT32 type)
 {
-        if (type > sizeof(memory_types)/sizeof(CHAR16 *))
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (type > sizeof(memory_types)/sizeof(CHAR16 *))
                 return L"Unknown";
 
         return memory_types[type];

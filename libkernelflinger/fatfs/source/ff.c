@@ -230,7 +230,9 @@
 
 
 /* Post process on fatal error in the file operations */
-#define ABORT(fs, res)		{ fp->err = (BYTE)(res); LEAVE_FF(fs, res); }
+#define ABORT(fs, res)		{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 fp->err = (BYTE)(res); LEAVE_FF(fs, res); }
 
 
 /* Re-entrancy related */
@@ -238,9 +240,13 @@
 #if FF_USE_LFN == 1
 #error Static LFN work area cannot be used in thread-safe configuration
 #endif
-#define LEAVE_FF(fs, res)	{ unlock_volume(fs, res); return res; }
+#define LEAVE_FF(fs, res)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 unlock_volume(fs, res); return res; }
 #else
-#define LEAVE_FF(fs, res)	{ return res; }
+#define LEAVE_FF(fs, res)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 return res; }
 #endif
 
 
@@ -530,11 +536,15 @@ static WCHAR LfnBuf[FF_MAX_LFN + 1];		/* LFN working buffer */
 #elif FF_USE_LFN == 2 	/* LFN enabled with dynamic working buffer on the stack */
 #if FF_FS_EXFAT
 #define DEF_NAMBUF		WCHAR lbuf[FF_MAX_LFN+1]; BYTE dbuf[MAXDIRB(FF_MAX_LFN)];	/* LFN working buffer and directory entry block scratchpad buffer */
-#define INIT_NAMBUF(fs)	{ (fs)->lfnbuf = lbuf; (fs)->dirbuf = dbuf; }
+#define INIT_NAMBUF(fs)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 (fs)->lfnbuf = lbuf; (fs)->dirbuf = dbuf; }
 #define FREE_NAMBUF()
 #else
 #define DEF_NAMBUF		WCHAR lbuf[FF_MAX_LFN+1];	/* LFN working buffer */
-#define INIT_NAMBUF(fs)	{ (fs)->lfnbuf = lbuf; }
+#define INIT_NAMBUF(fs)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 (fs)->lfnbuf = lbuf; }
 #define FREE_NAMBUF()
 #endif
 #define LEAVE_MKFS(res)	return res
@@ -542,14 +552,20 @@ static WCHAR LfnBuf[FF_MAX_LFN + 1];		/* LFN working buffer */
 #elif FF_USE_LFN == 3 	/* LFN enabled with dynamic working buffer on the heap */
 #if FF_FS_EXFAT
 #define DEF_NAMBUF		WCHAR *lfn;	/* Pointer to LFN working buffer and directory entry block scratchpad buffer */
-#define INIT_NAMBUF(fs)	{ lfn = ff_memalloc((FF_MAX_LFN+1)*2 + MAXDIRB(FF_MAX_LFN)); if (!lfn) LEAVE_FF(fs, FR_NOT_ENOUGH_CORE); (fs)->lfnbuf = lfn; (fs)->dirbuf = (BYTE*)(lfn+FF_MAX_LFN+1); }
+#define INIT_NAMBUF(fs)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 lfn = ff_memalloc((FF_MAX_LFN+1)*2 + MAXDIRB(FF_MAX_LFN)); if (!lfn) LEAVE_FF(fs, FR_NOT_ENOUGH_CORE); (fs)->lfnbuf = lfn; (fs)->dirbuf = (BYTE*)(lfn+FF_MAX_LFN+1); }
 #define FREE_NAMBUF()	ff_memfree(lfn)
 #else
 #define DEF_NAMBUF		WCHAR *lfn;	/* Pointer to LFN working buffer */
-#define INIT_NAMBUF(fs)	{ lfn = ff_memalloc((FF_MAX_LFN+1)*2); if (!lfn) LEAVE_FF(fs, FR_NOT_ENOUGH_CORE); (fs)->lfnbuf = lfn; }
+#define INIT_NAMBUF(fs)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 lfn = ff_memalloc((FF_MAX_LFN+1)*2); if (!lfn) LEAVE_FF(fs, FR_NOT_ENOUGH_CORE); (fs)->lfnbuf = lfn; }
 #define FREE_NAMBUF()	ff_memfree(lfn)
 #endif
-#define LEAVE_MKFS(res)	{ if (!work) ff_memfree(buf); return res; }
+#define LEAVE_MKFS(res)	{
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	 if (!work) ff_memfree(buf); return res; }
 #define MAX_MALLOC	0x8000	/* Must be >=FF_MAX_SS */
 
 #else
@@ -618,7 +634,9 @@ static const BYTE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
 
 static WORD ld_word (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 {
-	WORD rv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+WORD rv;
 
 	rv = ptr[1];
 	rv = rv << 8 | ptr[0];
@@ -627,7 +645,9 @@ static WORD ld_word (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 
 static DWORD ld_dword (const BYTE* ptr)	/* Load a 4-byte little-endian word */
 {
-	DWORD rv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD rv;
 
 	rv = ptr[3];
 	rv = rv << 8 | ptr[2];
@@ -639,7 +659,9 @@ static DWORD ld_dword (const BYTE* ptr)	/* Load a 4-byte little-endian word */
 #if FF_FS_EXFAT
 static QWORD ld_qword (const BYTE* ptr)	/* Load an 8-byte little-endian word */
 {
-	QWORD rv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+QWORD rv;
 
 	rv = ptr[7];
 	rv = rv << 8 | ptr[6];
@@ -656,13 +678,17 @@ static QWORD ld_qword (const BYTE* ptr)	/* Load an 8-byte little-endian word */
 #if !FF_FS_READONLY
 static void st_word (BYTE* ptr, WORD val)	/* Store a 2-byte word in little-endian */
 {
-	*ptr++ = (BYTE)val; val >>= 8;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val;
 }
 
 static void st_dword (BYTE* ptr, DWORD val)	/* Store a 4-byte word in little-endian */
 {
-	*ptr++ = (BYTE)val; val >>= 8;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val;
@@ -671,7 +697,9 @@ static void st_dword (BYTE* ptr, DWORD val)	/* Store a 4-byte word in little-end
 #if FF_FS_EXFAT
 static void st_qword (BYTE* ptr, QWORD val)	/* Store an 8-byte word in little-endian */
 {
-	*ptr++ = (BYTE)val; val >>= 8;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
@@ -692,6 +720,8 @@ static void st_qword (BYTE* ptr, QWORD val)	/* Store an 8-byte word in little-en
 /* Test if the byte is DBC 1st byte */
 static int dbc_1st (BYTE c)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #if FF_CODE_PAGE == 0		/* Variable code page */
 	if (DbcTbl && c >= DbcTbl[0]) {
 		if (c <= DbcTbl[1]) return 1;					/* 1st byte range 1 */
@@ -712,6 +742,8 @@ static int dbc_1st (BYTE c)
 /* Test if the byte is DBC 2nd byte */
 static int dbc_2nd (BYTE c)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #if FF_CODE_PAGE == 0		/* Variable code page */
 	if (DbcTbl && c >= DbcTbl[4]) {
 		if (c <= DbcTbl[5]) return 1;					/* 2nd byte range 1 */
@@ -738,7 +770,9 @@ static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on
 	const TCHAR** str		/* Pointer to pointer to TCHAR string in configured encoding */
 )
 {
-	DWORD uc;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD uc;
 	const TCHAR *p = *str;
 
 #if FF_LFN_UNICODE == 1		/* UTF-16 input */
@@ -809,6 +843,8 @@ static UINT put_utf (	/* Returns number of encoding units written (0:buffer over
 	UINT szb	/* Size of the buffer */
 )
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #if FF_LFN_UNICODE == 1	/* UTF-16 output */
 	WCHAR hs, wc;
 
@@ -898,7 +934,9 @@ static int lock_volume (	/* 1:Ok, 0:timeout */
 	int syslock				/* System lock required */
 )
 {
-	int rv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rv;
 
 
 #if FF_FS_LOCK
@@ -924,7 +962,9 @@ static void unlock_volume (
 	FRESULT res		/* Result code to be returned */
 )
 {
-	if (fs && res != FR_NOT_ENABLED && res != FR_INVALID_DRIVE && res != FR_TIMEOUT) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (fs && res != FR_NOT_ENABLED && res != FR_INVALID_DRIVE && res != FR_TIMEOUT) {
 #if FF_FS_LOCK
 		if (SysLock == 2 && SysLockVolume == fs->ldrv) {	/* Unlock system if it has been locked by this task */
 			SysLock = 1;
@@ -949,7 +989,9 @@ static FRESULT chk_share (	/* Check if the file can be accessed */
 	int acc			/* Desired access type (0:Read mode open, 1:Write mode open, 2:Delete or rename) */
 )
 {
-	UINT i, be;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT i, be;
 
 	/* Search open object table for the object */
 	be = 0;
@@ -973,7 +1015,9 @@ static FRESULT chk_share (	/* Check if the file can be accessed */
 
 static int enq_share (void)	/* Check if an entry is available for a new object */
 {
-	UINT i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT i;
 
 	for (i = 0; i < FF_FS_LOCK && Files[i].fs; i++) ;	/* Find a free entry */
 	return (i == FF_FS_LOCK) ? 0 : 1;
@@ -985,7 +1029,9 @@ static UINT inc_share (	/* Increment object open counter and returns its index (
 	int acc		/* Desired access (0:Read, 1:Write, 2:Delete/Rename) */
 )
 {
-	UINT i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT i;
 
 
 	for (i = 0; i < FF_FS_LOCK; i++) {	/* Find the object */
@@ -1015,7 +1061,9 @@ static FRESULT dec_share (	/* Decrement object open counter */
 	UINT i			/* Semaphore index (1..) */
 )
 {
-	UINT n;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT n;
 	FRESULT res;
 
 
@@ -1039,7 +1087,9 @@ static void clear_share (	/* Clear all lock entries of the volume */
 	FATFS* fs
 )
 {
-	UINT i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT i;
 
 	for (i = 0; i < FF_FS_LOCK; i++) {
 		if (Files[i].fs == fs) Files[i].fs = 0;
@@ -1058,7 +1108,9 @@ static FRESULT sync_window (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs			/* Filesystem object */
 )
 {
-	FRESULT res = FR_OK;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res = FR_OK;
 
 
 	if (fs->wflag) {	/* Is the disk access window dirty? */
@@ -1086,7 +1138,9 @@ static FRESULT move_window (	/* Returns FR_OK or FR_DISK_ERR */
 	LBA_t sect		/* Sector LBA to make appearance in the fs->win[] */
 )
 {
-	FRESULT res = FR_OK;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res = FR_OK;
 
 
 	if (sect != fs->winsect) {	/* Window offset changed? */
@@ -1116,7 +1170,9 @@ static FRESULT sync_fs (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs		/* Filesystem object */
 )
 {
-	FRESULT res;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res;
 
 
 	res = sync_window(fs);
@@ -1154,7 +1210,9 @@ static LBA_t clst2sect (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
 	DWORD clst		/* Cluster# to be converted */
 )
 {
-	clst -= 2;		/* Cluster number is origin from 2 */
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+clst -= 2;		/* Cluster number is origin from 2 */
 	if (clst >= fs->n_fatent - 2) return 0;		/* Is it invalid cluster number? */
 	return fs->database + (LBA_t)fs->csize * clst;	/* Start sector number of the cluster */
 }
@@ -1171,7 +1229,9 @@ static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFF
 	DWORD clst		/* Cluster number to get the value */
 )
 {
-	UINT wc, bc;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT wc, bc;
 	DWORD val;
 	FATFS *fs = obj->fs;
 
@@ -1249,7 +1309,9 @@ static FRESULT put_fat (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD val		/* New value to be set to the entry */
 )
 {
-	UINT bc;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT bc;
 	BYTE *p;
 	FRESULT res = FR_INT_ERR;
 
@@ -1314,7 +1376,9 @@ static DWORD find_bitmap (	/* 0:Not found, 2..:Cluster block found, 0xFFFFFFFF:D
 	DWORD ncl	/* Number of contiguous clusters to find (1..) */
 )
 {
-	BYTE bm, bv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BYTE bm, bv;
 	UINT i;
 	DWORD val, scl, ctr;
 
@@ -1355,7 +1419,9 @@ static FRESULT change_bitmap (
 	int bv		/* bit value to be set (0 or 1) */
 )
 {
-	BYTE bm;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BYTE bm;
 	UINT i;
 	LBA_t sect;
 
@@ -1388,7 +1454,9 @@ static FRESULT fill_first_frag (
 	FFOBJID* obj	/* Pointer to the corresponding object */
 )
 {
-	FRESULT res;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res;
 	DWORD cl, n;
 
 
@@ -1413,7 +1481,9 @@ static FRESULT fill_last_frag (
 	DWORD term		/* Value to set the last FAT entry */
 )
 {
-	FRESULT res;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res;
 
 
 	while (obj->n_frag > 0) {	/* Create the chain of last fragment */
@@ -1439,7 +1509,9 @@ static FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD pclst			/* Previous cluster of clst (0 if entire chain) */
 )
 {
-	FRESULT res = FR_OK;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res = FR_OK;
 	DWORD nxt;
 	FATFS *fs = obj->fs;
 #if FF_FS_EXFAT || FF_USE_TRIM
@@ -1533,7 +1605,9 @@ static DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:D
 	DWORD clst			/* Cluster# to stretch, 0:Create a new chain */
 )
 {
-	DWORD cs, ncl, scl;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD cs, ncl, scl;
 	FRESULT res;
 	FATFS *fs = obj->fs;
 
@@ -1636,7 +1710,9 @@ static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 	FSIZE_t ofs		/* File offset to be converted to cluster# */
 )
 {
-	DWORD cl, ncl;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD cl, ncl;
 	DWORD *tbl;
 	FATFS *fs = fp->obj.fs;
 
@@ -1667,7 +1743,9 @@ static FRESULT dir_clear (	/* Returns FR_OK or FR_DISK_ERR */
 	DWORD clst		/* Directory table to clear */
 )
 {
-	LBA_t sect;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+LBA_t sect;
 	UINT n, szb;
 	BYTE *ibuf;
 
@@ -1706,7 +1784,9 @@ static FRESULT dir_sdi (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD ofs		/* Offset of directory table */
 )
 {
-	DWORD csz, clst;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD csz, clst;
 	FATFS *fs = dp->obj.fs;
 
 	if (ofs >= (DWORD)((FF_FS_EXFAT && fs->fs_type == FS_EXFAT) ? MAX_DIR_EX : MAX_DIR) || ofs % SZDIRE) {	/* Check range of offset and alignment */
@@ -1760,7 +1840,9 @@ static FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DEN
 	int stretch				/* 0: Do not stretch table, 1: Stretch table if needed */
 )
 {
-	DWORD ofs, clst;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWORD ofs, clst;
 	FATFS *fs = dp->obj.fs;
 
 
@@ -1821,7 +1903,9 @@ static FRESULT dir_alloc (	/* FR_OK(0):succeeded, !=0:error */
 	UINT n_ent				/* Number of contiguous entries to allocate */
 )
 {
-	FRESULT res;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FRESULT res;
 	UINT n;
 	FATFS *fs = dp->obj.fs;
 

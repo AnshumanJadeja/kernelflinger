@@ -25,6 +25,7 @@
 #include <trusty/avb.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
+#include <log.h>
 
 #define LOCAL_LOG 0
 #define UNUSED(x) (void)(x)
@@ -35,7 +36,9 @@ static struct trusty_ipc_chan avb_chan;
 
 static int avb_send_request(struct avb_message *msg, void *req, size_t req_len)
 {
-    struct trusty_ipc_iovec req_iovs[2] = {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct trusty_ipc_iovec req_iovs[2] = {
         { .base = msg, .len = sizeof(*msg) },
         { .base = req, .len = req_len },
     };
@@ -46,7 +49,9 @@ static int avb_send_request(struct avb_message *msg, void *req, size_t req_len)
 static int avb_read_response(struct avb_message *msg, uint32_t cmd, void *resp,
                              size_t resp_len)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     struct trusty_ipc_iovec resp_iovs[2] = {
         { .base = msg, .len = sizeof(*msg) },
         { .base = resp, .len = resp_len },
@@ -79,7 +84,9 @@ static int avb_read_response(struct avb_message *msg, uint32_t cmd, void *resp,
 static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
                        uint32_t *resp_size_p)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     struct avb_message msg = { .cmd = cmd };
 
     if (!initialized && cmd != AVB_GET_VERSION) {
@@ -113,7 +120,9 @@ static int avb_do_tipc(uint32_t cmd, void *req, uint32_t req_size, void *resp,
 
 static int avb_get_version(uint32_t *version)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     struct avb_get_version_resp resp = { .version = 0 };
     uint32_t resp_size = sizeof(resp);
 
@@ -126,7 +135,9 @@ static int avb_get_version(uint32_t *version)
 
 int avb_tipc_init(struct trusty_ipc_dev *dev)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     uint32_t version = 0;
 
     trusty_assert(dev);
@@ -162,7 +173,9 @@ int avb_tipc_init(struct trusty_ipc_dev *dev)
 
 void avb_tipc_shutdown(struct trusty_ipc_dev *dev)
 {
-    UNUSED(*dev);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(*dev);
     if (!initialized)
         return; /* nothing to do */
 
@@ -174,7 +187,9 @@ void avb_tipc_shutdown(struct trusty_ipc_dev *dev)
 
 int trusty_read_rollback_index(uint32_t slot, uint64_t *value)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     struct avb_rollback_req req = { .slot = slot, .value = 0 };
     struct avb_rollback_resp resp = { .value = 0 };
     uint32_t resp_size = sizeof(resp);
@@ -188,7 +203,9 @@ int trusty_read_rollback_index(uint32_t slot, uint64_t *value)
 
 int trusty_write_rollback_index(uint32_t slot, uint64_t value)
 {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     struct avb_rollback_req req = { .slot = slot, .value = value };
     struct avb_rollback_resp resp;
     uint32_t resp_size = sizeof(resp);
@@ -200,7 +217,9 @@ int trusty_write_rollback_index(uint32_t slot, uint64_t value)
 
 int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size)
 {
-    uint8_t resp_buf[AVB_MAX_BUFFER_LENGTH];
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t resp_buf[AVB_MAX_BUFFER_LENGTH];
     uint32_t resp_size = AVB_MAX_BUFFER_LENGTH;
     int rc = avb_do_tipc(READ_PERMANENT_ATTRIBUTES, NULL, 0, resp_buf,
                          &resp_size);
@@ -217,17 +236,23 @@ int trusty_read_permanent_attributes(uint8_t *attributes, uint32_t size)
 
 int trusty_write_permanent_attributes(uint8_t *attributes, uint32_t size)
 {
-    return avb_do_tipc(WRITE_PERMANENT_ATTRIBUTES, attributes, size, NULL, NULL);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return avb_do_tipc(WRITE_PERMANENT_ATTRIBUTES, attributes, size, NULL, NULL);
 }
 
 int trusty_read_lock_state(uint8_t *lock_state)
 {
-    uint32_t resp_size = sizeof(*lock_state);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t resp_size = sizeof(*lock_state);
     return avb_do_tipc(READ_LOCK_STATE, NULL, 0, lock_state, &resp_size);
 }
 
 int trusty_write_lock_state(uint8_t lock_state)
 {
-    return avb_do_tipc(WRITE_LOCK_STATE, &lock_state, sizeof(lock_state), NULL,
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return avb_do_tipc(WRITE_LOCK_STATE, &lock_state, sizeof(lock_state), NULL,
                        NULL);
 }

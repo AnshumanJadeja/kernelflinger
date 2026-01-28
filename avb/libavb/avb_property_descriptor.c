@@ -24,10 +24,13 @@
 
 #include "avb_property_descriptor.h"
 #include "avb_util.h"
+#include <log.h>
 
 bool avb_property_descriptor_validate_and_byteswap(
     const AvbPropertyDescriptor* src, AvbPropertyDescriptor* dest) {
-  uint64_t expected_size;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbPropertyDescriptor));
 
@@ -67,7 +70,9 @@ typedef struct {
 
 static bool property_lookup_desc_foreach(const AvbDescriptor* header,
                                          void* user_data) {
-  PropertyIteratorData* data = (PropertyIteratorData*)user_data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+PropertyIteratorData* data = (PropertyIteratorData*)user_data;
   AvbPropertyDescriptor prop_desc;
   const uint8_t* p;
   bool ret = true;
@@ -109,7 +114,9 @@ const char* avb_property_lookup(const uint8_t* image_data,
                                 const char* key,
                                 size_t key_size,
                                 size_t* out_value_size) {
-  PropertyIteratorData data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+PropertyIteratorData data;
 
   if (key_size == 0) {
     key_size = avb_strlen(key);
@@ -137,7 +144,9 @@ bool avb_property_lookup_uint64(const uint8_t* image_data,
                                 const char* key,
                                 size_t key_size,
                                 uint64_t* out_value) {
-  const char* value;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const char* value;
   bool ret = false;
   uint64_t parsed_val;
   int base;

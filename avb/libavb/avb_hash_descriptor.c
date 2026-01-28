@@ -24,10 +24,13 @@
 
 #include "avb_hash_descriptor.h"
 #include "avb_util.h"
+#include <log.h>
 
 bool avb_hash_descriptor_validate_and_byteswap(const AvbHashDescriptor* src,
                                                AvbHashDescriptor* dest) {
-  uint64_t expected_size;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbHashDescriptor));
 

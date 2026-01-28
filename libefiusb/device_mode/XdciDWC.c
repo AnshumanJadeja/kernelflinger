@@ -18,6 +18,7 @@
 #include "UsbDeviceDxe.h"
 #include "XdciInterface.h"
 #include "XdciDWC.h"
+#include <log.h>
 
 UINT32
 UsbRegRead (
@@ -25,7 +26,9 @@ UsbRegRead (
   IN UINT32    Offset
   )
 {
-  volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
   return *addr;
 }
 
@@ -36,7 +39,9 @@ UsbRegWrite (
   IN UINT32    val
   )
 {
-  volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
   *addr = val;
 }
 
@@ -60,7 +65,9 @@ DwcXdciGetPhysicalEpNum (
   IN USB_EP_DIR    EndpointDir
   )
 {
-  return EndpointDir? ((EndpointNum << 1) | EndpointDir) : (EndpointNum << 1);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EndpointDir? ((EndpointNum << 1) | EndpointDir) : (EndpointNum << 1);
 }
 
 
@@ -81,7 +88,9 @@ DwcXdciCoreGetCtrlMps (
   IN UINT32              *mps
   )
 {
-  if (CoreHandle == NULL) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (CoreHandle == NULL) {
       DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreGetCtrlMps: INVALID handle\n"));
       return EFI_DEVICE_ERROR;
   }
@@ -135,7 +144,9 @@ DwcXdciCoreInitEpCmdParams (
   IN DWC_XDCI_ENDPOINT_CMD_PARAMS    *EpCmdParams
   )
 {
-  EFI_STATUS  status = EFI_SUCCESS;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  status = EFI_SUCCESS;
 
   if (CoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreInitEpCmdParams: INVALID handle\n"));
@@ -271,7 +282,9 @@ DwcXdciCoreIssueEpCmd (
   IN DWC_XDCI_ENDPOINT_CMD_PARAMS    *EpCmdParams
   )
 {
-  UINT32 BaseAddr;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 BaseAddr;
   UINT32 MaxDelayIter = 5000;//DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
@@ -342,7 +355,9 @@ DwcXdciCoreFlushAllFifos (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-  UINT32 BaseAddr;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
@@ -394,7 +409,9 @@ DwcXdciCoreFlushEpTxFifo (
   __attribute__((unused)) UINT32 EpNum
   )
 {
-  UINT32 BaseAddr;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
@@ -454,7 +471,9 @@ DwcXdciCorePrepareOneTrb (
   IN UINT32                  size
   )
 {
-  DEBUG ((DEBUG_INFO, "Trb is 0x%x, BufferPtr is 0x%x, size is 0x%x\n", Trb, BufferPtr, size));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DEBUG ((DEBUG_INFO, "Trb is 0x%x, BufferPtr is 0x%x, size is 0x%x\n", Trb, BufferPtr, size));
 
   Trb->BuffPtrLow = (UINT32)(UINTN)BufferPtr;
   Trb->BuffPtrHigh = 0;
@@ -495,6 +514,8 @@ DwcXdciCoreInitTrb (
   IN UINT32                  size
   )
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #define ONE_TRB_SIZE      (DWC_XDCI_TRB_BUFF_SIZE_MASK & 0x00F00000)
   UINT8                   *TrbBuffer;
   UINT32                  TrbCtrlLast;
@@ -563,7 +584,9 @@ DwcXdciCoreStartEp0SetupXfer (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-  DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   EFI_STATUS                      status = EFI_DEVICE_ERROR;
   DWC_XDCI_TRB                    *Trb;
 
@@ -640,7 +663,9 @@ DwcXdciProcessDeviceStateChangeEvent (
   IN UINT32              Event
   )
 {
-  if (CoreHandle == NULL) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (CoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessDeviceStateChangeEvent: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -675,7 +700,9 @@ DwcXdciEndXfer (
   IN UINT32              EpNum
   )
 {
-  EFI_STATUS                      status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                      status;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   UINT32                          cmdParams;
   DWC_XDCI_TRB                    *TrbPtr;
@@ -730,7 +757,9 @@ DwcXdciProcessDeviceResetDet (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-  EFI_STATUS  status = EFI_SUCCESS;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  status = EFI_SUCCESS;
 
   if (CoreHandle == NULL) {
     return EFI_DEVICE_ERROR;
@@ -780,7 +809,9 @@ DwcXdciProcessDeviceResetDone (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-  DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   UINT32                          BaseAddr;
   EFI_STATUS                      status = EFI_SUCCESS;
 
@@ -921,7 +952,9 @@ DwcXdciProcessDeviceEvent (
   IN UINT32                   *ProcessedEventSize
   )
 {
-  UINT32 event;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 event;
 
   if (CoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessDeviceEvent: INVALID handle\n"));
@@ -1013,7 +1046,9 @@ DwcXdciProcessEpXferNotReady (
   __attribute__((unused)) UINT32 EpNum
   )
 {
-  //
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+//
   // TODO: Not doing on-demand transfers
   // Revisit if required for later use
   //
@@ -1039,7 +1074,9 @@ DwcXdciProcessEp0XferNotReady (
   IN UINT32              epEventStatus
   )
 {
-  USB_EP_STATE        epState = USB_EP_STATE_SETUP;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_EP_STATE        epState = USB_EP_STATE_SETUP;
 
   if (CoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEp0XferNotReady: INVALID handle\n"));
@@ -1091,7 +1128,9 @@ DwcXdciProcessEp0XferPhaseDone (
   IN UINT32              EpNum
   )
 {
-  DWC_XDCI_ENDPOINT    *epHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWC_XDCI_ENDPOINT    *epHandle;
   DWC_XDCI_TRB         *Trb;
   EFI_STATUS           status = EFI_SUCCESS;
   UINT32               TrbSts;
@@ -1203,7 +1242,9 @@ DwcXdciProcessEpXferDone (
   IN UINT32              EpNum
   )
 {
-  DWC_XDCI_ENDPOINT    *epHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DWC_XDCI_ENDPOINT    *epHandle;
   DWC_XDCI_TRB         *Trb;
   USB_XFER_REQUEST     *XferReq;
   UINT32               remainingLen;
@@ -1289,7 +1330,9 @@ DwcXdciProcessEpEvent (
   IN UINT32                   *ProcessedEventSize
   )
 {
-  UINT32          EpNum;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32          EpNum;
   UINT32          epEvent;
   UINT32          epEventStatus;
 
@@ -1366,7 +1409,9 @@ DwcXdciProcessInterruptLineEvents (
   IN UINT32              *ProcessedEventCount
   )
 {
-  UINT32    ProcessedEventSize = 0;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32    ProcessedEventSize = 0;
   UINT32    currentEventAddr;
 
   if (CoreHandle == NULL) {
@@ -1437,7 +1482,9 @@ DwcXdciCoreInit (
   IN VOID                     **CoreHandle
   )
 {
-  EFI_STATUS                      status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                      status = EFI_DEVICE_ERROR;
   UINT32                          BaseAddr;
   XDCI_CORE_HANDLE                *LocalCoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
@@ -1908,7 +1955,9 @@ DwcXdciCoreDeinit (
   __attribute__((unused)) UINT32 flags
   )
 {
-  FreePool (CoreHandle);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FreePool (CoreHandle);
   return EFI_SUCCESS;
 }
 
@@ -1929,7 +1978,9 @@ DwcXdciCoreRegisterCallback (
   IN USB_DEVICE_CALLBACK_FUNC  CallbackFunc
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (LocalCoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "DwcXdciCoreRegisterCallback: INVALID handle\n"));
@@ -2016,7 +2067,9 @@ DwcXdciCoreUnregisterCallback (
   IN USB_DEVICE_EVENT_ID    event
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (LocalCoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "DwcXdciCoreUnregisterCallback: INVALID handle\n"));
@@ -2100,7 +2153,9 @@ DwcXdciCoreIsrRoutine (
   IN VOID     *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              BaseAddr;
   UINT32              eventCount;
   UINT32              ProcessedEventCount;
@@ -2163,7 +2218,9 @@ DwcXdciCoreIsrRoutineTimerBased (
   IN VOID     *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              BaseAddr;
   UINT32              eventCount;
   UINT32              ProcessedEventCount;
@@ -2238,7 +2295,9 @@ DwcXdciCoreConnect (
   IN VOID     *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32              BaseAddr;
 
@@ -2296,7 +2355,9 @@ DwcXdciCoreDisconnect (
   IN VOID    *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32            BaseAddr;
   UINT32            eventCount;
@@ -2373,7 +2434,9 @@ DwcXdciCoreGetSpeed (
   IN USB_SPEED    *Speed
   )
 {
-  XDCI_CORE_HANDLE *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (CoreHandle == NULL) {
     DEBUG ((DEBUG_INFO, "DwcXdciCoreGetSpeed: INVALID handle\n"));
@@ -2405,7 +2468,9 @@ DwcXdciCoreSetAddress (
   IN UINT32    address
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
@@ -2449,7 +2514,9 @@ DwcXdciCoreSetConfig (
   __attribute__((unused)) UINT32 ConfigNum
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
 
@@ -2508,7 +2575,9 @@ DwcXdciSetLinkState (
   IN USB_DEVICE_SS_LINK_STATE    state
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
@@ -2555,7 +2624,9 @@ DwcXdciInitEp (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
@@ -2665,7 +2736,9 @@ DwcXdciEpEnable (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
 
@@ -2709,7 +2782,9 @@ DwcXdciEpDisable (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
 
@@ -2753,7 +2828,9 @@ DwcXdciEpStall (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
@@ -2819,7 +2896,9 @@ DwcXdciEpClearStall (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
@@ -2883,7 +2962,9 @@ DwcXdciEpSetNrdy (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
   UINT32            MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
@@ -2956,7 +3037,9 @@ DwcXdciEp0ReceiveSetupPkt (
   IN UINT8    *Buffer
   )
 {
-  XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   EFI_STATUS                      Status = EFI_DEVICE_ERROR;
   DWC_XDCI_TRB                    *Trb;
@@ -3033,7 +3116,9 @@ DwcXdciEp0ReceiveStatusPkt (
   IN VOID    *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_TRB                    *Trb;
   DWC_XDCI_TRB_CONTROL            TrbCtrl;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
@@ -3132,7 +3217,9 @@ DwcXdciEp0SendStatusPkt (
   IN VOID    *CoreHandle
   )
 {
-  XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_TRB                    *Trb;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   EFI_STATUS                      Status;
@@ -3216,7 +3303,9 @@ DwcXdciEpTxData (
   IN USB_XFER_REQUEST    *XferReq
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   DWC_XDCI_TRB                  *Trb;
   DWC_XDCI_TRB_CONTROL          TrbCtrl;
@@ -3337,7 +3426,9 @@ DwcXdciEpRxData (
   IN USB_XFER_REQUEST    *XferReq
   )
 {
-  XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   DWC_XDCI_TRB                  *Trb;
   DWC_XDCI_TRB_CONTROL          TrbCtrl;
@@ -3450,7 +3541,9 @@ DwcXdciCoreFlushEpFifo (
   IN UINT32              EpNum
   )
 {
-  UINT32 BaseAddr;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32 fifoNum;
   UINT32 Param;
@@ -3534,7 +3627,9 @@ DwcXdciEpCancelTransfer (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
   UINT32      EpNum;
 
   if (CoreHandle == NULL) {
@@ -3558,7 +3653,9 @@ usbProcessDeviceResetDet (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-   return DwcXdciProcessDeviceResetDet (CoreHandle);
+   
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return DwcXdciProcessDeviceResetDet (CoreHandle);
 }
 
 EFI_STATUS
@@ -3566,7 +3663,9 @@ usbProcessDeviceResetDone (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
-  return DwcXdciProcessDeviceResetDone (CoreHandle);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return DwcXdciProcessDeviceResetDone (CoreHandle);
 }
 
 UINT32
@@ -3575,7 +3674,9 @@ UsbGetPhysicalEpNum (
   IN USB_EP_DIR    EndpointDir
   )
 {
-  return DwcXdciGetPhysicalEpNum(
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return DwcXdciGetPhysicalEpNum(
                             EndpointNum,
                             EndpointDir
                             );
@@ -3588,7 +3689,9 @@ UsbXdciCoreReinit (
   IN VOID                     *CoreHandle
   )
 {
-  EFI_STATUS                      status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                      status = EFI_DEVICE_ERROR;
   UINT32                          BaseAddr;
   XDCI_CORE_HANDLE                *LocalCoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
@@ -4029,7 +4132,9 @@ UsbXdciCoreFlushEpFifo (
   IN USB_EP_INFO    *EpInfo
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
   UINT32      EpNum;
 
   if (CoreHandle == NULL) {

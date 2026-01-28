@@ -37,13 +37,16 @@
 #include <vars.h>
 #include "efiapi.h"
 #include "CpuIo2.h"
+#include <log.h>
 
 EFI_GUID gEfiCpuIo2ProtocolGuid = EFI_CPU_IO2_PROTOCOL_GUID;
 static EFI_CPU_IO2_PROTOCOL  *mCpuIo = NULL;
 
 UINT32 MmioRead32(UINTN address)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
@@ -72,7 +75,9 @@ UINT32 MmioRead32(UINTN address)
 
 UINT16 MmioRead16(UINTN address)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
@@ -101,7 +106,9 @@ UINT16 MmioRead16(UINTN address)
 
 UINT8 MmioRead8(UINTN address)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
@@ -130,7 +137,9 @@ UINT8 MmioRead8(UINTN address)
 
 UINT32 MmioWrite32(UINTN add, UINT32 data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
@@ -158,7 +167,9 @@ UINT32 MmioWrite32(UINTN add, UINT32 data)
 
 UINT16 MmioWrite16(UINTN add, UINT16 data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
@@ -186,7 +197,9 @@ UINT16 MmioWrite16(UINTN add, UINT16 data)
 
 UINT8 MmioWrite8(UINTN add, UINT8 data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,

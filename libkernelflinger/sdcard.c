@@ -33,10 +33,13 @@
 #include <lib.h>
 #include "storage.h"
 #include "sdio.h"
+#include <log.h>
 
 static EMMC_DEVICE_PATH *get_sdcard_device_path(EFI_DEVICE_PATH *p)
 {
-	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == 26) // MSG_SD_DP
 			return (EMMC_DEVICE_PATH *)p;
@@ -46,7 +49,9 @@ static EMMC_DEVICE_PATH *get_sdcard_device_path(EFI_DEVICE_PATH *p)
 
 static BOOLEAN is_sdcard_type(CARD_TYPE type)
 {
-	switch (type) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+switch (type) {
 	case SDMemoryCard:
 	case SDMemoryCard2:
 	case SDMemoryCard2High:
@@ -59,7 +64,9 @@ static BOOLEAN is_sdcard_type(CARD_TYPE type)
 static EFI_STATUS sdcard_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 				      EFI_LBA start, EFI_LBA end)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE sdio_handle = NULL;
 	EFI_DEVICE_PATH *dev_path;
@@ -95,12 +102,16 @@ static EFI_STATUS sdcard_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 static EFI_STATUS sdcard_check_logical_unit(__attribute__((unused)) EFI_DEVICE_PATH *p,
 					    logical_unit_t log_unit)
 {
-	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_sdcard(EFI_DEVICE_PATH *p)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE handle = NULL;
 	CARD_TYPE type;

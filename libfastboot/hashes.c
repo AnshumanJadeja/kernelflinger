@@ -45,6 +45,7 @@
 #include "security.h"
 #if defined(USE_ACPIO) || defined(USE_ACPI)
 #include "acpi.h"
+#include <log.h>
 #endif
 
 static struct algorithm {
@@ -67,7 +68,9 @@ static UINT64 iasoffset = 0;
 
 EFI_STATUS set_hash_algorithm(const CHAR8 *algo)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	unsigned int i;
 
 	/* Use default algorithm */
@@ -91,7 +94,9 @@ out:
 
 static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 {
-	EVP_MD_CTX mdctx;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EVP_MD_CTX mdctx;
 
 	if (!selected_md)
 		set_hash_algorithm(NULL);
@@ -105,7 +110,9 @@ static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 
 static EFI_STATUS report_hash(const CHAR16 *base, const CHAR16 *name, CHAR8 *hash)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR8 hashstr[hash_len * 2 + 1];
 
 	ret = bytes_to_hex_stra(hash, hash_len, hashstr, sizeof(hashstr));
@@ -129,7 +136,9 @@ static INTN subdir;
 
 static EFI_STATUS hash_file(EFI_FILE *dir, EFI_FILE_INFO *fi)
 {
-	EFI_FILE *file;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_FILE *file;
 	void *data;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	EFI_STATUS ret;
@@ -170,7 +179,9 @@ close:
  */
  static void initpath(void)
  {
-	path = AllocateZeroPool(DIR_BUFFER_SIZE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+path = AllocateZeroPool(DIR_BUFFER_SIZE);
 	if (!path)
 		return;
 	strcat16_s(path, DIR_BUFFER_SIZE / sizeof(CHAR16), L"/bootloader/");
@@ -178,7 +189,9 @@ close:
 
 static void freepath(void)
 {
-	if (!path)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!path)
 		return;
 
 	FreePool(path);
@@ -188,7 +201,9 @@ static void freepath(void)
 
 static void pushdir(CHAR16 *dir)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!path)
 		return;
@@ -208,7 +223,9 @@ static void pushdir(CHAR16 *dir)
 
 static void popdir(void)
 {
-	if (!path)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!path)
 		return;
 	if (subdir > 0) {
 		*subname[subdir - 1] = L'\0';
@@ -220,7 +237,9 @@ static void popdir(void)
 
 static EFI_STATUS get_esp_hash(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io;
 	EFI_FILE *dirs[MAX_DIR];
 	CHAR8 buf[sizeof(EFI_FILE_INFO) + MAX_FILENAME_LEN];
@@ -290,7 +309,9 @@ static EFI_STATUS get_esp_hash(void)
 
 EFI_STATUS get_bootloader_hash(const CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_GUID type;
 
 	ret = gpt_get_partition_type(label, &type, LOGICAL_UNIT_USER);
@@ -386,7 +407,9 @@ struct fec_header {
 #define MIN(a, b) ((a < b) ? (a) : (b))
 static EFI_STATUS hash_partition(struct gpt_partition_interface *gparti, UINT64 len, CHAR8 *hash)
 {
-	EVP_MD_CTX mdctx;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EVP_MD_CTX mdctx;
 	CHAR8 *buffer;
 	UINT64 offset;
 	UINT64 chunklen;
@@ -441,7 +464,9 @@ struct ias_img_hdr {
 static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 				    UINT64 *len)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct ias_img_hdr hdr;
 	unsigned char tos_magic[ARRAY_SIZE(MULTIBOOT_MAGIC)];
 	UINT64 part_off, part_len;
@@ -557,7 +582,9 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 #ifdef USE_MULTIBOOT
 EFI_STATUS get_ias_image_hash(const CHAR16 *label)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	EFI_STATUS ret;
@@ -582,7 +609,9 @@ EFI_STATUS get_ias_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_boot_image_hash(const CHAR16 *label)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	EFI_STATUS ret;
@@ -612,7 +641,9 @@ EFI_STATUS get_boot_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_vbmeta_image_hash(const CHAR16 *label)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	EFI_STATUS ret;
@@ -638,7 +669,9 @@ EFI_STATUS get_vbmeta_image_hash(const CHAR16 *label)
 
 static EFI_STATUS get_ext4_len(struct gpt_partition_interface *gparti, UINT64 *len)
 {
-	UINT64 block_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 block_size;
 	UINT64 len_blocks;
 	struct ext4_super_block sb;
 	EFI_STATUS ret;
@@ -663,7 +696,9 @@ static EFI_STATUS get_ext4_len(struct gpt_partition_interface *gparti, UINT64 *l
 
 static EFI_STATUS get_squashfs_len(struct gpt_partition_interface *gparti, UINT64 *len)
 {
-	struct squashfs_super_block sb;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct squashfs_super_block sb;
 	UINT64 padding = SQUASHFS_PADDING;
 	EFI_STATUS ret;
 
@@ -692,7 +727,9 @@ static EFI_STATUS get_squashfs_len(struct gpt_partition_interface *gparti, UINT6
 #ifdef DYNAMIC_PARTITIONS
 EFI_STATUS get_super_image_hash(const CHAR16 *label)
 {
-	struct gpt_partition_interface gpart;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gpart;
 	EFI_STATUS ret;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	UINT64 len;
@@ -715,7 +752,9 @@ EFI_STATUS get_super_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_fs_hash(const CHAR16 *label)
 {
-	static struct supported_fs {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static struct supported_fs {
 		const char *name;
 		EFI_STATUS (*get_len)(struct gpt_partition_interface *gparti, UINT64 *len);
 	} SUPPORTED_FS[] = {
@@ -761,7 +800,9 @@ EFI_STATUS get_fs_hash(const CHAR16 *label)
 #if defined(USE_ACPIO) || defined(USE_ACPI)
 EFI_STATUS get_acpi_hash(const CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
 	struct ACPI_INFO *acpi_info;

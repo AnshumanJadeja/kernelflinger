@@ -38,6 +38,7 @@
 #include "protocol/Mmc.h"
 #include "protocol/SdHostIo.h"
 #include "sdio.h"
+#include <log.h>
 
 #define SDCARD_ERASE_GROUP_START	32
 #define SDCARD_ERASE_GROUP_END		33
@@ -47,7 +48,9 @@ EFI_STATUS sdio_get(EFI_DEVICE_PATH *p,
 		    EFI_HANDLE *handle,
 		    EFI_SD_HOST_IO_PROTOCOL **sdio)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_GUID guid = EFI_SD_HOST_IO_PROTOCOL_GUID;
 
 	if (!handle)
@@ -67,7 +70,9 @@ EFI_STATUS sdio_get(EFI_DEVICE_PATH *p,
 
 static BOOLEAN is_valid_card_type(CARD_TYPE type)
 {
-	return type > UnknownCard && type <= SDMemoryCard2High;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return type > UnknownCard && type <= SDMemoryCard2High;
 }
 
 EFI_STATUS sdio_get_card_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
@@ -75,7 +80,9 @@ EFI_STATUS sdio_get_card_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
 			      CARD_TYPE *type,
 			      UINT16 *address)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct _EFI_EMMC_CARD_INFO_PROTOCOL *info;
 	EFI_GUID guid = EFI_CARD_INFO_PROTOCOL_GUID;
 
@@ -105,7 +112,9 @@ static EFI_STATUS sdio_erase_group(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_LBA start,
 				   EFI_LBA end, UINTN timeout, UINT16 card_address,
 				   BOOLEAN emmc)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 status;
 	CARD_STATUS card_status;
 
@@ -164,7 +173,9 @@ EFI_STATUS sdio_erase(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_BLOCK_IO *bio,
 		      UINT16 card_address, UINTN erase_grp_size, UINTN erase_timeout,
 		      BOOLEAN emmc)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	EFI_LBA left;
 	UINTN timeout;
 

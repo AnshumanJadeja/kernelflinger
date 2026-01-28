@@ -34,6 +34,7 @@
 #include <pae.h>
 
 #include "devmem.h"
+#include <log.h>
 
 static const CHAR16 *VALUE_FORMAT[] = {
 	L"0x%02x\n", L"0x%04x\n", L"0x%08x\n", NULL, L"0x%016x\n"
@@ -49,7 +50,9 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS devmem_main(INTN argc, const char **argv)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	EFI_PHYSICAL_ADDRESS address, width = 8 * sizeof(UINT32), value;
 
 	switch (argc) {

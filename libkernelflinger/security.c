@@ -49,6 +49,7 @@
 #include "uefi_utils.h"
 
 #include "ivshmem.h"
+#include <log.h>
 
 extern UINT64 g_ivshmem_rot_addr;
 
@@ -84,7 +85,9 @@ EFI_STATUS raw_pub_key_sha256(IN const UINT8 *pub_key,
             IN UINTN pub_key_len,
             OUT UINT8 **hash_p)
 {
-        int ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int ret;
         static UINT8 hash[SHA256_DIGEST_LENGTH];
 
         ret = EVP_Digest(pub_key, pub_key_len, hash, NULL, EVP_sha256(), NULL);
@@ -99,7 +102,9 @@ EFI_STATUS raw_pub_key_sha256(IN const UINT8 *pub_key,
 
 EFI_STATUS set_os_secure_boot(BOOLEAN secure)
 {
-        EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         UINT8 value = secure ? 1 : 0;
 
         debug(L"Setting os secure boot to %d", value);
@@ -111,7 +116,9 @@ EFI_STATUS set_os_secure_boot(BOOLEAN secure)
 EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                         IN VBDATA *vb_data)
 {
-        EFI_STATUS ret = EFI_SUCCESS;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
         enum device_state state;
         struct boot_img_hdr *boot_image_header;
         UINT8 *temp_hash;
@@ -201,7 +208,9 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
 EFI_STATUS ivsh_send_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                         IN VBDATA *vb_data)
 {
-    EFI_STATUS ret = EFI_SUCCESS;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
     if (!g_ivshmem_rot_addr)
         return EFI_NOT_READY;
@@ -225,7 +234,9 @@ EFI_STATUS ivsh_send_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
 /* initialize the struct rot_data for startup_information */
 EFI_STATUS init_rot_data(UINT32 boot_state)
 {
-    /* Initialize the rot data structure */
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Initialize the rot data structure */
     rot_data.version = ROT_DATA_STRUCT_VERSION2;
     rot_data.deviceLocked = 1;
     rot_data.verifiedBootState = boot_state;
@@ -243,12 +254,16 @@ EFI_STATUS init_rot_data(UINT32 boot_state)
 /* Return rot data instance pointer */
 struct rot_data_t* get_rot_data()
 {
-	return &rot_data;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return &rot_data;
 }
 
 CHAR8* strrpl(CHAR8 *in, const char src, const char dst)
 {
-    if (NULL == in)
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (NULL == in)
         return in;
     CHAR8 *p = in;
     while(*p != '\0'){
@@ -261,7 +276,9 @@ CHAR8* strrpl(CHAR8 *in, const char src, const char dst)
 
 static EFI_STATUS set_attestation_ids(UINT8 *src)
 {
-    const char *delim = "=";
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const char *delim = "=";
     CHAR8 *savedPtr2;
     const char d1 = ',';
     const char d2 = ' ';
@@ -299,7 +316,9 @@ static EFI_STATUS set_attestation_ids(UINT8 *src)
 /* Update the struct attestation_ids for startup_information */
 EFI_STATUS update_attestation_ids(IN VOID *vendorbootimage)
 {
-    EFI_STATUS ret = EFI_SUCCESS;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
     struct vendor_boot_img_hdr_v4 *vendor_hdr;
     UINT32 page_size;
     UINT32 bootconfig_offset;
@@ -346,7 +365,9 @@ EFI_STATUS update_attestation_ids(IN VOID *vendorbootimage)
 /* initialize the struct attestation_ids for startup_information */
 EFI_STATUS init_attestation_ids()
 {
-    /* Initialize the attestation ids structure */
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Initialize the attestation ids structure */
     attestation_ids.brandSize = 0;
     memset_s(attestation_ids.brand, ATTESTATION_ID_MAX_LENGTH, 0, ATTESTATION_ID_MAX_LENGTH);
 
@@ -371,7 +392,9 @@ EFI_STATUS init_attestation_ids()
 /* Return rot data instance pointer */
 struct attestation_ids_t* get_attestation_ids()
 {
-    return &attestation_ids;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return &attestation_ids;
 }
 
 /* vim: softtabstop=8:shiftwidth=8:expandtab

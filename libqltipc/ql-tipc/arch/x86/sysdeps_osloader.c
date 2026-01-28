@@ -32,38 +32,52 @@
 
 void trusty_lock(struct trusty_dev *dev)
 {
-    UNUSED(dev);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(dev);
 }
 void trusty_unlock(struct trusty_dev *dev)
 {
-    UNUSED(dev);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(dev);
 }
 
 void trusty_local_irq_disable(unsigned long *state)
 {
-    UNUSED(state);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(state);
 }
 
 void trusty_local_irq_restore(unsigned long *state)
 {
-    UNUSED(state);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(state);
 }
 
 void trusty_idle(struct trusty_dev *dev, bool event_poll)
 {
-    /* ToDo */
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* ToDo */
     UNUSED(dev);
 }
 
 void trusty_abort(void)
 {
-    /* ToDo */
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* ToDo */
     __builtin_unreachable();
 }
 
 void trusty_printf(const char *format, ...)
 {
-    va_list ap;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list ap;
     CHAR16 *format16;
     format16 = stra_to_str((CHAR8 *)format);
 
@@ -75,42 +89,56 @@ void trusty_printf(const char *format, ...)
 
 void *trusty_memcpy(void *dest, const void *src, size_t n)
 {
-    EFI_STATUS ret;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
     ret = memcpy_s(dest, n, src, n);
     return (ret == EFI_SUCCESS) ? (dest) : (NULL);
 }
 
 void *trusty_memset(void *dest, const int c, size_t n)
 {
-    return memset_s(dest, n, c, n);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return memset_s(dest, n, c, n);
 }
 
 char *trusty_strcpy(char *dest, const char *src)
 {
-    EFI_STATUS ret;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
     ret = strcpy_s(dest, strlen(src), src);
     return (ret == EFI_SUCCESS) ? (dest) : (NULL);
 }
 
 size_t trusty_strlen(const char *str)
 {
-    return strlen((CHAR8 *)str);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return strlen((CHAR8 *)str);
 }
 
 void *trusty_calloc(size_t n, size_t size)
 {
-    return AllocatePool(n*size);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return AllocatePool(n*size);
 }
 
 void trusty_free(void *addr)
 {
-    if (addr)
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (addr)
         FreePool(addr);
 }
 
 void *trusty_alloc_pages(unsigned count)
 {
-    void *pa = NULL;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+void *pa = NULL;
     EFI_STATUS ret;
     EFI_PHYSICAL_ADDRESS Memory = 0XFFFFFFFF;
 
@@ -133,7 +161,9 @@ void *trusty_alloc_pages(unsigned count)
 
 void trusty_free_pages(void *va, unsigned count)
 {
-    if (va)
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (va)
         uefi_call_wrapper(BS->FreePages,
                           2,
                           (EFI_PHYSICAL_ADDRESS)(UINTN)va,

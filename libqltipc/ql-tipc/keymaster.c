@@ -30,6 +30,7 @@
 #include <life_cycle.h>
 #include <libtipc.h>
 #include "storage.h"
+#include <log.h>
 
 #define LOCAL_LOG 0
 #define UNUSED(x) (void)(x)
@@ -48,7 +49,9 @@ static const size_t max_send_size = 4000;
 #endif
 static int km_send_request(uint32_t cmd, const void *req, size_t req_len)
 {
-    struct keymaster_message header = { .cmd = cmd };
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct keymaster_message header = { .cmd = cmd };
     int num_iovecs = req ? 2 : 1;
 
     struct trusty_ipc_iovec req_iovs[2] = {
@@ -66,7 +69,9 @@ static int check_response_error(uint32_t expected_cmd,
                                 struct keymaster_message header,
                                 int32_t tipc_result)
 {
-    if (tipc_result < 0) {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (tipc_result < 0) {
         trusty_error("failed (%d) to recv response\n", tipc_result);
         return tipc_result;
     }
@@ -94,7 +99,9 @@ static int check_response_error(uint32_t expected_cmd,
  */
 static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
 {
-    struct keymaster_message header = { .cmd = cmd };
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct keymaster_message header = { .cmd = cmd };
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = resp_len;
     struct trusty_ipc_iovec resp_iovs[2] = {
@@ -139,7 +146,9 @@ static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
 static int km_read_data_response(uint32_t cmd, int32_t *error,
                                  uint8_t* resp_data, uint32_t* resp_data_len)
 {
-    struct keymaster_message header = { .cmd = cmd };
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct keymaster_message header = { .cmd = cmd };
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = *resp_data_len;
     uint32_t resp_data_bytes = 0;
@@ -190,7 +199,9 @@ static int km_do_tipc(uint32_t cmd, void* req,
                       uint32_t req_len, void* resp_data,
                       uint32_t* resp_data_len)
 {
-    int rc = TRUSTY_ERR_GENERIC;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc = TRUSTY_ERR_GENERIC;
     struct km_no_response resp_header  = { .error = 0 };
 
     rc = km_send_request(cmd, req, req_len);
@@ -220,7 +231,9 @@ static int km_do_tipc(uint32_t cmd, void* req,
 
 static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
                               uint8_t subminor_ver) {
-    UNUSED(subminor_ver);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(subminor_ver);
     int32_t message_version = -1;
     switch (major_ver) {
     case 0:
@@ -245,7 +258,9 @@ static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
 
 static int km_get_version(int32_t *version)
 {
-    int rc = TRUSTY_ERR_GENERIC;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc = TRUSTY_ERR_GENERIC;
     struct km_get_version_resp resp = { .major_ver = 0, .minor_ver = 0, .subminor_ver = 0 };
 
     rc = km_send_request(KM_GET_VERSION, NULL, 0);
@@ -267,7 +282,9 @@ static int km_get_version(int32_t *version)
 
 int km_tipc_init(struct trusty_ipc_dev *dev)
 {
-    int rc = TRUSTY_ERR_GENERIC;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc = TRUSTY_ERR_GENERIC;
     struct rot_data_t* p_rot_data = NULL;
     struct attestation_ids_t* p_attestation_ids = NULL;
 
@@ -341,7 +358,9 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
 
 void km_tipc_shutdown(struct trusty_ipc_dev *dev)
 {
-    UNUSED(dev);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UNUSED(dev);
     if (!initialized)
         return;
     /* close channel */
@@ -358,7 +377,9 @@ int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
                            const uint8_t* verified_boot_hash,
                            uint32_t verified_boot_hash_size)
 {
-    struct km_boot_params params = {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct km_boot_params params = {
         .os_version = os_version,
         .os_patchlevel = os_patchlevel,
         .device_locked = (uint32_t)device_locked,
@@ -387,7 +408,9 @@ end:
 
 int trusty_config_boot_patchlevel(uint32_t boot_patchlevel)
 {
-    struct km_boot_patchlevel params = {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct km_boot_patchlevel params = {
         .boot_patchlevel = boot_patchlevel
     };
     uint8_t *req = NULL;
@@ -424,7 +447,9 @@ int trusty_set_attestation_ids(const uint8_t *brand,
                                const uint8_t *model,
                                uint32_t model_size)
 {
-    struct km_attestation_ids params = {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct km_attestation_ids params = {
         .brand_size = brand_size,
         .brand = brand,
         .device_size = device_size,
@@ -462,7 +487,9 @@ static int trusty_send_attestation_data(uint32_t cmd, const uint8_t *data,
                                         uint32_t data_size,
                                         keymaster_algorithm_t algorithm)
 {
-    struct km_attestation_data attestation_data = {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct km_attestation_data attestation_data = {
         .algorithm = (uint32_t)algorithm,
         .data_size = data_size,
         .data = (uint8_t *)data,
@@ -487,7 +514,9 @@ end:
 int trusty_set_attestation_key(const uint8_t *key, uint32_t key_size,
                                keymaster_algorithm_t algorithm)
 {
-    return trusty_send_attestation_data(KM_SET_ATTESTATION_KEY, key, key_size,
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return trusty_send_attestation_data(KM_SET_ATTESTATION_KEY, key, key_size,
                                         algorithm);
 }
 
@@ -495,6 +524,8 @@ int trusty_append_attestation_cert_chain(const uint8_t *cert,
                                          uint32_t cert_size,
                                          keymaster_algorithm_t algorithm)
 {
-    return trusty_send_attestation_data(KM_APPEND_ATTESTATION_CERT_CHAIN,
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return trusty_send_attestation_data(KM_APPEND_ATTESTATION_CERT_CHAIN,
                                         cert, cert_size, algorithm);
 }

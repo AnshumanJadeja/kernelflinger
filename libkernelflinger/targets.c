@@ -32,6 +32,7 @@
 
 #include <lib.h>
 #include <targets.h>
+#include <log.h>
 
 static struct target {
         enum boot_target bt;
@@ -60,7 +61,9 @@ static struct target {
 
 static struct target *find_entry(enum boot_target bt)
 {
-        UINTN i;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TARGETS); i++)
                 if (TARGETS[i].bt == bt)
@@ -71,19 +74,25 @@ static struct target *find_entry(enum boot_target bt)
 
 const CHAR16 *boot_target_name(enum boot_target bt)
 {
-        struct target *target = find_entry(bt);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct target *target = find_entry(bt);
         return target ? target->name : NULL;
 }
 
 const CHAR16 *boot_target_description(enum boot_target bt)
 {
-        struct target *target = find_entry(bt);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct target *target = find_entry(bt);
         return target ? target->description : L"Unknown target";
 }
 
 enum boot_target name_to_boot_target(const CHAR16 *str)
 {
-        UINTN i;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TARGETS); i++) {
                 if (!TARGETS[i].name)
@@ -97,7 +106,9 @@ enum boot_target name_to_boot_target(const CHAR16 *str)
 
 EFI_STATUS reboot_to_target(enum boot_target bt, EFI_RESET_TYPE type)
 {
-        const CHAR16 *name;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const CHAR16 *name;
 
         if (bt == POWER_OFF) {
                 halt_system();

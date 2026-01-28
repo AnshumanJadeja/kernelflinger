@@ -48,6 +48,7 @@
 #include "efilinux.h"
 #include "libtipc.h"
 #include "security_efi.h"
+#include <log.h>
 
 #ifndef SIZE_2MB
 #define SIZE_2MB                 0x200000U
@@ -141,7 +142,9 @@ struct tos_image_header {
  */
 static struct tos_image_header *get_tosimage_header(IN VOID *bootimage)
 {
-        struct boot_img_hdr *aosp_header;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct boot_img_hdr *aosp_header;
         struct tos_image_header *tos_header;
 
         aosp_header = (struct boot_img_hdr *)bootimage;
@@ -155,7 +158,9 @@ static struct tos_image_header *get_tosimage_header(IN VOID *bootimage)
 /* Get the VMM  base address and size */
 static EFI_STATUS get_address_size_vmm(OUT UINT64 *vmm_mem_base, OUT UINT32 *vmm_size )
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
         /* Need to rework the code for these values should be read from B-UINT regsiter */
         if (!vmm_mem_base || !vmm_size)
                 return EFI_INVALID_PARAMETER;
@@ -180,7 +185,9 @@ static EFI_STATUS get_address_size_vmm(OUT UINT64 *vmm_mem_base, OUT UINT32 *vmm
 /* Get the TRUSTY  base address and size */
 static EFI_STATUS get_address_size_trusty(OUT UINT64 *trusty_mem_base, OUT UINT32 *trusty_size )
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
         /* Need to rework the code for these values should be read from B-UINT regsiter */
         if (!trusty_mem_base || !trusty_size)
@@ -212,7 +219,9 @@ static EFI_STATUS get_address_size_trusty(OUT UINT64 *trusty_mem_base, OUT UINT3
  */
 static EFI_STATUS start_tos_image(IN VOID *bootimage)
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
         UINTN map_key, desc_size;
         UINT32 desc_ver, load_size, tos_ret;
         UINTN nr_entries;
@@ -371,12 +380,16 @@ cleanup:
 
 EFI_STATUS set_trusty_param(__attribute__((unused))  IN VOID *param_data)
 {
-        return EFI_UNSUPPORTED;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
         if (!tosimage)
                 return EFI_INVALID_PARAMETER;
 

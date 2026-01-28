@@ -28,13 +28,16 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_version.h"
+#include <log.h>
 
 AvbVBMetaVerifyResult avb_vbmeta_image_verify(
     const uint8_t* data,
     size_t length,
     const uint8_t** out_public_key_data,
     size_t* out_public_key_length) {
-  AvbVBMetaVerifyResult ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbVBMetaVerifyResult ret;
   AvbVBMetaImageHeader h;
   uint8_t* computed_hash;
   const AvbAlgorithmData* algorithm;
@@ -240,7 +243,9 @@ out:
 
 void avb_vbmeta_image_header_to_host_byte_order(const AvbVBMetaImageHeader* src,
                                                 AvbVBMetaImageHeader* dest) {
-  avb_memcpy(dest, src, sizeof(AvbVBMetaImageHeader));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_memcpy(dest, src, sizeof(AvbVBMetaImageHeader));
 
   dest->required_libavb_version_major =
       avb_be32toh(dest->required_libavb_version_major);
@@ -275,7 +280,9 @@ void avb_vbmeta_image_header_to_host_byte_order(const AvbVBMetaImageHeader* src,
 }
 
 const char* avb_vbmeta_verify_result_to_string(AvbVBMetaVerifyResult result) {
-  const char* ret = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const char* ret = NULL;
 
   switch (result) {
     case AVB_VBMETA_VERIFY_RESULT_OK:

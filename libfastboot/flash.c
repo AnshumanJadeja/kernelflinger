@@ -59,6 +59,7 @@
 #endif
 #include "fatfs.h"
 #include "embedded_controller.h"
+#include <log.h>
 extern uint64_t vm_offset;
 static struct gpt_partition_interface gparti;
 static struct gpt_partition_interface vm_gparti;
@@ -76,7 +77,9 @@ BOOLEAN new_install_device = FALSE;
 
 EFI_STATUS flash_skip(UINT64 size)
 {
-	if (!is_inside_partition(cur_offset, size)) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!is_inside_partition(cur_offset, size)) {
 		error(L"Attempt to skip outside of partition [%ld %ld] [%ld %ld]",
 				part_start, part_end, cur_offset, cur_offset + size);
 		return EFI_INVALID_PARAMETER;
@@ -87,7 +90,9 @@ EFI_STATUS flash_skip(UINT64 size)
 
 EFI_STATUS flash_write(VOID *data, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!p_gparti->bio)
 		return EFI_INVALID_PARAMETER;
@@ -111,7 +116,9 @@ EFI_STATUS flash_write(VOID *data, UINTN size)
 
 EFI_STATUS flash_fill(UINT32 pattern, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 *aligned_buf;
 	VOID *buf;
 	UINTN i, buf_size, write_size;
@@ -144,7 +151,9 @@ out:
 
 static EFI_STATUS flash_into_esp(VOID *data, UINTN size, CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io;
 
 	ret = get_esp_fs(&io);
@@ -159,7 +168,9 @@ static EFI_STATUS flash_into_esp(VOID *data, UINTN size, CHAR16 *label)
 
 static EFI_STATUS get_full_gpt_header(VOID **data_p, UINTN *size_p)
 {
-	VOID *data = *data_p;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+VOID *data = *data_p;
 	UINTN size = *size_p;
 	struct gpt_header *gh;
 
@@ -184,7 +195,9 @@ static EFI_STATUS get_full_gpt_header(VOID **data_p, UINTN *size_p)
  */
 static EFI_STATUS _flash_gpt(VOID *data, UINTN size, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_bin_header *gb_hdr;
 	struct gpt_bin_part *gb_part;
 
@@ -208,7 +221,9 @@ static EFI_STATUS _flash_gpt(VOID *data, UINTN size, logical_unit_t log_unit)
 
 static EFI_STATUS flash_gpt(VOID *data, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = _flash_gpt(data, size, LOGICAL_UNIT_USER);
 	return EFI_ERROR(ret) ? ret : EFI_SUCCESS | REFRESH_PARTITION_VAR;
@@ -216,23 +231,31 @@ static EFI_STATUS flash_gpt(VOID *data, UINTN size)
 
 static EFI_STATUS flash_gpt_gpp1(VOID *data, UINTN size)
 {
-	return _flash_gpt(data, size, LOGICAL_UNIT_FACTORY);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return _flash_gpt(data, size, LOGICAL_UNIT_FACTORY);
 }
 
 static EFI_STATUS flash_ec(VOID *data, UINTN size)
 {
-	return update_ec(data, size);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return update_ec(data, size);
 }
 
 #ifndef USER
 static EFI_STATUS flash_efirun(VOID *data, UINTN size)
 {
-	return fastboot_stop(NULL, data, size, UNKNOWN_TARGET);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return fastboot_stop(NULL, data, size, UNKNOWN_TARGET);
 }
 
 static EFI_STATUS flash_mbr(VOID *data, UINTN size)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 
 	if (size > MBR_CODE_SIZE)
@@ -255,18 +278,24 @@ static EFI_STATUS flash_mbr(VOID *data, UINTN size)
 
 static EFI_STATUS flash_sfu(VOID *data, UINTN size)
 {
-	return flash_into_esp(data, size, L"BIOSUPDATE.fv");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return flash_into_esp(data, size, L"BIOSUPDATE.fv");
 }
 
 static EFI_STATUS flash_ifwi(VOID *data, UINTN size)
 {
-	return flash_into_esp(data, size, L"ifwi.bin");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return flash_into_esp(data, size, L"ifwi.bin");
 }
 
 #if defined(IOC_USE_SLCAN) || defined(IOC_USE_CBC)
 static EFI_STATUS flash_ioc(VOID *data, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;
 	IOC_UART_PROTOCOL *iocprotocal;
 
@@ -291,7 +320,9 @@ static EFI_STATUS flash_ioc(VOID *data, UINTN size)
 static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 				      VOID *ramdisk, UINTN ramdisk_size)
 {
-	struct boot_img_hdr *bootimage, *new_bootimage;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct boot_img_hdr *bootimage, *new_bootimage;
 	VOID *new_cur, *cur;
 	UINTN new_size, partlen, page_size;
 	EFI_STATUS ret;
@@ -439,12 +470,16 @@ out:
 
 static EFI_STATUS flash_kernel(VOID *data, UINTN size)
 {
-	return flash_new_bootimage(data, size, NULL, 0);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return flash_new_bootimage(data, size, NULL, 0);
 }
 
 static EFI_STATUS flash_ramdisk(VOID *data, UINTN size)
 {
-	return flash_new_bootimage(NULL, 0, data, size);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return flash_new_bootimage(NULL, 0, data, size);
 }
 
 static CHAR16 *DM_VERITY_PARTITIONS[] =
@@ -452,7 +487,9 @@ static CHAR16 *DM_VERITY_PARTITIONS[] =
 
 EFI_STATUS flash_partition(VOID *data, UINTN size, CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN i;
 
 	debug(L"flash partition label = %s\n", label);
@@ -513,7 +550,9 @@ static struct label_exception {
 
 EFI_STATUS flash(VOID *data, UINTN size, CHAR16 *label)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 	CHAR16 *full_label;
 
 #ifndef USER
@@ -540,7 +579,9 @@ EFI_STATUS flash(VOID *data, UINTN size, CHAR16 *label)
 
 EFI_STATUS flash_file(EFI_HANDLE image, CHAR16 *filename, CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io = NULL;
 	VOID *buffer = NULL;
 	UINTN size = 0;
@@ -573,7 +614,9 @@ out:
 #define FS_MGR_SIZE 4096
 static EFI_STATUS erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_LBA min_end;
 
 	ret = storage_erase_blocks(handle, bio, start, end);
@@ -597,7 +640,9 @@ static EFI_STATUS erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA sta
 
 static EFI_STATUS fast_erase_part(const CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_LBA start, end, min_end;
 
 	ret = gpt_get_partition_by_label(label, p_gparti, LOGICAL_UNIT_USER);
@@ -624,7 +669,9 @@ static EFI_STATUS fast_erase_part(const CHAR16 *label)
 
 EFI_STATUS erase_by_label(CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	BOOLEAN is_data = (!StrCmp(label, L"userdata") || !StrCmp(label, L"data"));
 	BOOLEAN is_share_data = !StrCmp(label, L"share_data");
 
@@ -671,7 +718,9 @@ EFI_STATUS erase_by_label(CHAR16 *label)
 
 EFI_STATUS garbage_disk(void)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 	VOID *chunk;
 	VOID *aligned_chunk;
@@ -706,7 +755,9 @@ EFI_STATUS garbage_disk(void)
 
 void part_select(int num)
 {
-	if (num == 0)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (num == 0)
 		p_gparti = &gparti;
 
 	else

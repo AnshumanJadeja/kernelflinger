@@ -44,7 +44,9 @@ static AvbIOResult read_from_partition(__attribute__((unused)) AvbOps* ops,
                                        size_t num_bytes,
                                        void* buf,
                                        size_t* out_num_read) {
-  AvbIOResult ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult ret;
   EFI_STATUS efi_ret;
   struct gpt_partition_interface gpart;
   int64_t partition_size;
@@ -117,7 +119,9 @@ static AvbIOResult write_to_partition(__attribute__((unused)) AvbOps* ops,
                                       int64_t offset_from_partition,
                                       size_t num_bytes,
                                       const void* buf) {
-  AvbIOResult ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult ret;
   EFI_STATUS efi_ret;
   struct gpt_partition_interface gpart;
   uint64_t partition_size;
@@ -187,7 +191,9 @@ failed:
 static AvbIOResult get_size_of_partition(__attribute__((unused)) AvbOps* ops,
                                          const char* partition_name,
                                          uint64_t* out_size) {
-  EFI_STATUS efi_ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS efi_ret;
   struct gpt_partition_interface gpart;
   uint64_t partition_size;
   const CHAR16 * label;
@@ -226,7 +232,9 @@ static AvbIOResult validate_vbmeta_public_key(
     __attribute__((unused)) size_t public_key_metadata_length,
     bool* out_key_is_trusted) {
 
-  if (out_key_is_trusted != NULL) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (out_key_is_trusted != NULL) {
     *out_key_is_trusted = false;
   }
 
@@ -247,7 +255,9 @@ static AvbIOResult validate_vbmeta_public_key(
 static AvbIOResult read_rollback_index(__attribute__((unused)) AvbOps* ops,
                                        size_t rollback_index_slot,
                                        uint64_t* out_rollback_index) {
-  EFI_STATUS ret = AVB_IO_RESULT_OK;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = AVB_IO_RESULT_OK;
 
   if (out_rollback_index == NULL)
     return ret;
@@ -278,7 +288,9 @@ static AvbIOResult read_rollback_index(__attribute__((unused)) AvbOps* ops,
 static AvbIOResult write_rollback_index(__attribute__((unused)) AvbOps* ops,
                                         size_t rollback_index_slot,
                                         uint64_t rollback_index) {
-  EFI_STATUS ret = AVB_IO_RESULT_OK;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = AVB_IO_RESULT_OK;
 
   if (rollback_index == 0)
     return ret;
@@ -302,13 +314,17 @@ static AvbIOResult write_rollback_index(__attribute__((unused)) AvbOps* ops,
 }
 
 static AvbIOResult read_is_device_unlocked(__attribute__((unused)) AvbOps* ops, bool* out_is_unlocked) {
-  avb_debug("read_is_device_unlocked().\n");
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_debug("read_is_device_unlocked().\n");
   *out_is_unlocked = device_is_unlocked();
   return AVB_IO_RESULT_OK;
 }
 
 static void set_hex(char* buf, uint8_t value) {
-  char hex_digits[17] = "0123456789abcdef";
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char hex_digits[17] = "0123456789abcdef";
   buf[0] = hex_digits[value >> 4];
   buf[1] = hex_digits[value & 0x0f];
 }
@@ -317,7 +333,9 @@ static AvbIOResult get_unique_guid_for_partition(__attribute__((unused)) AvbOps*
                                                  const char* partition,
                                                  char* guid_buf,
                                                  size_t guid_buf_size) {
-  AvbIOResult ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult ret;
   EFI_STATUS efi_ret;
   struct gpt_partition_interface gpart;
   uint8_t * unique_guid;
@@ -382,7 +400,9 @@ failed:
 }
 
 AvbOps* uefi_avb_ops_new(void) {
-  UEFIAvbOpsData* data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UEFIAvbOpsData* data;
   EFI_STATUS err;
   //EFI_LOADED_IMAGE* loaded_app_image = NULL;
   //EFI_GUID loaded_image_protocol = LOADED_IMAGE_PROTOCOL;
@@ -412,6 +432,8 @@ AvbOps* uefi_avb_ops_new(void) {
 }
 
 void uefi_avb_ops_free(AvbOps* ops) {
-  UEFIAvbOpsData* data = ops->user_data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UEFIAvbOpsData* data = ops->user_data;
   avb_free(data);
 }

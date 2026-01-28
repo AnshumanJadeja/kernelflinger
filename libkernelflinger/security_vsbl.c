@@ -35,6 +35,7 @@
 #include "rpmb_storage.h"
 #include "life_cycle.h"
 #include "security.h"
+#include <log.h>
 
 #ifdef RPMB_STORAGE
 
@@ -73,7 +74,9 @@ typedef struct _seed_entry {
 
 EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 {
-	image_boot_param_t *image_boot_param = (image_boot_param_t *)boot_param;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+image_boot_param_t *image_boot_param = (image_boot_param_t *)boot_param;
 	seed_list_t *SeedListCmdlinePtr = NULL;
 	seed_entry_t *SeedEntryData = NULL;
 	UINT32 Index, num_rpmb_key = 0;
@@ -142,7 +145,9 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 
 EFI_STATUS set_device_security_info(IN VOID * vsbl_cmdline_seed_rpmb)
 {
-	UINT32 *size_structure = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 *size_structure = NULL;
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!vsbl_cmdline_seed_rpmb) {
@@ -164,13 +169,17 @@ EFI_STATUS set_device_security_info(IN VOID * vsbl_cmdline_seed_rpmb)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID * security_data)
 {
-	return EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
-	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
 	UINTN cursize;
@@ -190,7 +199,9 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
-	BOOLEAN sbflags;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN sbflags;
 	EFI_STATUS ret;
 	BOOLEAN enduser;
 
@@ -207,7 +218,9 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
-	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
 	debug(L"Setting platform secure boot to %d", secure);
 	return set_efi_variable(&global_guid, SECURE_BOOT_VAR, sizeof(secure),

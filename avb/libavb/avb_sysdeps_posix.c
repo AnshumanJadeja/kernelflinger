@@ -29,39 +29,56 @@
 #include <string.h>
 
 #include "avb_sysdeps.h"
+#include <log.h>
 
 int avb_memcmp(const void* src1, const void* src2, size_t n) {
-  return memcmp(src1, src2, n);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return memcmp(src1, src2, n);
 }
 
 void* avb_memcpy(void* dest, const void* src, size_t n) {
-  EFI_STATUS ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
   ret = memcpy_s(dest, n, src, n);
   return (ret == EFI_SUCCESS) ? (dest) : (NULL);
 }
 
 void* avb_memset(void* dest, const int c, size_t n) {
-  return memset_s(dest, n, c, n);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return memset_s(dest, n, c, n);
 }
 
 int avb_strcmp(const char* s1, const char* s2) {
-  return strcmp(s1, s2);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return strcmp(s1, s2);
 }
 
 size_t avb_strlen(const char* str) {
-  return strlen(str);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return strlen(str);
 }
 
 void avb_abort(void) {
-  abort();
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+abort();
 }
 
 void avb_print(const char* message) {
-  fprintf(stderr, "%s", message);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+fprintf(stderr, "%s", message);
 }
 
 void avb_printv(const char* message, ...) {
-  va_list ap;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list ap;
   const char* m;
 
   va_start(ap, message);
@@ -72,15 +89,21 @@ void avb_printv(const char* message, ...) {
 }
 
 void* avb_malloc_(size_t size) {
-  return malloc(size);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return malloc(size);
 }
 
 void avb_free(void* ptr) {
-  free(ptr);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+free(ptr);
 }
 
 uint32_t avb_div_by_10(uint64_t* dividend) {
-  uint32_t rem = (uint32_t)(*dividend % 10);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t rem = (uint32_t)(*dividend % 10);
   *dividend /= 10;
   return rem;
 }

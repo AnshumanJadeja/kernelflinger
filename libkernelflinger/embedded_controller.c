@@ -8,6 +8,7 @@
 #include <ui.h>
 #include "lib.h"
 #include "timer.h"
+#include <log.h>
 
 #define SPI_CMD_WRSR           0x01
 #define SPI_CMD_WRDI           0x04
@@ -33,7 +34,9 @@ static UINT8 EC_DATA_PORT62      = 0x62;
 
 static void ec_wait_for_ready(void)
 {
-	int retries = 100;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 100;
 
 	register unsigned char status = inb(EC_STATUS_PORT66);
 
@@ -46,7 +49,9 @@ static void ec_wait_for_ready(void)
 
 static void ec_wait_for_free (void)
 {
-	int retries = 100;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 100;
 
 	register unsigned char status = inb(EC_STATUS_PORT66);
 
@@ -59,14 +64,18 @@ static void ec_wait_for_free (void)
 
 static void send_cmd_to_ec(UINT8 Cmd)
 {
-	ec_wait_for_free();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ec_wait_for_free();
 	outb(Cmd, EC_CMD_PORT66);
 	ec_wait_for_free();
 }
 
 static UINT8 read_data_from_ec(void)
 {
-	register unsigned char data;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+register unsigned char data;
 	ec_wait_for_ready();
 	data = inb(EC_DATA_PORT62);
 	return(data);
@@ -74,30 +83,40 @@ static UINT8 read_data_from_ec(void)
 
 static void follow_mode(UINT8 mode)
 {
-	send_cmd_to_ec(mode);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+send_cmd_to_ec(mode);
 }
 
 static void send_cmd_to_flash(UINT8 cmd)
 {
-	send_cmd_to_ec(Send_Cmd);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+send_cmd_to_ec(Send_Cmd);
 	send_cmd_to_ec(cmd);
 }
 
 static void send_byte_to_flash(UINT8 data)
 {
-	send_cmd_to_ec(Send_Byte);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+send_cmd_to_ec(Send_Byte);
 	send_cmd_to_ec(data);
 }
 
 static UINT8 read_byte_from_flash(void)
 {
-	send_cmd_to_ec(Read_Byte);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+send_cmd_to_ec(Read_Byte);
 	return(read_data_from_ec());
 }
 
 static void wait_flash_free(void)
 {
-	int retries = 10;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 10;
 	follow_mode(0x01);
 	send_cmd_to_flash(SPI_CMD_RDSR);
 	while ((read_byte_from_flash() & 0x01) && retries > 0) {
@@ -110,7 +129,9 @@ static void wait_flash_free(void)
 
 static void flash_write_enable(void)
 {
-	int retries = 10;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 10;
 	wait_flash_free();
 	follow_mode(0x01);
 	send_cmd_to_flash(SPI_CMD_WRSR);
@@ -130,7 +151,9 @@ static void flash_write_enable(void)
 
 static void flash_write_disable(void)
 {
-	int retries = 10;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 10;
 	wait_flash_free();
 	follow_mode(0x01);
 	send_cmd_to_flash(SPI_CMD_WRDI);
@@ -148,7 +171,9 @@ static void flash_write_disable(void)
 
 static void ec_status_write_enable(void)
 {
-	wait_flash_free();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+wait_flash_free();
 	follow_mode(0x01);
 	send_cmd_to_flash(SPI_CMD_WREN);
 
@@ -159,7 +184,9 @@ static void ec_status_write_enable(void)
 
 static void ec_erase(void)
 {
-	UINT16 i,j;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT16 i,j;
 
 	debug(L"Eraseing...\n");
 
@@ -183,7 +210,9 @@ static void ec_erase(void)
 
 static void ec_flash(UINT8 *data)
 {
-	UINT32 i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 i;
 
 	debug(L"flashing...\n");
 
@@ -214,7 +243,9 @@ static void ec_flash(UINT8 *data)
 
 static int ec_verify(UINT8 *data)
 {
-	UINT32 i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 i;
 
 	debug(L"Verifying...\n");
 
@@ -242,7 +273,9 @@ static int ec_verify(UINT8 *data)
 
 UINT8 get_ec_sub_ver(UINT8 Port)
 {
-	ec_wait_for_free();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ec_wait_for_free();
 	outb(SPI_CMD_VERSION, EC_CMD_PORT66);
 	ec_wait_for_free();
 	outb(Port, EC_DATA_PORT62);
@@ -253,14 +286,18 @@ UINT8 get_ec_sub_ver(UINT8 Port)
 
 void output_ec_version(void)
 {
-	info(L"Main version: %x", get_ec_sub_ver(0x0));
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+info(L"Main version: %x", get_ec_sub_ver(0x0));
 	info(L"Sub  version: %x", get_ec_sub_ver(0x1));
 	info(L"Test version: %x", get_ec_sub_ver(0x2));
 }
 
 EFI_STATUS update_ec(void *data, uint32_t len)
 {
-	int retries = 5;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int retries = 5;
 
 	debug(L"Update EC start\n");
 

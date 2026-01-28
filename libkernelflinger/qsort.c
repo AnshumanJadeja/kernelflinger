@@ -28,6 +28,7 @@
  */
 
 #include <lib.h>
+#include <log.h>
 
 static __inline char *med3(char *, char *, char *, int (*)(const void *, const void *));
 static __inline void swapfunc(char *, char *, size_t, int);
@@ -35,7 +36,9 @@ static __inline void swapfunc(char *, char *, size_t, int);
 /*
  * Qsort routine from Bentley & McIlroy's "Engineering a Sort Function".
  */
-#define swapcode(TYPE, parmi, parmj, n) {	\
+#define swapcode(TYPE, parmi, parmj, n) {
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+		\
 	size_t i = (n) / sizeof (TYPE);	\
 	TYPE *pi = (TYPE *) (parmi);	\
 	TYPE *pj = (TYPE *) (parmj);	\
@@ -52,14 +55,18 @@ static __inline void swapfunc(char *, char *, size_t, int);
 static __inline void
 swapfunc(char *a, char *b, size_t n, int swaptype)
 {
-	if (swaptype <= 1)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (swaptype <= 1)
 		swapcode(long, a, b, n)
 	else
 		swapcode(char, a, b, n)
 }
 
 #define swap(a, b)				\
-	if (swaptype == 0) {			\
+	if (swaptype == 0) {
+		log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+					\
 		long t = *(long *)(a);		\
 		*(long *)(a) = *(long *)(b);	\
 		*(long *)(b) = t;		\
@@ -71,7 +78,9 @@ swapfunc(char *a, char *b, size_t n, int swaptype)
 static __inline char *
 med3(char *a, char *b, char *c, int (*cmp)(const void *, const void *))
 {
-	return cmp(a, b) < 0 ?
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return cmp(a, b) < 0 ?
 		(cmp(b, c) < 0 ? b : (cmp(a, c) < 0 ? c : a ))
 		:(cmp(b, c) > 0 ? b : (cmp(a, c) < 0 ? a : c ));
 }
@@ -79,7 +88,9 @@ med3(char *a, char *b, char *c, int (*cmp)(const void *, const void *))
 void
 qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *))
 {
-	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
 	int cmp_result, swaptype, swap_cnt;
 	size_t d, r;
 	char *a = aa;

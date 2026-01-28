@@ -36,6 +36,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include <ui.h>
+#include <log.h>
 
 #define NOT_READY_USECS	(100 * 1000)
 
@@ -66,7 +67,9 @@ static const char *VENDOR_IMG_NAME = "splash_intel";
 
 static int get_hold_key_stall_time(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	static unsigned long hold_key_stall_time;
 
 	if (hold_key_stall_time)
@@ -93,7 +96,9 @@ out:
 
 EFI_STATUS ui_init(UINTN *width_p, UINTN *height_p)
 {
-	UINT32 mode;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 mode;
 	UINTN info_size;
 	EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *info;
 	EFI_STATUS ret;
@@ -185,7 +190,9 @@ EFI_STATUS ui_init(UINTN *width_p, UINTN *height_p)
 
 EFI_STATUS ui_display_vendor_splash(VOID)
 {
-	UINTN width, height, x, y, max_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN width, height, x, y, max_size;
 	ui_image_t *vendor;
 
 	if (!ui_is_ready())
@@ -224,7 +231,9 @@ EFI_STATUS ui_display_vendor_splash(VOID)
 
 void ui_free(void)
 {
-	if (!default_textarea)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!default_textarea)
 		return;
 
 	ui_textarea_free(default_textarea);
@@ -233,12 +242,16 @@ void ui_free(void)
 
 BOOLEAN ui_is_ready()
 {
-	return initialized;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return initialized;
 }
 
 EFI_STATUS ui_clear_screen()
 {
-	if (!ui_is_ready())
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!ui_is_ready())
 		return EFI_UNSUPPORTED;
 
 	return ui_clear_area(0, 0, graphic.width, graphic.height);
@@ -247,7 +260,9 @@ EFI_STATUS ui_clear_screen()
 EFI_STATUS ui_fill_area(UINTN x, UINTN y, UINTN width, UINTN height,
 			EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
-	if (!ui_is_ready())
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!ui_is_ready())
 		return EFI_UNSUPPORTED;
 
 	return uefi_call_wrapper(graphic.output->Blt, 10, graphic.output,
@@ -256,7 +271,9 @@ EFI_STATUS ui_fill_area(UINTN x, UINTN y, UINTN width, UINTN height,
 
 EFI_STATUS ui_clear_area(UINTN x, UINTN y, UINTN width, UINTN height)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = ui_fill_area(x, y, width, height, &COLOR_BLACK);
 
@@ -268,7 +285,9 @@ EFI_STATUS ui_clear_area(UINTN x, UINTN y, UINTN width, UINTN height)
 
 EFI_STATUS ui_display_texts(const ui_textline_t **texts, UINTN x, UINTN y,
 			    UINTN linesarea, UINTN colsarea) {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	ui_textline_t *lines;
 	UINTN line_nb = 0;
 	UINTN i, j, pos;
@@ -305,7 +324,9 @@ out:
 EFI_STATUS ui_draw_blt(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *blt, UINTN x, UINTN y,
 		       UINTN width, UINTN height)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!graphic.output)
 		return EFI_UNSUPPORTED;
@@ -320,7 +341,9 @@ EFI_STATUS ui_draw_blt(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *blt, UINTN x, UINTN y,
 
 static char *build_str(CHAR16 *fmt, va_list args)
 {
-	CHAR16 buf[default_textarea ? default_textarea->row_nb : 200];
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16 buf[default_textarea ? default_textarea->row_nb : 200];
 	char *str = NULL;
 	UINTN len;
 
@@ -344,7 +367,9 @@ static char *build_str(CHAR16 *fmt, va_list args)
 
 static void ui_internal_print(CHAR16 *fmt, va_list args, EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
-	char *str;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *str;
 
 	if (!ui_is_ready()) {
 		VPrint(fmt, args);
@@ -363,7 +388,9 @@ static void ui_internal_print(CHAR16 *fmt, va_list args, EFI_GRAPHICS_OUTPUT_BLT
 static BOOLEAN no_newline = FALSE;
 static void ui_internal_print_n(CHAR16 *fmt, va_list args, EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
-	char *str;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *str;
 
 	if (!ui_is_ready()) {
 		VPrint(fmt, args);
@@ -390,7 +417,9 @@ static void ui_internal_print_n(CHAR16 *fmt, va_list args, EFI_GRAPHICS_OUTPUT_B
 
 void ui_print(CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	va_start(args, fmt);
 	ui_internal_print(fmt, args, NULL);
@@ -399,7 +428,9 @@ void ui_print(CHAR16 *fmt, ...)
 
 void ui_info(CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	va_start(args, fmt);
 	ui_internal_print(fmt, args, &COLOR_GREEN);
@@ -408,7 +439,9 @@ void ui_info(CHAR16 *fmt, ...)
 
 void ui_info_n(CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	va_start(args, fmt);
 	ui_internal_print_n(fmt, args, &COLOR_GREEN);
@@ -417,7 +450,9 @@ void ui_info_n(CHAR16 *fmt, ...)
 
 void ui_warning(CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	va_start(args, fmt);
 	ui_internal_print_n(fmt, args, NULL);
@@ -426,7 +461,9 @@ void ui_warning(CHAR16 *fmt, ...)
 
 void ui_error(CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	va_start(args, fmt);
 	ui_internal_print(fmt, args, &COLOR_RED);
@@ -435,7 +472,9 @@ void ui_error(CHAR16 *fmt, ...)
 
 void ui_print_clear(void)
 {
-	if (!ui_is_ready())
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!ui_is_ready())
 		return;
 
 	ui_textarea_clear(default_textarea);
@@ -443,7 +482,9 @@ void ui_print_clear(void)
 
 ui_events_t ui_keycode_to_event(UINT16 keycode)
 {
-	switch (keycode) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+switch (keycode) {
 	case SCAN_UP:
 	case SCAN_PAGE_UP:
 	case SCAN_HOME:
@@ -465,7 +506,9 @@ ui_events_t ui_keycode_to_event(UINT16 keycode)
 
 ui_events_t ui_read_input(void)
 {
-	EFI_INPUT_KEY key;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_INPUT_KEY key;
 	EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2,
@@ -479,7 +522,9 @@ ui_events_t ui_read_input(void)
 
 static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 {
-	EFI_INPUT_KEY key;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_INPUT_KEY key;
 	EFI_STATUS ret = EFI_SUCCESS;
 	BOOLEAN result = TRUE;
 
@@ -507,7 +552,9 @@ static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 
 BOOLEAN ui_enforce_key_held(UINT32 milliseconds, ui_events_t event)
 {
-	BOOLEAN ret = TRUE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN ret = TRUE;
 	UINT32 i;
 	int stall_time = get_hold_key_stall_time();
 
@@ -522,12 +569,16 @@ BOOLEAN ui_enforce_key_held(UINT32 milliseconds, ui_events_t event)
 
 void ui_wait_for_key_release(void)
 {
-	while (test_key(FALSE, 0)) { }
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+while (test_key(FALSE, 0)) { }
 }
 
 ui_events_t ui_wait_for_event(UINTN timeout_secs, ui_events_t expected)
 {
-	UINT64 timeout_left;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 timeout_left;
 
 	timeout_left = timeout_secs * 1000000;
 
@@ -550,12 +601,16 @@ ui_events_t ui_wait_for_event(UINTN timeout_secs, ui_events_t expected)
 
 ui_events_t ui_wait_for_input(UINTN timeout_secs)
 {
-	return ui_wait_for_event(timeout_secs, EV_ANY);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return ui_wait_for_event(timeout_secs, EV_ANY);
 }
 
 BOOLEAN ui_input_to_bool(UINTN timeout_secs, BOOLEAN timeout_true)
 {
-	ui_events_t ue;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_events_t ue;
 
 	ue = ui_wait_for_input(timeout_secs);
 	switch (ue) {
@@ -570,7 +625,9 @@ BOOLEAN ui_input_to_bool(UINTN timeout_secs, BOOLEAN timeout_true)
 
 UINT64 ui_get_blt_size(UINTN width, UINTN height)
 {
-	UINTN size = MultU64x32 ((UINT64) width, height);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN size = MultU64x32 ((UINT64) width, height);
 
 	if (size > DivU64x32((UINTN) ~0, sizeof (EFI_GRAPHICS_OUTPUT_BLT_PIXEL), NULL))
 		return 0;
@@ -582,7 +639,9 @@ void ui_get_scaled_dimension(UINTN orig_width, UINTN orig_height,
 			     UINTN max_width, UINTN max_height,
 			     UINTN *width, UINTN *height)
 {
-	if (max_width == 0 && max_height != 0) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (max_width == 0 && max_height != 0) {
 		*width = orig_width * max_height / orig_height;
 		*height = max_height;
 		return;
@@ -614,7 +673,9 @@ void ui_bilinear_scale(unsigned char *s, unsigned char *d,
 		       int sx, int sy, int dx, int dy,
 		       int depth)
 {
-	double ratio_x = (double)(sx - 1) / dx;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+double ratio_x = (double)(sx - 1) / dx;
 	double ratio_y = (double)(sy - 1) / dy;
 	int i, j, k;
 	sx *= depth;

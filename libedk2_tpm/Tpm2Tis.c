@@ -15,6 +15,7 @@
 
 #include <IndustryStandard/TpmTis.h>
 #include "lib.h"
+#include <log.h>
 
 #define TIS_TIMEOUT_MAX             (90000 * 1000)  // 90s
 
@@ -36,7 +37,9 @@ TisPcPresenceCheck (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
-  UINT8                             RegRead;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8                             RegRead;
 
   RegRead = MmioRead8 ((UINTN)&TisReg->Access);
   return (BOOLEAN) (RegRead != (UINT8) - 1);
@@ -61,7 +64,9 @@ TisPcWaitRegisterBits (
   IN      UINT32                    TimeOut
   )
 {
-  UINT8                             RegRead;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8                             RegRead;
   UINT32                            WaitTime;
 
   for (WaitTime = 0; WaitTime < TimeOut; WaitTime += 100) {
@@ -91,7 +96,9 @@ TisPcReadBurstCount (
   OUT  UINT16                    *BurstCount
   )
 {
-  UINT32                            WaitTime;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32                            WaitTime;
   UINT8                             DataByte0;
   UINT8                             DataByte1;
 
@@ -133,7 +140,9 @@ TisPcPrepareCommand (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
 
   if (TisReg == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -165,7 +174,9 @@ TisPcRequestUseTpm (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
 
   if (TisReg == NULL) {
     return EFI_INVALID_PARAMETER;
@@ -209,7 +220,9 @@ Tpm2TisTpmCommand (
   IN OUT UINT32                     *SizeOut
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   UINT16                            BurstCount;
   UINT32                            Index;
   UINT32                            TpmOutSize;
@@ -352,7 +365,9 @@ DTpm2TisSubmitCommand (
   IN UINT8             *OutputParameterBlock
   )
 {
-  return Tpm2TisTpmCommand (
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return Tpm2TisTpmCommand (
            (TIS_PC_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress),
            InputParameterBlock,
            InputParameterBlockSize,
@@ -374,5 +389,7 @@ DTpm2TisRequestUseTpm (
   VOID
   )
 {
-  return TisPcRequestUseTpm ((TIS_PC_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TisPcRequestUseTpm ((TIS_PC_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress));
 }

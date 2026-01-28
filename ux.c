@@ -37,6 +37,7 @@
 #include "vars.h"
 #ifdef CRASHMODE_USE_ADB
 #include "adb.h"
+#include <log.h>
 #endif
 
 #define FIRST_TIMEOUT_SECS	5
@@ -179,7 +180,9 @@ static UINTN wmargin;
 static UINTN hmargin;
 
 static EFI_STATUS ux_init_screen() {
-	static BOOLEAN initialized;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static BOOLEAN initialized;
 	EFI_STATUS ret;
 
 	if (!initialized) {
@@ -207,7 +210,9 @@ static EFI_STATUS ux_init_screen() {
 static ui_textline_t *build_error_code_text(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *ecolor,
 					    UINT32 error_code)
 {
-	static char buf[26];
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static char buf[26];
 	static ui_textline_t code_text[] = {
 		{ NULL, buf, TRUE },
 		{ &COLOR_WHITE, "", FALSE },
@@ -227,7 +232,9 @@ static EFI_STATUS display_text(UINT32 error_code,
 			       const ui_textline_t *text2,
 			       const ui_textline_t *text3)
 {
-	UINTN width, height, x, y, linesarea, colsarea;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN width, height, x, y, linesarea, colsarea;
 	ui_image_t *vendor;
 	EFI_STATUS ret;
 	const ui_textline_t *texts[] =
@@ -274,7 +281,9 @@ static EFI_STATUS display_text(UINT32 error_code,
 }
 
 static EFI_STATUS clear_text() {
-	if (swidth > sheight)	/* Landscape orientation. */
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (swidth > sheight)	/* Landscape orientation. */
 		return ui_clear_area(swidth / 2, hmargin,
 				     swidth / 2, sheight - (2 * hmargin));
 	/* Portrait orientation. */
@@ -286,7 +295,9 @@ static EFI_STATUS clear_text() {
 #define MIN_HASH_SIZE	6
 
 static const ui_textline_t *format_hash(UINT8 *hash, UINTN hash_size) {
-	static char buf[19];
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static char buf[19];
 	static const ui_textline_t hash_text[] = {
 		{ &COLOR_WHITE, buf, FALSE },
 		{ NULL, NULL, FALSE }
@@ -312,6 +323,8 @@ static const ui_textline_t empty_text[] = {
 enum boot_target ux_prompt_user(enum ux_error_code code, BOOLEAN power_off, UINT8 boot_state,
 				UINT8 *hash, UINTN hash_size)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #ifdef USE_POWER_BUTTON
 	ui_events_t expected = EV_POWER;
 	CHAR8 *button = (CHAR8 *)"Power";
@@ -393,7 +406,9 @@ static ui_boot_action_t BOOT_ACTIONS[] = {
 };
 
 enum boot_target ux_prompt_user_for_boot_target(enum ux_error_code code) {
-	ui_image_t *img;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_image_t *img;
 	ui_boot_menu_t *menu = NULL;
 	UINTN width, height, img_x, img_y, area_x, area_y, colsarea, linesarea;
 	EFI_STATUS ret = EFI_SUCCESS;
@@ -560,7 +575,9 @@ error:
 
 
 VOID ux_display_img_battery(const char *battery_img_name, UINTN delay) {
-	ui_image_t *battery;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_image_t *battery;
 	EFI_STATUS ret;
 
 	ret = ux_init_screen();
@@ -585,19 +602,25 @@ VOID ux_display_img_battery(const char *battery_img_name, UINTN delay) {
 }
 
 VOID ux_display_low_battery(UINTN delay) {
-	ux_display_img_battery(LOW_BATTERY_IMG_NAME, delay);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ux_display_img_battery(LOW_BATTERY_IMG_NAME, delay);
 }
 
 VOID ux_display_empty_battery(VOID) {
-	ux_display_img_battery(EMPTY_BATTERY_IMG_NAME, 0);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ux_display_img_battery(EMPTY_BATTERY_IMG_NAME, 0);
 }
 
 VOID ux_display_vendor_splash(VOID) {
 
-	if (get_display_splash()) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (get_display_splash()) {
 		if (EFI_ERROR(ux_init_screen()))
 			return;
 		ui_display_vendor_splash();
-		log(L"vendor splash shown\n");
+		log(L"aj_debug_1:vendor splash shown\n");
 	}
 }

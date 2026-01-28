@@ -75,7 +75,9 @@ typedef struct {                    // an IAS image generic header:
 static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 				    IASIMAGE_DATA *img, UINT32 *numFile)
 {
-	UINT32 *subFileSizeArray;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 *subFileSizeArray;
 	VOID *addr;
 	UINT32 index;
 	IASIMAGE_HEADER *header = (IASIMAGE_HEADER*)iasimage;
@@ -106,7 +108,9 @@ static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 {
 
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_HANDLE handle = NULL;
 
 	ret = gpt_get_partition_handle(label, LOGICAL_UNIT_USER,
@@ -129,7 +133,9 @@ static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 /*Get buffer sha256 hash value*/
 static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 {
-	EVP_MD_CTX mdctx;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EVP_MD_CTX mdctx;
 
 	EVP_MD_CTX_init(&mdctx);
 	EVP_DigestInit_ex(&mdctx, EVP_sha256(), NULL);
@@ -145,7 +151,9 @@ static EFI_STATUS verify_file_hash(CHAR8* filename,
 				UINT32 hashLen,
 				BOOLEAN* verify_pass)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	CHAR8 *data;
 	UINTN size = 0;
 	CHAR8 realHash[EVP_MAX_MD_SIZE] = {0};
@@ -175,7 +183,9 @@ out:
 
 static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 {
-	BIO *bio;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BIO *bio;
 	X509 *x509;
 
 	/* BIO is the OpenSSL input/output abstraction. Instantiate
@@ -192,7 +202,9 @@ static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 
 static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 {
-	EVP_PKEY *pkey = X509_get_pubkey(cert);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EVP_PKEY *pkey = X509_get_pubkey(cert);
 	if (!pkey)
 		return NULL;
 
@@ -206,7 +218,9 @@ static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 /*Signature check ias iamge*/
 static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 {
-	UINT8 *signature_data;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8 *signature_data;
 	CHAR8 datahash[32] = {0};
 	UINT32 datalen = 0;
 	EVP_PKEY *pkey = NULL;
@@ -267,7 +281,9 @@ free_pkey:
 /*Verify vbmeta cover files' integerity*/
 EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pass)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	UINT32 index;
 	UINT32 num_files;
 	UINTN size = 0;

@@ -34,10 +34,13 @@
 #define _IOPORT_H_
 
 #include "shell_service.h"
+#include <log.h>
 
 static inline UINT32 inl(int port)
 {
-	UINT32 val;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 val;
 
 	__asm__ __volatile__("inl %w1, %0" : "=a"(val) : "Nd"(port));
 	return val;
@@ -45,7 +48,9 @@ static inline UINT32 inl(int port)
 
 static inline void outl(UINT32 val, int port)
 {
-	__asm__ __volatile__("outl %0, %w1" : : "a"(val), "Nd"(port));
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+__asm__ __volatile__("outl %0, %w1" : : "a"(val), "Nd"(port));
 }
 
 extern shcmd_t inb_shcmd;

@@ -55,7 +55,9 @@
 
 EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 {
-	EFI_GUID gEfiLoadedImageProtocolGuid = LOADED_IMAGE_PROTOCOL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID gEfiLoadedImageProtocolGuid = LOADED_IMAGE_PROTOCOL;
 	EFI_STATUS Status = EFI_SUCCESS;
 	EFI_HANDLE efi_handle = NULL;
 	EFI_DEVICE_PATH *device_path;
@@ -100,7 +102,9 @@ EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 
 CHAR16 *get_base_path(EFI_HANDLE image_handle)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_LOADED_IMAGE *g_loaded_image = NULL;
 	CHAR16 *self_path = NULL;
 
@@ -116,7 +120,9 @@ CHAR16 *get_base_path(EFI_HANDLE image_handle)
 
 CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 {
-	CHAR16 *base_path = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16 *base_path = NULL;
 	CHAR16 *abs_path = NULL;
 	UINTN len;
 	EFI_STATUS ret;
@@ -164,7 +170,9 @@ CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 
 static VOID show_disable_secure_boot_warnning()
 {
-	enum boot_target bt = NORMAL_BOOT;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum boot_target bt = NORMAL_BOOT;
 
 #ifdef USE_UI
 	bt = ux_prompt_user(SECURE_BOOT_CODE, FALSE, BOOT_STATE_YELLOW, NULL, 0);
@@ -177,7 +185,9 @@ static VOID show_disable_secure_boot_warnning()
 
 EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *boot_path = NULL;
 
 	boot_path = absolute_path(image_handle, SYSTEMD_BOOT_FILE);
@@ -193,7 +203,9 @@ EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 #ifdef USE_TRUSTY
 static EFI_STATUS load_and_start_tos(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	VOID *tosimage = NULL;
 
 	debug(L"loading trusty");
@@ -215,7 +227,9 @@ static EFI_STATUS load_and_start_tos(void)
 
 static EFI_STATUS update_rollback_indexes()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	AvbOps *ops;
 	AvbSlotVerifyResult verify_result;
 	AvbSlotVerifyData *slot_data = NULL;
@@ -251,7 +265,9 @@ static EFI_STATUS update_rollback_indexes()
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 boot_state;
 
 	InitializeLib(image, _table);

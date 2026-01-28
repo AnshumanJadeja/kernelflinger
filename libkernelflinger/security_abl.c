@@ -37,6 +37,7 @@
 #include "rpmb_storage.h"
 #include "life_cycle.h"
 #include "security.h"
+#include <log.h>
 
 #ifdef RPMB_STORAGE
 #define SECURITY_ABL_SEED_LEN 32
@@ -63,7 +64,9 @@
 
 EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
         UINT8 serial[MMC_PROD_NAME_WITH_PSN_LEN] = {0};
         char *serialno;
         /* HWCRYPTO Server App UUID */
@@ -102,7 +105,9 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
  EFI_STATUS set_device_security_info(IN VOID *security_data)
  {
- 	EFI_STATUS ret;
+ 	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	device_sec_info_t *dev_sec;
 	UINT8 rpmb_key[SECURITY_ABL_SEED_MAX_ENTRIES * RPMB_KEY_SIZE];
 	UINT8 i;
@@ -142,13 +147,17 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID *security_data)
 {
-	return EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
-        EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         EFI_STATUS ret;
         UINT8 value;
         UINTN cursize;
@@ -169,7 +178,9 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
-        BOOLEAN sbflags;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN sbflags;
         EFI_STATUS ret;
         BOOLEAN enduser;
 
@@ -186,7 +197,9 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
-        EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
         debug(L"Setting abl secure boot to %d", secure);
         return set_efi_variable(&global_guid, SECURE_BOOT_VAR, sizeof(secure),

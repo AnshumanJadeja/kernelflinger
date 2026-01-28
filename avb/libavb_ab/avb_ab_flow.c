@@ -23,9 +23,12 @@
  */
 
 #include "avb_ab_flow.h"
+#include <log.h>
 
 bool avb_ab_data_verify_and_byteswap(const AvbABData* src, AvbABData* dest) {
-  /* Ensure magic is correct. */
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Ensure magic is correct. */
   if (src->magic != BOOT_CTRL_MAGIC) {
     avb_error("Magic is incorrect.\n");
     return false;
@@ -52,13 +55,17 @@ bool avb_ab_data_verify_and_byteswap(const AvbABData* src, AvbABData* dest) {
 
 void avb_ab_data_update_crc_and_byteswap(const AvbABData* src,
                                          AvbABData* dest) {
-  avb_memcpy(dest, src, sizeof(AvbABData));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_memcpy(dest, src, sizeof(AvbABData));
   dest->crc32_le = avb_crc32((const uint8_t*)dest,
                              sizeof(AvbABData) - sizeof(uint32_t));
 }
 
 void avb_ab_data_init(AvbABData* data) {
-  avb_memset(data, '\0', sizeof(AvbABData));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_memset(data, '\0', sizeof(AvbABData));
   data->magic = BOOT_CTRL_MAGIC;
   data->version_major = BOOT_CTRL_VERSION;
   data->nb_slot = 2;
@@ -81,7 +88,9 @@ void avb_ab_data_init(AvbABData* data) {
 #define AB_METADATA_MISC_PARTITION_OFFSET 2048
 
 AvbIOResult avb_ab_data_read(AvbABOps* ab_ops, AvbABData* data) {
-  AvbOps* ops = ab_ops->ops;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbOps* ops = ab_ops->ops;
   AvbABData serialized;
   AvbIOResult io_ret;
   size_t num_bytes_read;
@@ -112,7 +121,9 @@ AvbIOResult avb_ab_data_read(AvbABOps* ab_ops, AvbABData* data) {
 }
 
 AvbIOResult avb_ab_data_write(AvbABOps* ab_ops, const AvbABData* data) {
-  AvbOps* ops = ab_ops->ops;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbOps* ops = ab_ops->ops;
   AvbABData serialized;
   AvbIOResult io_ret;
 
@@ -132,12 +143,16 @@ AvbIOResult avb_ab_data_write(AvbABOps* ab_ops, const AvbABData* data) {
 }
 
 static bool slot_is_bootable(AvbABSlotData* slot) {
-  return slot->priority > 0 &&
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return slot->priority > 0 &&
          (slot->successful_boot || (slot->tries_remaining > 0));
 }
 
 static void slot_set_unbootable(AvbABSlotData* slot) {
-  slot->priority = 0;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+slot->priority = 0;
   slot->tries_remaining = 0;
   slot->successful_boot = 0;
 }
@@ -147,7 +162,9 @@ static void slot_set_unbootable(AvbABSlotData* slot) {
  * and successful_boot=0.
  */
 static void slot_normalize(AvbABSlotData* slot) {
-  if (slot->priority > 0) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (slot->priority > 0) {
     if (slot->tries_remaining == 0 && !slot->successful_boot) {
       /* We've exhausted all tries -> unbootable. */
       slot_set_unbootable(slot);
@@ -166,7 +183,9 @@ static const char* slot_suffixes[2] = {"_a", "_b"};
 static AvbIOResult load_metadata(AvbABOps* ab_ops,
                                  AvbABData* ab_data,
                                  AvbABData* ab_data_orig) {
-  AvbIOResult io_ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult io_ret;
 
   io_ret = ab_ops->read_ab_metadata(ab_ops, ab_data);
   if (io_ret != AVB_IO_RESULT_OK) {
@@ -190,7 +209,9 @@ static AvbIOResult load_metadata(AvbABOps* ab_ops,
 static AvbIOResult save_metadata_if_changed(AvbABOps* ab_ops,
                                             AvbABData* ab_data,
                                             AvbABData* ab_data_orig) {
-  if (avb_safe_memcmp(ab_data, ab_data_orig, sizeof(AvbABData)) != 0) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (avb_safe_memcmp(ab_data, ab_data_orig, sizeof(AvbABData)) != 0) {
     avb_debug("Writing A/B metadata to disk.\n");
     return ab_ops->write_ab_metadata(ab_ops, ab_data);
   }
@@ -202,7 +223,9 @@ AvbABFlowResult avb_ab_flow(AvbABOps* ab_ops,
                             AvbSlotVerifyFlags flags,
                             AvbHashtreeErrorMode hashtree_error_mode,
                             AvbSlotVerifyData** out_data) {
-  AvbOps* ops = ab_ops->ops;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbOps* ops = ab_ops->ops;
   AvbSlotVerifyData* slot_data[2] = {NULL, NULL};
   AvbSlotVerifyData* data = NULL;
   AvbABFlowResult ret;
@@ -403,7 +426,9 @@ out:
 
 AvbIOResult avb_ab_mark_slot_active(AvbABOps* ab_ops,
                                     unsigned int slot_number) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   unsigned int other_slot_number;
   AvbIOResult ret;
 
@@ -435,7 +460,9 @@ out:
 }
 
 unsigned int avb_ab_get_active_slot(AvbABOps* ab_ops) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   AvbIOResult ret;
 
   ret = load_metadata(ab_ops, &ab_data, &ab_data_orig);
@@ -455,7 +482,9 @@ out:
 
 AvbIOResult avb_ab_mark_slot_unbootable(AvbABOps* ab_ops,
                                         unsigned int slot_number) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   AvbIOResult ret;
 
   avb_assert(slot_number < 2);
@@ -478,7 +507,9 @@ out:
 
 AvbIOResult avb_ab_set_snapshot_merge_status(AvbABOps* ab_ops,
                                         uint8_t merge_status) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   AvbIOResult ret;
 
   if (merge_status > CANCELLED)
@@ -501,7 +532,9 @@ out:
 }
 
 uint8_t avb_ab_get_snapshot_merge_status(AvbABOps* ab_ops) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   AvbIOResult ret;
   uint8_t status = UNKNOWN;
 
@@ -518,7 +551,9 @@ out:
 
 AvbIOResult avb_ab_mark_slot_successful(AvbABOps* ab_ops,
                                         unsigned int slot_number) {
-  AvbABData ab_data, ab_data_orig;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbABData ab_data, ab_data_orig;
   AvbIOResult ret;
 
   avb_assert(slot_number < 2);
@@ -547,7 +582,9 @@ out:
 }
 
 const char* avb_ab_flow_result_to_string(AvbABFlowResult result) {
-  const char* ret = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const char* ret = NULL;
 
   switch (result) {
     case AVB_AB_FLOW_RESULT_OK:

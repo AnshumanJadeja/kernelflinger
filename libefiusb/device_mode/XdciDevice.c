@@ -19,6 +19,7 @@
 #include "XdciDevice.h"
 #include "XdciInterface.h"
 #include "UsbDeviceDxe.h"
+#include <log.h>
 
 /**
   This function is used to initialize the device controller
@@ -33,7 +34,9 @@ UsbDeviceInit (
   IN OUT VOID                 **DevCoreHandle
   )
 {
-  USB_DEV_CORE    *DevCorePtr;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE    *DevCorePtr;
   EFI_STATUS      Status = EFI_INVALID_PARAMETER;
 
   DEBUG ((DEBUG_INFO, "Call UsbDeviceInit start\n"));
@@ -83,7 +86,9 @@ UsbDeviceDeinit (
   IN UINT32    Flags
   )
 {
-  USB_DEV_CORE    *Core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE    *Core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS      Status = EFI_DEVICE_ERROR;
 
   if (Core == NULL) {
@@ -121,7 +126,9 @@ UsbDeviceRegisterCallback (
   IN USB_DEVICE_CALLBACK_FUNC  CallbackFunc
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
 
   DEBUG ((DEBUG_INFO, "UsbDeviceRegisterCallback start\n"));
@@ -156,7 +163,9 @@ UsbDeviceUnregisterCallback (
   IN USB_DEVICE_EVENT_ID       EventId
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
 
   if (core == NULL) {
@@ -187,7 +196,9 @@ UsbDeviceIsrRoutine (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -216,7 +227,9 @@ UsbDeviceIsrRoutineTimerBased (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -243,7 +256,9 @@ UsbXdciDeviceConnect (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -268,7 +283,9 @@ UsbDeviceDisconnect (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core =(USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core =(USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -294,7 +311,9 @@ UsbDeviceGetSpeed (
   IN USB_SPEED                 *Speed
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -319,7 +338,9 @@ UsbDeviceSetAddress (
   IN UINT32                    Address
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbDeviceSetAddress: enter......\n"));
@@ -347,7 +368,9 @@ UsbDeviceSetConfiguration (
   IN UINT32                    ConfigNum
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -372,7 +395,9 @@ UsbDeviceSetLinkState (
   IN USB_DEVICE_SS_LINK_STATE  State
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -397,7 +422,9 @@ UsbDeviceInitEp (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -422,7 +449,9 @@ UsbDeviceEpEnable (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -447,7 +476,9 @@ UsbDeviceEpDisable (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -472,7 +503,9 @@ UsbDeviceEpStall (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -497,7 +530,9 @@ UsbDeviceEpClearStall (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -523,7 +558,9 @@ UsbDeviceEpSetNrdy (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -549,7 +586,9 @@ UsbDeviceEp0RxSetup (
   IN UINT8                     *Buffer
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -573,7 +612,9 @@ UsbDeviceEp0RxStatus (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -596,7 +637,9 @@ UsbDeviceEp0TxStatus (
   IN VOID                      *DevCoreHandle
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -627,7 +670,9 @@ UsbXdciDeviceEpTxData (
   IN USB_XFER_REQUEST          *XferReq
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -658,7 +703,9 @@ UsbXdciDeviceEpRxData (
   IN USB_XFER_REQUEST          *XferReq
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
@@ -684,7 +731,9 @@ UsbDeviceEpCancelTransfer (
   IN USB_EP_INFO               *EpInfo
   )
 {
-  USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {

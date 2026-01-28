@@ -40,6 +40,7 @@
 #include "usb.h"
 #include "protocol/UsbDeviceModeProtocol.h"
 #include "smbios.h"
+#include <log.h>
 
 #define CONFIG_COUNT            1
 #define INTERFACE_COUNT         1
@@ -162,7 +163,9 @@ static USB_DEVICE_DESCRIPTOR device_descriptor = {
 
 EFI_STATUS usb_write(void *buf, UINT32 size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
 	ioReq.EndpointInfo.EndpointDesc = &config_descriptor.ep_in;
@@ -180,7 +183,9 @@ EFI_STATUS usb_write(void *buf, UINT32 size)
 
 EFI_STATUS usb_read(void *buf, UINT32 size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
 	/* WA: usb device stack doesn't accept rx buffer not multiple of MaxPacketSize */
@@ -205,14 +210,18 @@ static EFIAPI EFI_STATUS setup_handler(__attribute__((__unused__)) EFI_USB_DEVIC
 				       __attribute__((__unused__)) USB_DEVICE_IO_INFO *IoInfo)
 {
 
-	/* Does not handle any Class/Vendor specific setup requests */
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Does not handle any Class/Vendor specific setup requests */
 
 	return EFI_SUCCESS;
 }
 
 static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 {
-	EFI_STATUS status = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS status = EFI_SUCCESS;
 
 	if (cfgVal == config_descriptor.config.ConfigurationValue) {
 		/* we've been configured, get ready to receive Commands */
@@ -228,7 +237,9 @@ static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 
 EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 {
-	if (!XferInfo->Buffer || XferInfo->Length == 0) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!XferInfo->Buffer || XferInfo->Length == 0) {
 		error(L"Received an unexpected NULL or zero length buffer");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -245,7 +256,9 @@ EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 
 static void set_string16_table_line(UINTN line, CHAR16 *str)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN size;
 
 	size = (StrLen(str) + 1) * sizeof(CHAR16);
@@ -264,7 +277,9 @@ static void set_string16_table_line(UINTN line, CHAR16 *str)
 
 static void set_string_table_line(UINTN line, char *string)
 {
-	CHAR16 *str;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16 *str;
 
 	str = stra_to_str((CHAR8 *)string);
 	if (!str) {
@@ -278,7 +293,9 @@ static void set_string_table_line(UINTN line, char *string)
 
 static void set_manufacturer(void)
 {
-	char *manufacturer;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *manufacturer;
 
 	manufacturer = SMBIOS_GET_STRING(2, Manufacturer);
 	if (manufacturer == SMBIOS_UNDEFINED) {
@@ -291,7 +308,9 @@ static void set_manufacturer(void)
 
 static void set_product(void)
 {
-	char *product;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *product;
 
 	product = SMBIOS_GET_STRING(2, ProductName);
 	if (product == SMBIOS_UNDEFINED) {
@@ -304,7 +323,9 @@ static void set_product(void)
 
 static void set_serial_number(void)
 {
-	char *serial;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *serial;
 
 	serial = get_serial_number();
 	if (!serial) {
@@ -320,7 +341,9 @@ static void init_driver_objs(UINT8 subclass,
 			     CHAR16 *str_configuration,
 			     CHAR16 *str_interface)
 {
-	config_descriptor.interface.InterfaceSubClass = subclass;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+config_descriptor.interface.InterfaceSubClass = subclass;
 	config_descriptor.interface.InterfaceProtocol = protocol;
 
 	set_manufacturer();
@@ -361,7 +384,9 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 		     start_callback_t start_cb, data_callback_t rx_cb,
 		     data_callback_t tx_cb)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!str_configuration || !str_interface || !start_cb || !rx_cb || !tx_cb)
 		return EFI_INVALID_PARAMETER;
@@ -425,7 +450,9 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 
 EFI_STATUS usb_stop(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(usb_device->Stop, 1, usb_device);
 	if (EFI_ERROR(ret))
@@ -452,5 +479,7 @@ EFI_STATUS usb_stop(void)
 
 EFI_STATUS usb_run(UINT32 *state)
 {
-	return uefi_call_wrapper(usb_device->Run, 2, usb_device, 1, state);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(usb_device->Run, 2, usb_device, 1, state);
 }

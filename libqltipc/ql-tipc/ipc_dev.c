@@ -26,6 +26,7 @@
 #include <trusty/trusty_ipc.h>
 #include <trusty/trusty_mem.h>
 #include <trusty/util.h>
+#include <log.h>
 
 #define NS_PTE_PHYSADDR(pte) ((pte)&0xFFFFFFFFF000ULL)
 
@@ -60,7 +61,9 @@ struct trusty_ipc_connect_req {
 };
 
 static size_t iovec_size(const struct trusty_ipc_iovec* iovs, size_t iovs_cnt) {
-    size_t i;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t i;
     size_t cb = 0;
 
     trusty_assert(iovs);
@@ -76,7 +79,9 @@ static size_t iovec_to_buf(void* buf,
                            size_t buf_len,
                            const struct trusty_ipc_iovec* iovs,
                            size_t iovs_cnt) {
-    size_t i;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t i;
     size_t buf_pos = 0;
 
     trusty_assert(iovs);
@@ -106,7 +111,9 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec* iovs,
                            size_t iovs_cnt,
                            const void* buf,
                            size_t buf_len) {
-    size_t i;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t i;
     size_t copied = 0;
     const uint8_t* buf_ptr = buf;
 
@@ -141,7 +148,9 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec* iovs,
 static int check_response(struct trusty_ipc_dev* dev,
                           volatile struct trusty_ipc_cmd_hdr* hdr,
                           uint16_t cmd) {
-    if (hdr->opcode != (cmd | QL_TIPC_DEV_RESP)) {
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (hdr->opcode != (cmd | QL_TIPC_DEV_RESP)) {
         /* malformed response */
         trusty_error("%s: malformed response cmd: 0x%x\n", __func__,
                      hdr->opcode);
@@ -161,7 +170,9 @@ static int check_response(struct trusty_ipc_dev* dev,
 int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
                           struct trusty_dev* tdev,
                           size_t shared_buf_size) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     int rc2;
     struct trusty_ipc_dev* dev;
 
@@ -230,7 +241,9 @@ err_alloc_pages:
 }
 
 void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     trusty_assert(dev);
 
     trusty_debug("%s: shutting down Trusty IPC device (%p)\n", __func__, dev);
@@ -253,7 +266,9 @@ void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
 int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
                            const char* port,
                            uint64_t cookie) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     size_t port_len;
     volatile struct trusty_ipc_cmd_hdr* cmd;
     struct trusty_ipc_connect_req* req;
@@ -303,7 +318,9 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
 }
 
 int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
     trusty_assert(dev);
@@ -337,7 +354,9 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
 }
 
 bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     bool has_event;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
@@ -380,7 +399,9 @@ bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
 int trusty_ipc_dev_get_event(struct trusty_ipc_dev* dev,
                              handle_t chan,
                              struct trusty_ipc_event* event) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
     trusty_assert(dev);
@@ -425,7 +446,9 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev* dev,
                         handle_t chan,
                         const struct trusty_ipc_iovec* iovs,
                         size_t iovs_cnt) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     size_t msg_size;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
@@ -471,7 +494,9 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
                         handle_t chan,
                         const struct trusty_ipc_iovec* iovs,
                         size_t iovs_cnt) {
-    int rc;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int rc;
     size_t copied;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
@@ -512,5 +537,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
 }
 
 void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev, bool event_poll) {
-    trusty_idle(dev->tdev, event_poll);
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+trusty_idle(dev->tdev, event_poll);
 }

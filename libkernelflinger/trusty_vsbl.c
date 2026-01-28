@@ -48,6 +48,7 @@
 #include "libelfloader.h"
 #ifdef RPMB_STORAGE
 #include "rpmb_storage.h"
+#include <log.h>
 #endif
 
 #define TRUSTY_MEM_SIZE			0x1000000
@@ -109,7 +110,9 @@ struct tos_image_header {
 static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UINTN base,
 	UINTN size, trusty_boot_param_t *boot_param)
 {
-	UINT64 entry_addr;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 entry_addr;
 #ifdef RPMB_STORAGE
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT8 *out_key = NULL;
@@ -151,7 +154,9 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #define ACRN_HC_LAUNCH_TRUSTY 0x80000070
 static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	register signed long smc_id asm("r8") = ACRN_HC_LAUNCH_TRUSTY;
 
 	if (!param)
@@ -167,19 +172,25 @@ static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 #else
 static EFI_STATUS launch_trusty_os(__attribute__((unused)) trusty_startup_params_t *param)
 {
-	efi_perror(ret, L"Unsupport to launch trusty on 32bit");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+efi_perror(ret, L"Unsupport to launch trusty on 32bit");
 	return EFI_UNSUPPORTED;
 }
 #endif
 
 EFI_STATUS set_trusty_param(__attribute__((unused)) IN VOID *param_data)
 {
-	return EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	const struct boot_img_hdr *header;
 	UINTN load_base;
 	trusty_startup_params_t trusty_startup_params;

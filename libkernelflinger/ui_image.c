@@ -39,10 +39,13 @@
 #include <upng.h>
 
 #include "res/img_res.h"
+#include <log.h>
 
 ui_image_t *ui_image_get(const char *name)
 {
-	unsigned int i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+unsigned int i;
 	EFI_STATUS ret;
 	ui_image_t *img = NULL;
 
@@ -66,7 +69,9 @@ ui_image_t *ui_image_get(const char *name)
 
 EFI_STATUS ui_image_draw(ui_image_t *image, UINTN x, UINTN y)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = ui_draw_blt(image->blt, x, y, image->width, image->height);
 	if (EFI_ERROR(ret))
@@ -77,7 +82,9 @@ EFI_STATUS ui_image_draw(ui_image_t *image, UINTN x, UINTN y)
 
 EFI_STATUS ui_image_draw_scale(ui_image_t *image, UINTN x, UINTN y, UINTN width, UINTN height)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	ui_image_t to_draw;
 	UINTN new_width, new_height;
 

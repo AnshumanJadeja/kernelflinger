@@ -35,6 +35,7 @@
 #include <uefi_utils.h>
 
 #include "pae.h"
+#include <log.h>
 
 /*
  * This module uses the Physical Address Extension hardware support to
@@ -120,7 +121,9 @@ static volatile EFI_PHYSICAL_ADDRESS dir_ptr[1 << 2]
 static EFI_STATUS find_usable_memory_region(CHAR8 *entries, UINTN nr_entries,
 					  UINTN entry_sz)
 {
-	EFI_MEMORY_DESCRIPTOR *cur;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS cur_end, start, end;
 	UINT64 size;
 	UINT32 type;
@@ -165,7 +168,9 @@ static EFI_STATUS find_usable_memory_region(CHAR8 *entries, UINTN nr_entries,
 
 static void init_directory(void)
 {
-	EFI_PHYSICAL_ADDRESS cur;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_PHYSICAL_ADDRESS cur;
 	UINTN i, dir_size;
 
 	dir_size = ARRAY_SIZE(directory) / ARRAY_SIZE(dir_ptr);
@@ -179,7 +184,9 @@ static void init_directory(void)
 static BOOLEAN has_above_4G_memory_region(CHAR8 *entries, UINTN nr_entries,
 					  UINTN entry_sz)
 {
-	EFI_MEMORY_DESCRIPTOR *cur;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS end;
 	UINTN i;
 
@@ -195,7 +202,9 @@ static BOOLEAN has_above_4G_memory_region(CHAR8 *entries, UINTN nr_entries,
 
 EFI_STATUS pae_init(CHAR8 *entries, UINTN nr_entries, UINTN entry_sz)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 reg[4];
 
 	if (ctx.initialized)
@@ -237,7 +246,9 @@ EFI_STATUS pae_init(CHAR8 *entries, UINTN nr_entries, UINTN entry_sz)
 
 static EFI_STATUS memmap(EFI_PHYSICAL_ADDRESS addr)
 {
-	UINT32 src;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 src;
 
 	if (!ctx.initialized)
 		return EFI_NOT_READY;
@@ -258,7 +269,9 @@ static EFI_STATUS memmap(EFI_PHYSICAL_ADDRESS addr)
 
 EFI_STATUS pae_map(EFI_PHYSICAL_ADDRESS addr, unsigned char **to, UINT64 *len)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (addr <= UINT32_MAX) {
 		*to = (unsigned char *)(UINT32)addr;
@@ -283,7 +296,9 @@ EFI_STATUS pae_map(EFI_PHYSICAL_ADDRESS addr, unsigned char **to, UINT64 *len)
 
 EFI_STATUS pae_exit(void)
 {
-	if (!ctx.initialized)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!ctx.initialized)
 		return EFI_SUCCESS;
 
 	/* Disable paging. */

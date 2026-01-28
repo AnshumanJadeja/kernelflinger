@@ -33,6 +33,7 @@
 #include "oemvars.h"
 #include "vars.h"
 #include "text_parser.h"
+#include <log.h>
 
 enum vartype {
 	VAR_TYPE_UNKNOWN,
@@ -48,7 +49,9 @@ typedef struct oemvars_ctx {
 
 static BOOLEAN parse_oemvar_guid_line(char *line, EFI_GUID *g)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	const CHAR8 *prefix = (CHAR8 *) "GUID";
 
 	skip_whitespace(&line);
@@ -75,7 +78,9 @@ static BOOLEAN parse_oemvar_guid_line(char *line, EFI_GUID *g)
  * bytes */
 static UINTN unescape_oemvar_val(char *val)
 {
-	char *p = val, *out = val;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *p = val, *out = val;
 	unsigned int byte;
 	char value[3] = { '\0', '\0', '\0' };
 	char *tmp;
@@ -101,7 +106,9 @@ static UINTN unescape_oemvar_val(char *val)
 
 static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum vartype *typep)
 {
-	char *line = *linep;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *line = *linep;
 	char *pos, *end;
 	/* No point in writing volatile values. Default to both boot and runtime
 	 * access, can remove runtime access with 'b' flag */
@@ -167,7 +174,9 @@ static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum var
 
 static EFI_STATUS parse_line(char *line, VOID *context)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	uint32_t attributes = 0;
 	enum vartype type;
 	CHAR16 *varname;
@@ -293,7 +302,9 @@ static EFI_STATUS _flash_oemvars(VOID *data, UINTN size,
 				 const EFI_GUID *restricted_guid,
 				 BOOLEAN silent_error)
 {
-	oemvars_ctx_t ctx = {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+oemvars_ctx_t ctx = {
 		.guid = loader_guid,
 		.restricted_guid = restricted_guid,
 		.silent_write_error = silent_error
@@ -306,10 +317,14 @@ static EFI_STATUS _flash_oemvars(VOID *data, UINTN size,
 EFI_STATUS flash_oemvars_silent_write_error(VOID *data, UINTN size,
 					    const EFI_GUID *restricted_guid)
 {
-	return _flash_oemvars(data, size, restricted_guid, TRUE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return _flash_oemvars(data, size, restricted_guid, TRUE);
 }
 
 EFI_STATUS flash_oemvars(VOID *data, UINTN size)
 {
-	return _flash_oemvars(data, size, NULL, FALSE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return _flash_oemvars(data, size, NULL, FALSE);
 }

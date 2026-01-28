@@ -35,13 +35,16 @@
 #include <lib.h>
 #include "storage.h"
 #include "protocol/DevicePath.h"
+#include <log.h>
 
 /**
  *  Will ignore the USB device.
  */
 static EFI_DEVICE_PATH *get_general_block_device_path(EFI_DEVICE_PATH *p)
 {
-	ACPI_HID_DEVICE_PATH *Acpi;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ACPI_HID_DEVICE_PATH *Acpi;
 	EFI_DEVICE_PATH *op = p;
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p)) {
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
@@ -68,18 +71,24 @@ static EFI_STATUS general_block_erase_blocks(__attribute__((unused)) EFI_HANDLE 
 				   __attribute__((unused)) EFI_LBA start,
 				   __attribute__((unused)) EFI_LBA end)
 {
-	return EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 
 static EFI_STATUS general_block_check_logical_unit (__attribute__((unused)) EFI_DEVICE_PATH *p,
 					  logical_unit_t log_unit)
 {
-	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_general_block(EFI_DEVICE_PATH *p)
 {
-	return get_general_block_device_path(p) != NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return get_general_block_device_path(p) != NULL;
 }
 
 struct storage STORAGE(STORAGE_GENERAL_BLOCK) = {

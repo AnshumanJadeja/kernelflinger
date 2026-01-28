@@ -17,6 +17,7 @@
 #include "XdciUtility.h"
 #include "UsbDeviceDxe.h"
 #include "UsbDeviceMode.h"
+#include <log.h>
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 //
@@ -54,7 +55,9 @@ BOOLEAN mXdciRun = FALSE;
 VOID
 XhciSwitchSwid(BOOLEAN enable)
 {
-  UINTN                             XhciPciMmBase;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN                             XhciPciMmBase;
   EFI_PHYSICAL_ADDRESS              XhciMemBaseAddress;
   UINT32                            DualRoleCfg0;
   UINT32                            DualRoleCfg1;
@@ -85,7 +88,9 @@ UsbdMonitorEvents (
   IN VOID                 *Context
   )
 {
-  USB_XDCI_DEV_CONTEXT    *XdciDevContext;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_XDCI_DEV_CONTEXT    *XdciDevContext;
   UINT32                  EventCount;
   UINT32                  PreEventCount;
   UINT32                  LoopCount;
@@ -134,7 +139,9 @@ UsbdInit (
   IN VOID      **XdciHndl
   )
 {
-  EFI_STATUS               Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS               Status = EFI_DEVICE_ERROR;
   USB_DEV_CONFIG_PARAMS    ConfigParams = {0};
 
   XhciSwitchSwid(TRUE);
@@ -170,7 +177,9 @@ UsbdSetEpInfo (
   IN USB_DEVICE_ENDPOINT_INFO    *EpSrc
   )
 {
-  EFI_USB_ENDPOINT_DESCRIPTOR              *EpDesc = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_USB_ENDPOINT_DESCRIPTOR              *EpDesc = NULL;
   EFI_USB_ENDPOINT_COMPANION_DESCRIPTOR    *EpCompDesc = NULL;
 
   //
@@ -213,7 +222,9 @@ UsbdInitEp (
   IN USB_DEVICE_ENDPOINT_INFO  *DevEpInfo
   )
 {
-  EFI_STATUS   Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS   Status = EFI_DEVICE_ERROR;
   USB_EP_INFO  EpInfo;
 
   UsbdSetEpInfo (&EpInfo, DevEpInfo);
@@ -240,7 +251,9 @@ UsbdXferDoneHndlr (
   IN USB_XFER_REQUEST        *XferReq
   )
 {
-  EFI_USB_DEVICE_XFER_INFO  XferInfo;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_USB_DEVICE_XFER_INFO  XferInfo;
 
   DEBUG ((DEBUG_INFO, "UsbdXferDoneHndlr\n"));
 
@@ -279,7 +292,9 @@ UsbdEpTxData (
   IN USB_DEVICE_IO_REQ  *IoReq
   )
 {
-  EFI_STATUS        Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS        Status = EFI_DEVICE_ERROR;
   USB_XFER_REQUEST  TxReq = {0};
 
   //
@@ -327,7 +342,9 @@ UsbdEpRxData (
   IN USB_DEVICE_IO_REQ  *IoReq
   )
 {
-  EFI_STATUS        Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS        Status = EFI_DEVICE_ERROR;
   USB_XFER_REQUEST  RxReq = {0};
   UINT32            ReqPacket;
 
@@ -381,7 +398,9 @@ UsbdResetEvtHndlr (
   IN USB_DEVICE_CALLBACK_PARAM __attribute__((unused)) *Param
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdResetEvtHndlr\n"));
 
@@ -411,7 +430,9 @@ UsbdConnDoneEvtHndlr (
   IN USB_DEVICE_CALLBACK_PARAM __attribute__((unused))*Param
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdConnDoneEvtHndlr\n"));
 
@@ -446,7 +467,9 @@ UsbdSetupEvtHndlr (
   IN USB_DEVICE_CALLBACK_PARAM *Param
   )
 {
-  EFI_STATUS              Status = EFI_SUCCESS;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS              Status = EFI_SUCCESS;
   EFI_USB_DEVICE_REQUEST  Req;
 
   DEBUG ((DEBUG_INFO, "UsbdSetupEvtHndlr\n"));
@@ -478,7 +501,9 @@ UsbdNrdyEvtHndlr (
   IN USB_DEVICE_CALLBACK_PARAM __attribute((unused))*Param
   )
 {
-  DEBUG ((DEBUG_INFO, "UsbdNrdyEvtHndlr\n"));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+DEBUG ((DEBUG_INFO, "UsbdNrdyEvtHndlr\n"));
   return EFI_SUCCESS;
 }
 
@@ -496,7 +521,9 @@ UsbdRegisterCallbacks (
   IN VOID  *XdciHndl
   )
 {
-  if (UsbDeviceRegisterCallback (XdciHndl, USB_DEVICE_RESET_EVENT, UsbdResetEvtHndlr) != EFI_SUCCESS) {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (UsbDeviceRegisterCallback (XdciHndl, USB_DEVICE_RESET_EVENT, UsbdResetEvtHndlr) != EFI_SUCCESS) {
     goto UdciRegCallbackError;
   }
 
@@ -541,7 +568,9 @@ UsbdGetConfigDesc (
   IN UINT32    *DataLen
   )
 {
-  EFI_STATUS             Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS             Status = EFI_DEVICE_ERROR;
   UINT8                  NumConfigs = 0;
   UINT32                 ConfigLen = 0;
   USB_DEVICE_CONFIG_OBJ  *ConfigObj = NULL;
@@ -606,7 +635,9 @@ UsbdSetConfig (
   UINT8  CfgValue
   )
 {
-  EFI_STATUS                 Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                 Status = EFI_DEVICE_ERROR;
   UINT8                      numConfigs = 0;
   USB_DEVICE_CONFIG_OBJ      *pConfigObj = NULL;
   USB_DEVICE_INTERFACE_OBJ   *pIfObj = NULL;
@@ -703,7 +734,9 @@ UsbdGetConfig (
   UINT32    *DataLen
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdGetConfig()\n"));
 
@@ -746,7 +779,9 @@ UsbdGetStringDesc (
   UINT32    *DataLen
   )
 {
-  EFI_STATUS             Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS             Status = EFI_DEVICE_ERROR;
   UINT32                 Length = 0;
   USB_STRING_DESCRIPTOR  *StringDesc;
   UINT8                  Index = 0;
@@ -840,7 +875,9 @@ UsbdGetBOSDesc (
   IN UINT32    *DataLen
   )
 {
-  EFI_USB_BOS_DESCRIPTOR  *BosDesc = 0;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_USB_BOS_DESCRIPTOR  *BosDesc = 0;
   UINT32                  Length = 0;
 
   DEBUG ((DEBUG_INFO, "UsbdGetBOSDesc()\n"));
@@ -877,7 +914,9 @@ UsbdGetStatus (
   UINT32    *DataLen
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdGetStatus()\n"));
 
@@ -932,7 +971,9 @@ UsbdSetAddress (
   UINT8    Address
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdSetAddress: setting address: 0x%x\n", Address));
 
@@ -971,7 +1012,9 @@ UsbdSetupHdlr (
   IN EFI_USB_DEVICE_REQUEST    *CtrlRequest
   )
 {
-  EFI_STATUS              Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS              Status = EFI_DEVICE_ERROR;
   UINT8                   DescIndex = 0;
   USB_DEVICE_DESCRIPTOR   *DevDesc = 0;
 
@@ -1140,7 +1183,9 @@ UsbdConnDoneHdlr (
   VOID
   )
 {
-  EFI_STATUS    Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbdConnDoneHdlr()\n"));
 
@@ -1176,7 +1221,9 @@ UsbdXferDoneHdlr (
   IN EFI_USB_DEVICE_XFER_INFO    *XferInfo
   )
 {
-  //
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+//
   // If this is a non-control transfer complete, notify the class driver
   //
   if (XferInfo->EndpointNum > 0) {
@@ -1207,7 +1254,9 @@ UsbDeviceBind (
   IN USB_DEVICE_OBJ                             *UsbdDevObj
   )
 {
-  EFI_STATUS  Status = EFI_SUCCESS;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_SUCCESS;
 
   //
   // allocate Tx Buffer
@@ -1239,7 +1288,9 @@ UsbDeviceUnbind (
   IN EFI_USB_DEVICE_MODE_PROTOCOL __attribute__((unused))*This
   )
 {
-  mDrvObj.UsbdDevObj = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+mDrvObj.UsbdDevObj = NULL;
   mDrvObj.ActiveConfigObj = NULL;
   mDrvObj.Address = 0;
   mDrvObj.State = UsbDevStateOff;
@@ -1272,7 +1323,9 @@ UsbDeviceRun (
   IN UINT32                                     *state
   )
 {
-  EFI_STATUS              Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS              Status = EFI_DEVICE_ERROR;
   USB_XDCI_DEV_CONTEXT    *XdciDevContext;
 
   if (state)
@@ -1354,7 +1407,9 @@ UsbDeviceStop (
   IN EFI_USB_DEVICE_MODE_PROTOCOL __attribute__((unused))*This
   )
 {
-  mXdciRun = FALSE; // set run flag to FALSE to stop processing
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+mXdciRun = FALSE; // set run flag to FALSE to stop processing
   return EFI_SUCCESS;
 }
 
@@ -1365,7 +1420,9 @@ UsbDeviceInitXdci (
   IN EFI_USB_DEVICE_MODE_PROTOCOL               *This
   )
 {
-  EFI_STATUS            Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS            Status = EFI_DEVICE_ERROR;
   USB_XDCI_DEV_CONTEXT  *XdciDevContext;
 
   XdciDevContext = USBUSBD_CONTEXT_FROM_PROTOCOL (This);
@@ -1418,7 +1475,9 @@ UsbDeviceConnect(
   IN EFI_USB_DEVICE_MODE_PROTOCOL __attribute((unused))*This
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO,  "UsbDeviceConnect \n"));
   if (UsbXdciDeviceConnect (mDrvObj.XdciDrvObj) == EFI_SUCCESS) {
@@ -1434,7 +1493,9 @@ UsbDeviceDisConnect (
   IN EFI_USB_DEVICE_MODE_PROTOCOL __attribute((unused))*This
   )
 {
-  EFI_STATUS  Status = EFI_DEVICE_ERROR;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO,  "UsbDeviceDisConnect \n"));
   if (UsbDeviceDisconnect (mDrvObj.XdciDrvObj) == EFI_SUCCESS) {
@@ -1454,7 +1515,9 @@ UsbDeviceEpTxData(
   IN USB_DEVICE_IO_REQ                          *IoRequest
   )
 {
-  EFI_STATUS  Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status;
 
   Status = UsbdEpTxData (mDrvObj.XdciDrvObj, IoRequest);
   return Status;
@@ -1468,7 +1531,9 @@ UsbDeviceEpRxData(
   IN USB_DEVICE_IO_REQ                          *IoRequest
   )
 {
-  EFI_STATUS  Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS  Status;
 
   Status = UsbdEpRxData (mDrvObj.XdciDrvObj, IoRequest);
   return Status;

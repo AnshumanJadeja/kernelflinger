@@ -37,10 +37,13 @@
 #include <lib.h>
 
 #include "ui.h"
+#include <log.h>
 
 ui_boot_menu_t *ui_boot_menu_create(ui_boot_action_t *actions)
 {
-	ui_boot_menu_t *menu;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_boot_menu_t *menu;
 	UINTN i;
 
 	for (i = 0; actions[i].img_name; i++) {
@@ -63,7 +66,9 @@ static const UINTN MARGIN = 20;
 
 static EFI_STATUS ui_boot_menu_redraw(ui_boot_menu_t *menu, UINTN *y)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	ui_textline_t lines[] = {
 #ifdef USE_POWER_BUTTON
 		{ &COLOR_LIGHTGRAY, "Volume UP/DOWN buttons to move the selection", TRUE },
@@ -102,7 +107,9 @@ static EFI_STATUS ui_boot_menu_redraw(ui_boot_menu_t *menu, UINTN *y)
 
 EFI_STATUS ui_boot_menu_draw(ui_boot_menu_t *menu, UINTN x, UINTN *y, UINTN max_width)
 {
-	menu->x = x;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+menu->x = x;
 	menu->y = *y;
 	menu->max_width = max_width;
 	return ui_boot_menu_redraw(menu, y);
@@ -110,7 +117,9 @@ EFI_STATUS ui_boot_menu_draw(ui_boot_menu_t *menu, UINTN x, UINTN *y, UINTN max_
 
 enum boot_target ui_boot_menu_event_handler(ui_boot_menu_t *menu, ui_events_t event)
 {
-	UINTN y;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN y;
 
 	switch (event) {
 	case EV_UP:
@@ -136,5 +145,7 @@ enum boot_target ui_boot_menu_event_handler(ui_boot_menu_t *menu, ui_events_t ev
 
 void ui_boot_menu_free(ui_boot_menu_t *menu)
 {
-	FreePool(menu);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FreePool(menu);
 }

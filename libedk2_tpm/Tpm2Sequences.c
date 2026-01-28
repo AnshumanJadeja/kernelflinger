@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include <log.h>
 
 #pragma pack(1)
 
@@ -99,7 +100,9 @@ Tpm2HashSequenceStart (
   OUT TPMI_DH_OBJECT *SequenceHandle
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_HASH_SEQUENCE_START_COMMAND  Cmd;
   TPM2_HASH_SEQUENCE_START_RESPONSE Res;
   UINT32                            CmdSize;
@@ -187,7 +190,9 @@ Tpm2SequenceUpdate (
   IN TPM2B_MAX_BUFFER *Buffer
   )
 {
-  EFI_STATUS                    Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                    Status;
   TPM2_SEQUENCE_UPDATE_COMMAND  Cmd;
   TPM2_SEQUENCE_UPDATE_RESPONSE Res;
   UINT32                        CmdSize;
@@ -288,7 +293,9 @@ Tpm2EventSequenceComplete (
   OUT TPML_DIGEST_VALUES *Results
   )
 {
-  EFI_STATUS                            Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                            Status;
   TPM2_EVENT_SEQUENCE_COMPLETE_COMMAND  Cmd;
   TPM2_EVENT_SEQUENCE_COMPLETE_RESPONSE Res;
   UINT32                                CmdSize;
@@ -418,7 +425,9 @@ Tpm2SequenceComplete (
   OUT TPM2B_DIGEST       *Result
   )
 {
-  EFI_STATUS                            Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                            Status;
   TPM2_SEQUENCE_COMPLETE_COMMAND        Cmd;
   TPM2_SEQUENCE_COMPLETE_RESPONSE       Res;
   UINT32                                CmdSize;
@@ -535,7 +544,9 @@ Tpm2HashSequence(
   IN TPM2B_DIGEST *Buffers,
   OUT TPM2B_DIGEST *Result )
 {
-  EFI_STATUS          Status = EFI_SUCCESS;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS          Status = EFI_SUCCESS;
   TPMI_DH_OBJECT      SequenceHandle;
   TPM2B_MAX_BUFFER    HashBbuf;
   UINT8 Index;

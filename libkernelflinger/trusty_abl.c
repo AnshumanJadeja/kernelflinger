@@ -47,6 +47,7 @@
 #include "efilinux.h"
 #include "libelfloader.h"
 #include <uefi_utils.h>
+#include <log.h>
 
 #define TRUSTY_MEM_SIZE        0x1200000
 #define BARRIER_MEM_SIZE       0x100000
@@ -113,7 +114,11 @@ struct tos_image_header {
 static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UINTN base,
 	UINTN size, trusty_boot_param_t *boot_param)
 {
-	UINT64 entry_addr = 0;
+	
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 entry_addr = 0;
 
 	if (!param || !boot_param)
 		return EFI_INVALID_PARAMETER;
@@ -138,7 +143,11 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #define TRUSTY_VMCALL_SMC 0x74727500
 static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 {
-	if (!param)
+	
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!param)
 		return EFI_INVALID_PARAMETER;
 
 	asm volatile(
@@ -150,7 +159,11 @@ static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 
 EFI_STATUS set_trusty_param(__attribute__((unused)) IN VOID *param_data)
 {
-	return EFI_UNSUPPORTED;
+	
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 
 static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
@@ -158,7 +171,11 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 	IN EFI_PHYSICAL_ADDRESS min_addr,
 	IN EFI_PHYSICAL_ADDRESS max_addr)
 {
-	EFI_MEMORY_DESCRIPTOR entries[64];
+	
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_MEMORY_DESCRIPTOR entries[64];
 	EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS  start, end;
 	EFI_STATUS ret;
@@ -220,7 +237,11 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
-	EFI_STATUS ret;
+	
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	const struct boot_img_hdr *header;
 	UINTN load_base;
 	trusty_startup_params_t trusty_startup_params;

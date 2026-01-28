@@ -9,6 +9,7 @@
 #include <efi.h>
 #include <efiapi.h>
 #include <RegisterFilterLib.h>
+#include <log.h>
 
 /**
   Filter IO read operation before read IO port.
@@ -34,7 +35,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN OUT VOID         *Buffer
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
 /**
@@ -54,7 +57,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }
 
 /**
@@ -80,7 +85,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
   /**
@@ -100,7 +107,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }
 
 /**
@@ -125,7 +134,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN OUT VOID         *Buffer
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
 /**
@@ -144,7 +155,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }
 
 /**
@@ -169,7 +182,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
 /**
@@ -188,7 +203,9 @@ __attribute__((__unused__))  IN UINTN            Address,
 __attribute__((__unused__))  IN VOID             *Buffer
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }
 
 /**
@@ -211,7 +228,9 @@ __attribute__((__unused__))  IN UINT32        Index,
 __attribute__((__unused__))  IN OUT UINT64    *Value
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
 /**
@@ -228,7 +247,9 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }
 
 /**
@@ -251,7 +272,9 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
-  return TRUE;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }
 
 /**
@@ -268,5 +291,7 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
-  return;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return;
 }

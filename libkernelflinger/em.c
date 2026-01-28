@@ -35,6 +35,7 @@
 #include "protocol/ChargingAppletProtocol.h"
 
 #include "em.h"
+#include <log.h>
 
 #ifdef USE_CHARGING_APPLET
 static EFI_GUID gChargingAppletProtocolGuid = CHARGING_APPLET_PROTOCOL_GUID;
@@ -50,7 +51,9 @@ struct battery_status {
 
 static EFI_STATUS get_battery_status(struct battery_status *status)
 {
-        CHARGING_APPLET_PROTOCOL *charging_protocol;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHARGING_APPLET_PROTOCOL *charging_protocol;
         EFI_STATUS ret;
 
         ret = LibLocateProtocol(&gChargingAppletProtocolGuid,
@@ -78,7 +81,9 @@ error:
 
 BOOLEAN is_charger_plugged_in(void)
 {
-        CHARGING_APPLET_PROTOCOL *charging_protocol;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHARGING_APPLET_PROTOCOL *charging_protocol;
         CHARGER_TYPE type;
         EFI_STATUS ret;
 
@@ -101,7 +106,9 @@ error:
 
 BOOLEAN is_battery_below_boot_OS_threshold(void)
 {
-        struct battery_status status;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct battery_status status;
         EFI_STATUS ret;
         UINTN value, threshold;
         UINT8 ia_apps_to_use;
@@ -140,7 +147,9 @@ BOOLEAN is_battery_below_boot_OS_threshold(void)
 
 EFI_STATUS get_battery_voltage(UINTN *voltage)
 {
-        struct battery_status status;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct battery_status status;
         EFI_STATUS ret;
 
         ret = get_battery_status(&status);
@@ -154,19 +163,25 @@ EFI_STATUS get_battery_voltage(UINTN *voltage)
 #else
 BOOLEAN is_charger_plugged_in(void)
 {
-        debug(L"WARNING: charging protocol disabled, assume charger is not plugged-in");
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+debug(L"WARNING: charging protocol disabled, assume charger is not plugged-in");
         return FALSE;
 }
 
 BOOLEAN is_battery_below_boot_OS_threshold(void)
 {
-        debug(L"WARNING: charging protocol disabled, assume battery level is above BOOT_OS");
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+debug(L"WARNING: charging protocol disabled, assume battery level is above BOOT_OS");
         return FALSE;
 }
 
 EFI_STATUS get_battery_voltage(__attribute__((__unused__)) UINTN *voltage)
 {
-        debug(L"WARNING: charging protocol is disabled");
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+debug(L"WARNING: charging protocol is disabled");
         return EFI_UNSUPPORTED;
 }
 #endif  /* USE_CHARGING_APPLET */

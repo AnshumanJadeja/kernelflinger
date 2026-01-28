@@ -18,6 +18,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "UsbIo.h"
 #include "protocol/DevicePath.h"
 #include "UsbMassBot.h"
+#include <log.h>
 
 static
 EFI_STATUS
@@ -26,7 +27,9 @@ UsbClearEndpointStall (
   IN UINT8 Address
   )
 {
-  EFI_USB_DEVICE_REQUEST    Request;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_USB_DEVICE_REQUEST    Request;
   EFI_STATUS                Status;
   UINT32                    CmdResult;
   UINT32                    Timeout;
@@ -72,7 +75,9 @@ UsbBotInit (
   OUT VOID                      **Context OPTIONAL
   )
 {
-  USB_BOT_PROTOCOL              *UsbBot;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_BOT_PROTOCOL              *UsbBot;
   EFI_USB_INTERFACE_DESCRIPTOR  *Interface;
   EFI_USB_ENDPOINT_DESCRIPTOR   EndPoint;
   EFI_STATUS                    Status;
@@ -184,7 +189,9 @@ UsbBotSendCommand (
   IN UINT8                    Lun
   )
 {
-  USB_BOT_CBW               Cbw;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_BOT_CBW               Cbw;
   EFI_STATUS                Status;
   UINT32                    Result;
   UINTN                     DataLen;
@@ -265,7 +272,9 @@ UsbBotDataTransfer (
   IN UINT32                   Timeout
   )
 {
-  EFI_USB_ENDPOINT_DESCRIPTOR *Endpoint;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_USB_ENDPOINT_DESCRIPTOR *Endpoint;
   EFI_STATUS                  Status;
   UINT32                      Result;
 
@@ -342,7 +351,9 @@ UsbBotGetStatus (
   OUT UINT8                 *CmdStatus
   )
 {
-  USB_BOT_CSW               Csw;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_BOT_CSW               Csw;
   UINTN                     Len;
   UINT8                     Endpoint;
   EFI_STATUS                Status;
@@ -436,7 +447,9 @@ UsbBotExecCommand (
   OUT UINT32                  *CmdStatus
   )
 {
-  USB_BOT_PROTOCOL          *UsbBot;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_BOT_PROTOCOL          *UsbBot;
   EFI_STATUS                Status;
   UINTN                     TransLen;
   UINT8                     Result;
@@ -497,7 +510,9 @@ UsbBotResetDevice (
   IN  BOOLEAN                 ExtendedVerification
   )
 {
-  USB_BOT_PROTOCOL        *UsbBot;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_BOT_PROTOCOL        *UsbBot;
   EFI_USB_DEVICE_REQUEST  Request;
   EFI_STATUS              Status;
   UINT32                  Result;
@@ -571,7 +586,9 @@ UsbBotExecCommandWithRetry (
   OUT UINT32                   *CmdStatus
   )
 {
-  EFI_STATUS             Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS             Status;
   UINTN                  Retry;
   VOID                   *timeout_evt;
 

@@ -39,6 +39,7 @@
 #include "adb.h"
 #include "adb_socket.h"
 #include "service.h"
+#include <log.h>
 
 /* USB configuration */
 #define ADB_IF_SUBCLASS		0x42
@@ -77,7 +78,9 @@ UINT32 adb_version;
 
 static UINT32 adb_pkt_sum(adb_pkt_t *pkt)
 {
-	UINTN count, sum;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN count, sum;
 	unsigned char *cur = pkt->data;
 
 	for (sum = 0, count = pkt->msg.data_length; count; count--)
@@ -89,7 +92,9 @@ static UINT32 adb_pkt_sum(adb_pkt_t *pkt)
 static adb_pkt_t *delayed_pkt_data;
 EFI_STATUS adb_send_pkt(adb_pkt_t *pkt, UINT32 command, UINT32 arg0, UINT32 arg1)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	pkt->msg.command = command;
 	pkt->msg.arg0 = arg0;
@@ -119,7 +124,9 @@ EFI_STATUS adb_send_pkt(adb_pkt_t *pkt, UINT32 command, UINT32 arg0, UINT32 arg1
 
 static void adb_read_msg(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	adb_state = ADB_READ_MSG;
 	ret = transport_read(&adb_pkt_in.msg, sizeof(adb_pkt_in.msg));
@@ -129,7 +136,9 @@ static void adb_read_msg(void)
 
 static void adb_read_msg_payload()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	adb_state = ADB_READ_MSG_PAYLOAD;
 	ret = transport_read(adb_pkt_in.data, adb_pkt_in.msg.data_length);
@@ -141,7 +150,9 @@ static void adb_read_msg_payload()
 /* ADB commands */
 static void cmd_unsupported(adb_pkt_t *pkt)
 {
-	char cmd[5];
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char cmd[5];
 
 	*(UINT32 *)cmd = pkt->msg.command;
 	*(UINT32 *)cmd = MKID(cmd[0], cmd[1], cmd[2], cmd[3]);
@@ -151,12 +162,16 @@ static void cmd_unsupported(adb_pkt_t *pkt)
 
 static BOOLEAN is_supported_adb_version(UINT32 ver)
 {
-	return ((ver >= ADB_VERSION_MIN) && (ver <= ADB_VERSION_MAX)) ? TRUE : FALSE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return ((ver >= ADB_VERSION_MIN) && (ver <= ADB_VERSION_MAX)) ? TRUE : FALSE;
 }
 
 static void cmd_connect(adb_pkt_t *pkt)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	static adb_pkt_t out_pkt;
 
 	if (!is_supported_adb_version(pkt->msg.arg0)) {
@@ -179,7 +194,9 @@ static void cmd_connect(adb_pkt_t *pkt)
 
 static void cmd_open(adb_pkt_t *pkt)
 {
-	char *name = (char *)pkt->data;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *name = (char *)pkt->data;
 	char *arg = name;
 	service_t *srv = NULL;
 	UINTN i;
@@ -205,17 +222,23 @@ static void cmd_open(adb_pkt_t *pkt)
 
 static void cmd_okay(adb_pkt_t *pkt)
 {
-	asock_okay(asock_find(pkt->msg.arg1, pkt->msg.arg0));
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+asock_okay(asock_find(pkt->msg.arg1, pkt->msg.arg0));
 }
 
 static void cmd_close(adb_pkt_t *pkt)
 {
-	asock_close(asock_find(pkt->msg.arg1, pkt->msg.arg0));
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+asock_close(asock_find(pkt->msg.arg1, pkt->msg.arg0));
 }
 
 static void cmd_write(adb_pkt_t *pkt)
 {
-	asock_read(asock_find(pkt->msg.arg1, pkt->msg.arg0),
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+asock_read(asock_find(pkt->msg.arg1, pkt->msg.arg0),
 		   pkt->data, pkt->msg.data_length);
 }
 
@@ -236,7 +259,9 @@ static adb_handler_t HANDLERS[] = {
 
 static adb_handler_t *get_handler(adb_msg_t *msg)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(HANDLERS); i++)
 		if (HANDLERS[i].command == msg->command)
@@ -247,7 +272,9 @@ static adb_handler_t *get_handler(adb_msg_t *msg)
 
 static void process_msg(void)
 {
-	adb_handler_t *handler;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+adb_handler_t *handler;
 
 	if (adb_state != ADB_PROCESS_MSG)
 		return;
@@ -263,7 +290,9 @@ static void process_msg(void)
 
 static void adb_process_rx(void *buf, unsigned len)
 {
-	adb_msg_t *msg;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+adb_msg_t *msg;
 
 	switch (adb_state) {
 	case ADB_READ_MSG:
@@ -327,7 +356,9 @@ static void adb_process_rx(void *buf, unsigned len)
 static void adb_process_tx(__attribute__((__unused__)) void *buf,
 			   __attribute__((__unused__)) unsigned len)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!delayed_pkt_data)
 		return;
@@ -342,25 +373,33 @@ static enum boot_target exit_bt;
 
 enum boot_target adb_get_boot_target(void)
 {
-	return exit_bt;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return exit_bt;
 }
 
 void adb_set_boot_target(enum boot_target bt)
 {
-	exit_bt = bt;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+exit_bt = bt;
 }
 
 static EFI_STATUS adb_usb_start(start_callback_t start_cb,
 				data_callback_t rx_cb,
 				data_callback_t tx_cb)
 {
-	return usb_start(ADB_IF_SUBCLASS, ADB_IF_PROTOCOL,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return usb_start(ADB_IF_SUBCLASS, ADB_IF_PROTOCOL,
 			 STR_CONFIGURATION, STR_INTERFACE,
 			 start_cb, rx_cb, tx_cb);
 }
 
 static void print_tcpip_information(EFI_IPv4_ADDRESS *address)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #define TCPIP_INFO_FMT L"ADB is listening on TCP %d.%d.%d.%d:%d"
 
 	ui_print(TCPIP_INFO_FMT, address->Addr[0], address->Addr[1],
@@ -373,7 +412,9 @@ static EFI_STATUS adb_tcp_start(start_callback_t start_cb,
 				data_callback_t rx_cb,
 				data_callback_t tx_cb)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_IPv4_ADDRESS station_address;
 
 	ret = tcp_start(TCP_PORT, start_cb, rx_cb, tx_cb,
@@ -407,7 +448,9 @@ static transport_t ADB_TRANSPORT[] = {
 
 EFI_STATUS adb_init()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	adb_pkt_in.data = in_buf;
 	exit_bt = UNKNOWN_TARGET;
@@ -423,7 +466,9 @@ EFI_STATUS adb_init()
 
 EFI_STATUS adb_run(UINT32 *state)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if(state)
 		*state = 1;
@@ -440,7 +485,9 @@ EFI_STATUS adb_run(UINT32 *state)
 
 EFI_STATUS adb_exit()
 {
-	asock_close_all();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+asock_close_all();
 	transport_stop();
 	return EFI_SUCCESS;
 }

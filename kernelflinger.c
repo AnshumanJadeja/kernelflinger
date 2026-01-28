@@ -71,6 +71,7 @@
 #include "security_efi.h"
 #include "tpm2_security.h"
 #include "ivshmem.h"
+#include <log.h>
 
 BOOLEAN tee_tpm = false;
 
@@ -139,7 +140,9 @@ static VOID die(VOID) __attribute__ ((noreturn));
 #if DEBUG_MESSAGES
 static VOID print_rsci_values(VOID)
 {
-	enum wake_sources raw_wake_source = rsci_get_wake_source();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum wake_sources raw_wake_source = rsci_get_wake_source();
 	enum reset_sources raw_reset_source = rsci_get_reset_source();
 	enum reset_types raw_reset_type = rsci_get_reset_type();
 
@@ -160,7 +163,9 @@ static VOID print_rsci_values(VOID)
 
 static enum boot_target check_fastboot_sentinel(VOID)
 {
-	debug(L"checking ESP for %s", FASTBOOT_SENTINEL);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+debug(L"checking ESP for %s", FASTBOOT_SENTINEL);
 	if (file_exists(g_disk_device, FASTBOOT_SENTINEL))
 		return FASTBOOT;
 	return NORMAL_BOOT;
@@ -169,7 +174,9 @@ static enum boot_target check_fastboot_sentinel(VOID)
 
 static enum boot_target check_magic_key(VOID)
 {
-	unsigned long i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+unsigned long i;
 	EFI_STATUS ret = EFI_NOT_READY;
 	EFI_INPUT_KEY key;
 	unsigned long wait_ms = EFI_RESET_WAIT_MS;
@@ -219,7 +226,9 @@ static enum boot_target check_magic_key(VOID)
 
 static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct bootloader_message bcb;
 	CHAR16 *target = NULL;
 	enum boot_target t;
@@ -303,7 +312,9 @@ out:
 
 static enum boot_target check_loader_entry_one_shot(VOID)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *target;
 	enum boot_target bt;
 
@@ -337,7 +348,9 @@ static enum boot_target check_loader_entry_one_shot(VOID)
 
 static BOOLEAN reset_is_due_to_watchdog_or_panic(void)
 {
-	static enum reset_sources WATCHDOG_RESET_SOURCES[] = {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static enum reset_sources WATCHDOG_RESET_SOURCES[] = {
 		RESET_KERNEL_WATCHDOG,
 		RESET_SECURITY_WATCHDOG,
 		RESET_PMIC_WATCHDOG,
@@ -364,7 +377,9 @@ static BOOLEAN reset_is_due_to_watchdog_or_panic(void)
  */
 static enum boot_target check_watchdog(VOID)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT8 counter;
 	EFI_TIME time_ref =  {0}, now = {0};
 
@@ -444,7 +459,9 @@ error:
 #ifndef USE_SBL
 static enum boot_target check_command_line(VOID)
 {
-	UINTN argc, pos;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN argc, pos;
 	CHAR16 **argv;
 	CHAR16 *options;
 	enum boot_target bt;
@@ -522,7 +539,9 @@ static union bootMode
 
 static enum boot_target check_command_line()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	enum boot_target target = NORMAL_BOOT;
 	static EFI_LOADED_IMAGE *limg;
 	UINTN argc, i, j;
@@ -804,7 +823,9 @@ out:
 
 static enum boot_target check_battery_inserted(void)
 {
-	enum wake_sources wake_source;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum wake_sources wake_source;
 
 	if (!get_off_mode_charge())
 		return NORMAL_BOOT;
@@ -818,7 +839,9 @@ static enum boot_target check_battery_inserted(void)
 
 static enum boot_target check_charge_mode(void)
 {
-	enum wake_sources wake_source;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum wake_sources wake_source;
 
 	if (!get_off_mode_charge())
 		return NORMAL_BOOT;
@@ -835,7 +858,9 @@ static enum boot_target check_charge_mode(void)
 
 enum boot_target check_battery(void)
 {
-	if (!get_off_mode_charge())
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!get_off_mode_charge())
 		return NORMAL_BOOT;
 
 	if (is_battery_below_boot_OS_threshold()) {
@@ -874,7 +899,9 @@ enum boot_target check_battery(void)
  */
 static enum boot_target choose_boot_target(CHAR16 **target_path, BOOLEAN *oneshot)
 {
-	enum boot_target ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum boot_target ret;
 
 	*target_path = NULL;
 	*oneshot = TRUE;
@@ -960,7 +987,9 @@ out:
   */
 static void disable_slot_if_efi_loaded_slot_failed()
 {
-	UINT8 loaded_slot;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8 loaded_slot;
 	UINT8 slot;
 	EFI_STATUS ret;
 	EFI_STATUS err;
@@ -1015,7 +1044,9 @@ static void disable_slot_if_efi_loaded_slot_failed()
 static void reboot_if_slot_is_different(IN AvbSlotVerifyData *slot_data,
 		IN enum boot_target boot_target)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT8 slot;
 	char *suffix;
 	UINTN nb_slots;
@@ -1074,7 +1105,9 @@ static EFI_STATUS avb_load_verify_boot_image(
 		UINT8 *boot_state,
 		AvbSlotVerifyData **slot_data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	switch (boot_target) {
 	case NORMAL_BOOT:
@@ -1134,7 +1167,9 @@ static EFI_STATUS avb_load_verify_image(
 		IN enum boot_target boot_target,
 		OUT VOID **bootimage)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT8 boot_state;
 	AvbSlotVerifyData *slot_data;
 	CHAR16 *label16;
@@ -1165,7 +1200,9 @@ static EFI_STATUS avb_load_verify_image(
 static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 						const EFI_GUID *restricted_guid)
 {
-	VOID *oemvars;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+VOID *oemvars;
 	UINT32 osz;
 	EFI_STATUS ret;
 
@@ -1196,7 +1233,9 @@ static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 
 static EFI_STATUS set_image_oemvars(VOID *bootimage)
 {
-	if (!get_oemvars_update()) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!get_oemvars_update()) {
 		debug(L"OEM vars should be up-to-date");
 		return EFI_SUCCESS;
 	}
@@ -1211,7 +1250,9 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 				VBDATA *vb_data
 				)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 #ifdef USE_TRUSTY
 	VOID *tosimage = NULL;
 #endif
@@ -1314,7 +1355,9 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 
 static VOID die(VOID)
 {
-	/* Allow plenty of time for the error to be visible before the
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Allow plenty of time for the error to be visible before the
 	 * screen goes blank
 	 */
 	pause(30);
@@ -1323,7 +1366,9 @@ static VOID die(VOID)
 
 VOID connect_all_drivers(VOID)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_HANDLE *handles;
 	UINTN      nb_handle = 0;
 	UINTN      index;
@@ -1344,7 +1389,9 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 
 static VOID enter_fastboot_mode(UINT8 boot_state)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	enum boot_target target;
 	EFI_HANDLE image;
 	void *efiimage = NULL;
@@ -1444,7 +1491,9 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 
 static void bootloader_recover_mode(UINT8 boot_state)
 {
-	enum boot_target target;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+enum boot_target target;
 
 	(VOID)boot_state;
 
@@ -1474,7 +1523,9 @@ static void bootloader_recover_mode(UINT8 boot_state)
 static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 			UINT8 *hash , UINTN hash_size )
 {
-	BOOLEAN power_off = FALSE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN power_off = FALSE;
 	enum boot_target bt;
 
 	(VOID)error_code;
@@ -1513,7 +1564,9 @@ static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *target_path = NULL;
 	VOID *vendorbootimage = NULL;
 	VOID *bootimage = NULL;

@@ -35,6 +35,7 @@
 #include "security_efi.h"
 #include "protocol/BootloaderSeedProtocol.h"
 #include "tpm2_security.h"
+#include <log.h>
 
 #define BOOTLOADER_SEED_MAX_ENTRIES  10
 
@@ -43,7 +44,9 @@ static BOOTLOADER_SEED_PROTOCOL *bls_proto = NULL;
 
 static BOOTLOADER_SEED_PROTOCOL *get_bls_proto(void)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!bls_proto)
 		ret = LibLocateProtocol(&bls_guid, (void **)&bls_proto);
@@ -56,7 +59,9 @@ static BOOTLOADER_SEED_PROTOCOL *get_bls_proto(void)
 
 EFI_STATUS stop_bls_proto(void)
 {
-	BOOTLOADER_SEED_PROTOCOL *bls;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOTLOADER_SEED_PROTOCOL *bls;
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	bls = get_bls_proto();
@@ -76,14 +81,18 @@ EFI_STATUS stop_bls_proto(void)
 /* Now the input security_data should be NULL. */
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN void *security_data)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
 	return ret;
 }
 
 EFI_STATUS set_platform_secure_boot(__attribute__((unused)) IN UINT8 secure)
 {
-	return EFI_UNSUPPORTED;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_UNSUPPORTED;
 }
 
 /* UEFI specification 2.4. Section 3.3
@@ -95,7 +104,9 @@ EFI_STATUS set_platform_secure_boot(__attribute__((unused)) IN UINT8 secure)
  */
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
-	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
 
@@ -115,7 +126,9 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
-	BOOLEAN sbflags;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN sbflags;
 	BOOLEAN enduser = TRUE;
 
 	sbflags = is_platform_secure_boot_enabled();
@@ -125,7 +138,9 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 static EFI_STATUS bls_get_seed_list(BOOTLOADER_SEED_INFO_LIST *blist)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	BOOTLOADER_SEED_PROTOCOL *bls;
 
 	bls = get_bls_proto();
@@ -144,7 +159,9 @@ static EFI_STATUS bls_get_seed_list(BOOTLOADER_SEED_INFO_LIST *blist)
 
 static UINT32 bls_get_max_svn_index(BOOTLOADER_SEED_INFO_LIST *blist)
 {
-	UINT32 i, max_svn_idx = 0;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 i, max_svn_idx = 0;
 
 #ifdef USERDEBUG
 	/* if no seed found, use dummy seed for userdebug build */
@@ -169,7 +186,9 @@ static UINT32 bls_get_max_svn_index(BOOTLOADER_SEED_INFO_LIST *blist)
 
 static EFI_STATUS bls_get_seed(VOID *seed)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	BOOTLOADER_SEED_INFO_LIST blist;
 	INT32 max_svn_idx;
 
@@ -197,7 +216,9 @@ static EFI_STATUS bls_get_seed(VOID *seed)
 
 static EFI_STATUS tpm2_get_seed(VOID *seed)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
 	if (is_live_boot())
 		return EFI_SUCCESS;
@@ -214,7 +235,9 @@ static EFI_STATUS tpm2_get_seed(VOID *seed)
 
 EFI_STATUS get_seed(OUT VOID *seed)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!seed)
 		return EFI_INVALID_PARAMETER;

@@ -37,10 +37,13 @@
 #include <lib.h>
 
 #include "ui.h"
+#include <log.h>
 
 static EFI_STATUS ui_textarea_allocate_blt(ui_textarea_t *textarea)
 {
-	UINTN blt_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN blt_size;
 
 	textarea->width = textarea->font->cwidth * textarea->row_nb;
 	textarea->height = textarea->font->cheight * textarea->line_nb;
@@ -57,7 +60,9 @@ ui_textarea_t *ui_textarea_create(UINTN line_nb, UINTN row_nb, ui_font_t *font,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
-	UINTN text_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN text_size;
 
 	if (!font)
 		font = ui_font_get_default();
@@ -95,7 +100,9 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 				  int width, int height,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
-	int i, j;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int i, j;
 
 	for (j = 0; j < height; ++j) {
 		unsigned char* sx = src_p;
@@ -126,7 +133,9 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 
 static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 {
-	UINTN cur, i, j, x, y = 0;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN cur, i, j, x, y = 0;
 	ui_font_t *font = textarea->font;
 	UINTN pixel_size = sizeof(*textarea->blt);
 	UINTN row_size = textarea->width * pixel_size;
@@ -174,7 +183,9 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 				    UINTN x, UINTN *y, UINTN width, UINTN height,
 				    EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
-	ui_textarea_t textarea;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_textarea_t textarea;
 	EFI_STATUS ret;
 	UINTN line_nb, len, row_nb = 0;
 
@@ -208,7 +219,9 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 
 void ui_textarea_free(ui_textarea_t *textarea)
 {
-	ui_textarea_clear(textarea);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_textarea_clear(textarea);
 	FreePool(textarea->blt);
 	FreePool(textarea->text);
 	FreePool(textarea);
@@ -216,7 +229,9 @@ void ui_textarea_free(ui_textarea_t *textarea)
 
 void ui_textarea_clear(ui_textarea_t *textarea)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	for (i = 0; i < textarea->line_nb; i++)
 		if (textarea->text[i].str) {
@@ -230,7 +245,9 @@ void ui_textarea_clear(ui_textarea_t *textarea)
 void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
-	textarea->text[line_nb].str = str;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+textarea->text[line_nb].str = str;
 	textarea->text[line_nb].color = color;
 	textarea->text[line_nb].bold = bold;
 }
@@ -238,7 +255,9 @@ void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
-	char *newbuf = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *newbuf = NULL;
 	UINTN len;
 	EFI_STATUS ret;
 
@@ -272,7 +291,9 @@ void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 			 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
-	textarea->current = (textarea->current + 1) % textarea->line_nb;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+textarea->current = (textarea->current + 1) % textarea->line_nb;
 
 	if (textarea->text[textarea->current].str)
 		FreePool(textarea->text[textarea->current].str);
@@ -283,14 +304,18 @@ void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 void ui_textarea_n(ui_textarea_t *textarea, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
-	textarea->current = (textarea->current + 0) % textarea->line_nb;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+textarea->current = (textarea->current + 0) % textarea->line_nb;
 	ui_textarea_set_line_n(textarea, textarea->current, str, color, bold);
 }
 
 EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 				  UINTN width, UINTN height)
 {
-	UINTN new_width, new_height;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN new_width, new_height;
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *scaled_blt = NULL;
 	EFI_STATUS ret;
 
@@ -316,6 +341,8 @@ EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 
 EFI_STATUS ui_textarea_draw(ui_textarea_t *textarea, UINTN x, UINTN y)
 {
-	ui_textarea_refresh_blt(textarea);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ui_textarea_refresh_blt(textarea);
 	return ui_draw_blt(textarea->blt, x, y, textarea->width, textarea->height);
 }

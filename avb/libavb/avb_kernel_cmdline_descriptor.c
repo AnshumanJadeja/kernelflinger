@@ -24,10 +24,13 @@
 
 #include "avb_kernel_cmdline_descriptor.h"
 #include "avb_util.h"
+#include <log.h>
 
 bool avb_kernel_cmdline_descriptor_validate_and_byteswap(
     const AvbKernelCmdlineDescriptor* src, AvbKernelCmdlineDescriptor* dest) {
-  uint64_t expected_size;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbKernelCmdlineDescriptor));
 

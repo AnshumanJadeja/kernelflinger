@@ -56,6 +56,7 @@
 #include "ui.h"
 #endif
 #include "tpm2_security.h"
+#include <log.h>
 
 static BOOLEAN last_cmd_succeeded;
 static fastboot_handle fastboot_flash_cmd;
@@ -87,7 +88,9 @@ BOOLEAN user_build = false;
 
 static void flush_tx_buffer(void)
 {
-	while (need_tx_cb) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+while (need_tx_cb) {
 		need_tx_cb = FALSE;
 		fastboot_tx_cb(NULL, 0);
 	}
@@ -95,13 +98,17 @@ static void flush_tx_buffer(void)
 
 static void do_erase(INTN argc, CHAR8 **argv)
 {
-	fastboot_erase_cmd(argc, argv);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+fastboot_erase_cmd(argc, argv);
 	flush_tx_buffer();
 }
 
 static EFI_STATUS find_partition(CHAR8 *target)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *target16;
 	struct gpt_partition_interface gparti;
 
@@ -119,7 +126,9 @@ static EFI_STATUS find_partition(CHAR8 *target)
 
 static CHAR8 *get_target(CHAR8 *target)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *target16;
 	const CHAR16 *label16;
 	static CHAR8 label[MAX_LABEL_LEN];
@@ -159,7 +168,9 @@ out:
 
 static void installer_erase(INTN argc, CHAR8 **argv)
 {
-	if (argc != 2) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (argc != 2) {
 		fastboot_fail("Erase command requires exactly 2 arguments");
 		return;
 	}
@@ -174,7 +185,9 @@ static void installer_erase(INTN argc, CHAR8 **argv)
 static void installer_flash_buffer(void *data, unsigned size,
 				   INTN argc, CHAR8 **argv)
 {
-	void *data_save = dl->data;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+void *data_save = dl->data;
 
 	dl->data = data;
 	dl->size = size;
@@ -188,7 +201,9 @@ static void installer_flash_buffer(void *data, unsigned size,
 
 static EFI_STATUS read_file(EFI_FILE *file, UINTN size, void *data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN nsize = size;
 
 	ret = uefi_call_wrapper(file->Read, 3, file, &nsize, data);
@@ -219,7 +234,9 @@ typedef struct flash_buffer {
 static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *read_flags,
 	UINTN file_size, UINTN *remaining_data, flash_buffer_t *fb, UINTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret = EFI_INVALID_PARAMETER;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	UINTN payload_size, read_size, already_read, ckh_blks, data_size;
 	const UINTN MAX_DATA_SIZE = dl->max_size - offsetof(flash_buffer_t, ckh_data);
 	const UINTN MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
@@ -284,7 +301,9 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_data,
 					    flash_buffer_t *fb, UINTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret = EFI_INVALID_PARAMETER;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	UINTN payload_size, read_size, already_read, ckh_blks, data_size;
 	const UINTN MAX_DATA_SIZE = dl->max_size - offsetof(flash_buffer_t, ckh_data);
 	const UINTN MAX_BLKS = MAX_DATA_SIZE / fb->sph.blk_sz;
@@ -340,7 +359,9 @@ static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_dat
 static void installer_split_and_joint_flash(CHAR16 **filename,
 						UINTN *size, UINTN num, UINTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	flash_buffer_t *fb;
 	UINTN  read_flags = 0;
 	struct sparse_header sph;
@@ -470,7 +491,9 @@ exit:
 static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 				      UINTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	flash_buffer_t *fb;
 	struct sparse_header sph;
 	struct chunk_header *ckh;
@@ -591,7 +614,9 @@ exit:
 
 static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR16 *filename;
 	INTN num = argc - 2;
 	CHAR16 *numname[num];
@@ -714,7 +739,9 @@ exit:
 
 static CHAR16 *get_format_image_filename(CHAR8 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR8 *filename;
 	CHAR16 *filename16;
 	UINTN label_length;
@@ -753,7 +780,9 @@ out:
    3. flash the filesystem image; */
 static void installer_format(INTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	void *data = NULL;
 	UINTN size;
 	CHAR16 *filename;
@@ -796,7 +825,9 @@ free_filename:
 
 static void installer_boot(INTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	VOID *bootimage;
 	UINTN size;
 	CHAR16 *filename;
@@ -837,7 +868,9 @@ static UINTN current_command;
 
 static void free_commands(void)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	if (!commands)
 		return;
@@ -854,7 +887,9 @@ static void free_commands(void)
 
 static EFI_STATUS create_new_command(struct command *command, char *str)
 {
-	char *cmd = str;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *cmd = str;
 
 	command->optional = FALSE;
 
@@ -892,7 +927,9 @@ static EFI_STATUS create_new_command(struct command *command, char *str)
 
 static EFI_STATUS store_command(char *command, VOID *context _unused)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct command *new_commands;
 
 	new_commands = AllocatePool(SIZE_OF_NEW_COMMANDS);
@@ -921,7 +958,9 @@ static EFI_STATUS store_command(char *command, VOID *context _unused)
 
 static char *next_command()
 {
-	if (command_nb == current_command) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (command_nb == current_command) {
 		free_commands();
 		return NULL;
 	}
@@ -931,7 +970,9 @@ static char *next_command()
 
 static void batch(INTN argc, CHAR8 **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	void *data;
 	UINTN size;
 	CHAR16 *filename;
@@ -965,7 +1006,9 @@ static void batch(INTN argc, CHAR8 **argv)
 
 static CHAR8 *build_default_options()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	static CHAR8 options[64];
 	const char cmd_prefix[] = "--batch installer";
 	const char file_suffix[] = ".cmd";
@@ -998,7 +1041,9 @@ static CHAR8 *build_default_options()
 static void usage(__attribute__((__unused__)) INTN argc,
 		__attribute__((__unused__)) CHAR8 **argv)
 {
-	Print(L"Usage: installer [OPTIONS | COMMANDS]\n");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+Print(L"Usage: installer [OPTIONS | COMMANDS]\n");
 	Print(L"  installer is an EFI application acting like the fastboot command.\n\n");
 	Print(L" COMMANDS               fastboot commands (cf. the fastboot manual page)\n");
 	Print(L" -i                     include the device which is loaded from, must be the first option\n");
@@ -1014,7 +1059,9 @@ static void usage(__attribute__((__unused__)) INTN argc,
 static void version(__attribute__((__unused__)) INTN argc,
 		__attribute__((__unused__)) CHAR8 **argv)
 {
-	Print(L"%s\n", KERNELFLINGER_VERSION);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+Print(L"%s\n", KERNELFLINGER_VERSION);
 
 	fastboot_okay("");
 }
@@ -1022,7 +1069,9 @@ static void version(__attribute__((__unused__)) INTN argc,
 static void unsupported_cmd(__attribute__((__unused__)) INTN argc,
 		CHAR8 **argv)
 {
-	fastboot_fail("installer does not the support the '%a' command", argv[0]);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+fastboot_fail("installer does not the support the '%a' command", argv[0]);
 }
 
 static struct replacements {
@@ -1055,7 +1104,9 @@ static struct replacements {
 
 static EFI_STATUS installer_replace_functions(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct fastboot_cmd *cmd;
 	UINTN i;
 
@@ -1093,7 +1144,9 @@ static EFI_STATUS installer_replace_functions(void)
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_LOADED_IMAGE *loaded_img = NULL;
 	CHAR8 *options, *buf;
 	UINTN i;
@@ -1204,7 +1257,9 @@ EFI_STATUS installer_transport_start(start_callback_t start_cb,
 				     data_callback_t rx_cb,
 				     data_callback_t tx_cb)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	ret = fastboot_set_command_buffer(command_buffer,
 					  sizeof(command_buffer));
 	if (EFI_ERROR(ret)) {
@@ -1228,12 +1283,16 @@ EFI_STATUS installer_transport_start(start_callback_t start_cb,
 
 EFI_STATUS installer_transport_stop(void)
 {
-	return EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_SUCCESS;
 }
 
 EFI_STATUS installer_transport_run(UINT32 *state)
 {
-	static BOOLEAN initialized = FALSE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static BOOLEAN initialized = FALSE;
 	EFI_STATUS ret;
 	char *cmd;
 	UINTN cmd_len;
@@ -1290,7 +1349,9 @@ stop:
 
 EFI_STATUS installer_transport_read(void *buf, UINT32 size)
 {
-	fastboot_cmd_buf = buf;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+fastboot_cmd_buf = buf;
 	fastboot_cmd_buf_len = size;
 
 	return EFI_SUCCESS;
@@ -1298,6 +1359,8 @@ EFI_STATUS installer_transport_read(void *buf, UINT32 size)
 
 EFI_STATUS installer_transport_write(void *buf, UINT32 size)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #define PREFIX_LEN 4
 
 	if (size < PREFIX_LEN)
@@ -1333,37 +1396,51 @@ static transport_t INSTALLER_TRANSPORT[] = {
 
 EFI_STATUS fastboot_transport_register(void)
 {
-	return transport_register(INSTALLER_TRANSPORT,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return transport_register(INSTALLER_TRANSPORT,
 				  ARRAY_SIZE(INSTALLER_TRANSPORT));
 }
 
 void fastboot_transport_unregister(void)
 {
-	transport_unregister();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+transport_unregister();
 }
 
 /* UI wrapper functions. */
 void fastboot_ui_destroy(void)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 }
 
 void fastboot_ui_refresh(void)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 }
 
 EFI_STATUS fastboot_ui_init(void)
 {
-	return EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return EFI_SUCCESS;
 }
 
 enum boot_target fastboot_ui_event_handler()
 {
-	return UNKNOWN_TARGET;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return UNKNOWN_TARGET;
 }
 
 /* Installer does not support UI.  It is intended to be used in
    factory or for engineering purpose only.  */
 BOOLEAN fastboot_ui_confirm_for_state(__attribute__((__unused__)) enum device_state target)
 {
-	return TRUE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TRUE;
 }

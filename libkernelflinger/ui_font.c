@@ -36,12 +36,15 @@
 #include <ui.h>
 
 #include "res/font_res.h"
+#include <log.h>
 
 #define DEFAULT_FONT_NAME "18x32"
 
 ui_font_t *ui_font_get_default(void)
 {
-	static ui_font_t *default_font = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static ui_font_t *default_font = NULL;
 
 	if (!default_font)
 		default_font = ui_font_get(DEFAULT_FONT_NAME);
@@ -54,7 +57,9 @@ ui_font_t *ui_font_get_default(void)
 
 ui_font_t *ui_font_get(char *name)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(ui_fonts); i++)
 		if (!strcmp((CHAR8 *)ui_fonts[i].name, (CHAR8 *)name))

@@ -32,11 +32,14 @@
 #include "fatfs.h"
 #include "gpt.h"
 #include "ff.h"
+#include <log.h>
 
 static FATSYSTEM g_fatsystem;
 
 VOID debug_ascii(CHAR8 * ch, UINT16 size) {
-	UINT16 i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT16 i;
 	CHAR8 *p;
 	p=ch;
 	for(i = 0; i < size;i++) {
@@ -44,7 +47,9 @@ VOID debug_ascii(CHAR8 * ch, UINT16 size) {
 	}
 }
 VOID debug_hex(UINT32 offset, CHAR8 *data, UINT16 size){
-	UINT16 i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT16 i;
 	UINT32 off;
 	CHAR8 *d;
 	for(i = 0; i < size/8;i++) {
@@ -56,11 +61,15 @@ VOID debug_hex(UINT32 offset, CHAR8 *data, UINT16 size){
 	}
 }
 UINT32 fat_getbpb_offset(){
-	return g_fatsystem.bpb_offset;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return g_fatsystem.bpb_offset;
 }
 
 EFI_STATUS fat_readdisk(UINT32 offset, UINT32 len, void *data) {
-	FATSYSTEM *fs = &g_fatsystem;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FATSYSTEM *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	if (fs == NULL || fs->parti.dio == NULL || fs->parti.bio == NULL)
 	{
@@ -79,7 +88,9 @@ EFI_STATUS fat_readdisk(UINT32 offset, UINT32 len, void *data) {
 
 EFI_STATUS fat_writedisk( UINT32 offset, UINT32 len, void *data)
 {
-	FATSYSTEM *fs = &g_fatsystem;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FATSYSTEM *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	if (fs == NULL || fs->parti.bio == NULL)
 	{
@@ -95,7 +106,9 @@ EFI_STATUS fat_writedisk( UINT32 offset, UINT32 len, void *data)
 static TCHAR * fwuImage = L"/FwuImage.bin";
 EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
 {
-	FATSYSTEM  *fs = &g_fatsystem;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FATSYSTEM  *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	FRESULT f_ret;
 	FIL fp;
@@ -153,7 +166,9 @@ EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
 }
 EFI_STATUS fat_test()
 {
-	FATSYSTEM  *fs = &g_fatsystem;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FATSYSTEM  *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_GUID guid;
 	FRESULT f_ret;
@@ -242,7 +257,9 @@ EFI_STATUS fat_test()
 
 
 UINT32 get_fattime() {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_TIME now = {0};
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);

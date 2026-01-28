@@ -39,19 +39,24 @@
 #include "fastboot_oem.h"
 #include "smbios.h"
 #include "intel_variables.h"
+#include <log.h>
 
 /* "secureboot": Indicates whether UEFI Secure Boot is enabled. This
    is a pre-requisite for Verified Boot.  */
 static EFI_STATUS publish_secureboot(void)
 {
-	return fastboot_publish("secureboot",
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return fastboot_publish("secureboot",
 				is_platform_secure_boot_enabled() ? "yes" : "no" );
 }
 
 /* "product-name": Reports "product_name" field in DMI.  */
 static EFI_STATUS publish_product_name(void)
 {
-	return fastboot_publish("product-name",
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return fastboot_publish("product-name",
 				SMBIOS_GET_STRING(1, ProductName));
 }
 
@@ -61,7 +66,9 @@ static EFI_STATUS publish_product_name(void)
 static char firmware_str[128];
 static EFI_STATUS publish_firmware(void)
 {
-	int len;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int len;
 
 	len = efi_snprintf((CHAR8 *)firmware_str, sizeof(firmware_str) - 1,
 			   (CHAR8 *)"%a %a",
@@ -82,7 +89,9 @@ static char *BOOT_STATES_STRING[] = {
 };
 static EFI_STATUS publish_boot_state(void)
 {
-	UINT8 state;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8 state;
 	EFI_STATUS ret;
 
 	ret = get_efi_variable_byte(&fastboot_guid, BOOT_STATE_VAR, &state);
@@ -97,7 +106,9 @@ static EFI_STATUS publish_boot_state(void)
  * "verified" */
 static EFI_STATUS publish_device_state(void)
 {
-	return fastboot_publish("device-state", get_current_state_string());
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return fastboot_publish("device-state", get_current_state_string());
 }
 
 /* "board": Indicates the board information, combining the values of
@@ -105,7 +116,9 @@ static EFI_STATUS publish_device_state(void)
 static char board_str[128];
 static EFI_STATUS publish_board(void)
 {
-	int len;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int len;
 
 	len = efi_snprintf((CHAR8 *)board_str, sizeof(board_str),
 			   (CHAR8 *)"%a %a %a",
@@ -121,7 +134,9 @@ static EFI_STATUS publish_board(void)
 /* "serialno": The device serial number. */
 static EFI_STATUS publish_serialno(void)
 {
-	char *serial = get_serial_number();
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char *serial = get_serial_number();
 	return fastboot_publish("serialno", serial ? serial : "N/A");
 }
 
@@ -137,7 +152,9 @@ static EFI_STATUS (*PUBLISH_FUNCTION[])(void) = {
 
 EFI_STATUS publish_intel_variables(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(PUBLISH_FUNCTION); i++) {

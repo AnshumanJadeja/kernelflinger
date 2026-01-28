@@ -37,6 +37,7 @@
 
 #include <efi.h>
 #include <efilib.h>
+#include <log.h>
 
 /**
  * handle_protocol - Query @handle to see if it supports @protocol
@@ -50,7 +51,9 @@
 static inline EFI_STATUS
 handle_protocol(EFI_HANDLE handle, EFI_GUID *protocol, void **interface)
 {
-	return uefi_call_wrapper(BS->HandleProtocol, 3,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->HandleProtocol, 3,
 				 handle, protocol, interface);
 }
 
@@ -68,7 +71,9 @@ static inline EFI_STATUS
 locate_handle(EFI_LOCATE_SEARCH_TYPE type, EFI_GUID *protocol, void *key,
 	      UINTN *size, EFI_HANDLE *buffer)
 {
-	return uefi_call_wrapper(BS->LocateHandle, 5, type, protocol,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->LocateHandle, 5, type, protocol,
 				 key, size, buffer);
 }
 
@@ -85,7 +90,9 @@ static inline EFI_STATUS
 locate_device_path(EFI_GUID *protocol, EFI_DEVICE_PATH **device_path,
 		   EFI_HANDLE *handle)
 {
-	return uefi_call_wrapper(BS->LocateDevicePath, 3, protocol, device_path,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(BS->LocateDevicePath, 3, protocol, device_path,
 				 handle);
 }
 

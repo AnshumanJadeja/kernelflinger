@@ -56,7 +56,9 @@ static UINTN pos, last_pos;
 
 EFI_STATUS log_flush_to_var(BOOLEAN nonvol)
 {
-	static volatile BOOLEAN running;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static volatile BOOLEAN running;
 	EFI_STATUS ret;
 	CHAR8 *buf, *cur;
 	UINTN size;
@@ -109,7 +111,9 @@ out:
 
 static void log_append_to_buffer(CHAR8 *msg, UINTN length)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (length > LOG_BUF_SIZE)
 		return;
@@ -128,7 +132,9 @@ static void log_append_to_buffer(CHAR8 *msg, UINTN length)
 
 static EFI_STATUS serial_init()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_GUID guid = SERIAL_IO_PROTOCOL;
 
 	ret = LibLocateProtocol(&guid, (void **)&serial);
@@ -151,7 +157,9 @@ static EFI_STATUS serial_init()
 
 void vlog(const CHAR16 *fmt, va_list args)
 {
-	UINTN length;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN length;
 
 	if (!serial && EFI_ERROR(serial_init()))
 		return;
@@ -171,7 +179,9 @@ void vlog(const CHAR16 *fmt, va_list args)
 
 void log(const CHAR16 *fmt, ...)
 {
-	va_list args;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list args;
 
 	if (!serial && EFI_ERROR(serial_init()))
 		return;

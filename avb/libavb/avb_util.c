@@ -25,9 +25,12 @@
 #include "avb_util.h"
 
 #include <stdarg.h>
+#include <log.h>
 
 uint32_t avb_be32toh(uint32_t in) {
-  uint8_t* d = (uint8_t*)&in;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t* d = (uint8_t*)&in;
   uint32_t ret;
   ret = ((uint32_t)d[0]) << 24;
   ret |= ((uint32_t)d[1]) << 16;
@@ -37,7 +40,9 @@ uint32_t avb_be32toh(uint32_t in) {
 }
 
 uint64_t avb_be64toh(uint64_t in) {
-  uint8_t* d = (uint8_t*)&in;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t* d = (uint8_t*)&in;
   uint64_t ret;
   ret = ((uint64_t)d[0]) << 56;
   ret |= ((uint64_t)d[1]) << 48;
@@ -52,7 +57,9 @@ uint64_t avb_be64toh(uint64_t in) {
 
 /* Converts a 32-bit unsigned integer from host to big-endian byte order. */
 uint32_t avb_htobe32(uint32_t in) {
-  union {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+union {
     uint32_t word;
     uint8_t bytes[4];
   } ret;
@@ -65,7 +72,9 @@ uint32_t avb_htobe32(uint32_t in) {
 
 /* Converts a 64-bit unsigned integer from host to big-endian byte order. */
 uint64_t avb_htobe64(uint64_t in) {
-  union {
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+union {
     uint64_t word;
     uint8_t bytes[8];
   } ret;
@@ -81,7 +90,9 @@ uint64_t avb_htobe64(uint64_t in) {
 }
 
 int avb_safe_memcmp(const void* s1, const void* s2, size_t n) {
-  const unsigned char* us1 = s1;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const unsigned char* us1 = s1;
   const unsigned char* us2 = s2;
   int result = 0;
 
@@ -101,7 +112,9 @@ int avb_safe_memcmp(const void* s1, const void* s2, size_t n) {
 }
 
 bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
-  uint64_t original_value;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t original_value;
 
   avb_assert(value != NULL);
 
@@ -117,7 +130,9 @@ bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
 }
 
 bool avb_safe_add(uint64_t* out_result, uint64_t a, uint64_t b) {
-  uint64_t dummy;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t dummy;
   if (out_result == NULL) {
     out_result = &dummy;
   }
@@ -126,7 +141,9 @@ bool avb_safe_add(uint64_t* out_result, uint64_t a, uint64_t b) {
 }
 
 bool avb_validate_utf8(const uint8_t* data, size_t num_bytes) {
-  size_t n;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t n;
   unsigned int num_cc;
 
   for (n = 0, num_cc = 0; n < num_bytes; n++) {
@@ -174,7 +191,9 @@ bool avb_str_concat(char* buf,
                     size_t str1_len,
                     const char* str2,
                     size_t str2_len) {
-  uint64_t combined_len;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t combined_len;
 
   if (!avb_safe_add(&combined_len, str1_len, str2_len)) {
     avb_error("Overflow when adding string sizes.\n");
@@ -194,7 +213,9 @@ bool avb_str_concat(char* buf,
 }
 
 void* avb_malloc(size_t size) {
-  void* ret = avb_malloc_(size);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+void* ret = avb_malloc_(size);
   if (ret == NULL) {
     avb_error("Failed to allocate memory.\n");
     return NULL;
@@ -203,7 +224,9 @@ void* avb_malloc(size_t size) {
 }
 
 void* avb_calloc(size_t size) {
-  void* ret = avb_malloc(size);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+void* ret = avb_malloc(size);
   if (ret == NULL) {
     return NULL;
   }
@@ -213,7 +236,9 @@ void* avb_calloc(size_t size) {
 }
 
 char* avb_strdup(const char* str) {
-  size_t len = avb_strlen(str);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t len = avb_strlen(str);
   char* ret = avb_malloc(len + 1);
   if (ret == NULL) {
     return NULL;
@@ -226,7 +251,9 @@ char* avb_strdup(const char* str) {
 }
 
 const char* avb_strstr(const char* haystack, const char* needle) {
-  size_t n, m;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t n, m;
 
   /* Look through |haystack| and check if the first character of
    * |needle| matches. If so, check the rest of |needle|.
@@ -253,7 +280,9 @@ const char* avb_strstr(const char* haystack, const char* needle) {
 const char* avb_strv_find_str(const char* const* strings,
                               const char* str,
                               size_t str_size) {
-  size_t n;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t n;
   for (n = 0; strings[n] != NULL; n++) {
     if (avb_strlen(strings[n]) == str_size &&
         avb_memcmp(strings[n], str, str_size) == 0) {
@@ -264,7 +293,9 @@ const char* avb_strv_find_str(const char* const* strings,
 }
 
 char* avb_replace(const char* str, const char* search, const char* replace) {
-  char* ret = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+char* ret = NULL;
   size_t ret_len = 0;
   size_t search_len, replace_len;
   const char* str_after_last_replace;
@@ -343,7 +374,9 @@ out:
 #define AVB_STRDUPV_MAX_NUM_STRINGS 32
 
 char* avb_strdupv(const char* str, ...) {
-  va_list ap;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list ap;
   const char* strings[AVB_STRDUPV_MAX_NUM_STRINGS];
   size_t lengths[AVB_STRDUPV_MAX_NUM_STRINGS];
   size_t num_strings, n;
@@ -388,7 +421,9 @@ out:
 }
 
 const char* avb_basename(const char* str) {
-  int64_t n;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int64_t n;
   size_t len;
 
   len = avb_strlen(str);
@@ -403,7 +438,9 @@ const char* avb_basename(const char* str) {
 }
 
 void avb_uppercase(char* str) {
-  size_t i;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t i;
   for (i = 0; str[i] != '\0'; ++i) {
     if (str[i] <= 0x7A && str[i] >= 0x61) {
       str[i] -= 0x20;
@@ -412,7 +449,9 @@ void avb_uppercase(char* str) {
 }
 
 char* avb_bin2hex(const uint8_t* data, size_t data_len) {
-  const char hex_digits[17] = "0123456789abcdef";
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const char hex_digits[17] = "0123456789abcdef";
   char* hex_data;
   size_t n;
 

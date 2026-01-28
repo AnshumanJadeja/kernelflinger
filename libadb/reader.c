@@ -39,6 +39,7 @@
 #endif
 #include "reader.h"
 #include "sparse_format.h"
+#include <log.h>
 
 /* Memory dump shared functions.  These functions do not make any
    dynamic memory allocation to avoid RAM corruption during the
@@ -64,7 +65,9 @@ typedef struct memory_priv {
 
 static EFI_STATUS get_sorted_memory_map(memory_t *mem)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 descr_ver;
 	UINTN key, memmap_sz;
 
@@ -87,7 +90,9 @@ static EFI_STATUS memory_open(reader_ctx_t *ctx, memory_t *mem,
 			      EFI_STATUS (*init)(reader_ctx_t *, void *),
 			      UINTN argc, char **argv)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	char *endptr;
 	UINT64 length;
 
@@ -144,6 +149,8 @@ err:
 
 static EFI_STATUS memory_read_current(memory_t *mem, unsigned char **buf, UINT64 *len)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #ifndef __LP64__
 	EFI_STATUS ret;
 #endif
@@ -163,7 +170,9 @@ static EFI_STATUS memory_read_current(memory_t *mem, unsigned char **buf, UINT64
 
 static void memory_close(reader_ctx_t *ctx)
 {
-	((memory_t *)ctx->private)->is_in_used = FALSE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+((memory_t *)ctx->private)->is_in_used = FALSE;
 #ifndef __LP64__
 	pae_exit();
 #endif
@@ -194,7 +203,9 @@ static struct ram_priv {
 
 static EFI_STATUS ram_add_chunk(reader_ctx_t *ctx, struct ram_priv *priv, UINT16 type, UINT64 size)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	struct chunk_header *cur = NULL;
 
 	if (size % EFI_PAGE_SIZE) {
@@ -236,7 +247,9 @@ static EFI_STATUS ram_add_chunk(reader_ctx_t *ctx, struct ram_priv *priv, UINT16
 
 static EFI_STATUS ram_build_chunks(reader_ctx_t *ctx, void *priv_p)
 {
-	struct ram_priv *priv = priv_p;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct ram_priv *priv = priv_p;
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT16 type;
 	UINTN i;
@@ -322,12 +335,16 @@ err:
 
 static EFI_STATUS ram_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	return memory_open(ctx, &ram_priv.m, ram_build_chunks, argc, argv);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return memory_open(ctx, &ram_priv.m, ram_build_chunks, argc, argv);
 }
 
 static EFI_STATUS ram_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
-	struct ram_priv *priv;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct ram_priv *priv;
 	struct chunk_header *chunk;
 
 	priv = (struct ram_priv *)ctx->private;
@@ -492,7 +509,9 @@ static struct vmcore_priv {
 static EFI_STATUS vmcore_build_header(reader_ctx_t *ctx, void *priv_p)
 
 {
-	struct vmcore_priv *priv = priv_p;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct vmcore_priv *priv = priv_p;
 	UINTN i;
 	EFI_MEMORY_DESCRIPTOR *entry;
 	elf64_phdr_t *phdr;
@@ -558,12 +577,16 @@ static EFI_STATUS vmcore_build_header(reader_ctx_t *ctx, void *priv_p)
 
 static EFI_STATUS vmcore_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	return memory_open(ctx, &vmcore_priv.m, vmcore_build_header, argc, argv);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return memory_open(ctx, &vmcore_priv.m, vmcore_build_header, argc, argv);
 }
 
 static EFI_STATUS vmcore_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
-	struct vmcore_priv *priv = ctx->private;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct vmcore_priv *priv = ctx->private;
 
 	/* First byte, send the ELF headers */
 	if (ctx->cur == 0) {
@@ -614,7 +637,9 @@ struct part_priv {
 
 static EFI_STATUS _part_open(reader_ctx_t *ctx, UINTN argc, char **argv, logical_unit_t log_unit)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	struct gpt_partition_interface *gparti;
 	struct part_priv *priv;
 	CHAR16 *partname;
@@ -674,17 +699,23 @@ err:
 
 static EFI_STATUS part_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	return _part_open(ctx, argc, argv, LOGICAL_UNIT_USER);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return _part_open(ctx, argc, argv, LOGICAL_UNIT_USER);
 }
 
 static EFI_STATUS factory_part_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	return _part_open(ctx, argc, argv, LOGICAL_UNIT_FACTORY);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return _part_open(ctx, argc, argv, LOGICAL_UNIT_FACTORY);
 }
 
 static EFI_STATUS part_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct part_priv *priv = ctx->private;
 
 	if (priv->need_more_data) {
@@ -713,7 +744,9 @@ static EFI_STATUS part_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 /* ACPI table reader */
 static EFI_STATUS acpi_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct ACPI_DESC_HEADER *table;
 
 	if (argc != 1)
@@ -735,7 +768,9 @@ static EFI_STATUS acpi_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 /* EFI variable reader */
 static EFI_STATUS efivar_find(CHAR16 *varname, EFI_GUID *guid_p)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN bufsize, namesize;
 	CHAR16 *name;
 	EFI_GUID guid={0};
@@ -799,7 +834,9 @@ static EFI_STATUS efivar_find(CHAR16 *varname, EFI_GUID *guid_p)
 
 static EFI_STATUS efivar_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 flags;
 	UINTN size;
 	CHAR16 *varname = NULL;
@@ -842,7 +879,9 @@ exit:
 static EFI_STATUS mbr_open(reader_ctx_t *ctx, UINTN argc,
 			   __attribute__((__unused__)) char **argv)
 {
-	struct gpt_partition_interface gparti;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 
 	if (argc != 0)
@@ -878,7 +917,9 @@ static EFI_STATUS mbr_open(reader_ctx_t *ctx, UINTN argc,
 /* GPT-HEADER and GPT-FACTORY-HEADER */
 static EFI_STATUS _gpt_header_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 {
-	UINTN size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN size;
 	EFI_STATUS ret;
 
 	ret = gpt_get_header((struct gpt_header **)&ctx->private, &size, log_unit);
@@ -896,7 +937,9 @@ static EFI_STATUS _gpt_header_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 static EFI_STATUS gpt_header_open(reader_ctx_t *ctx, UINTN argc,
 				  __attribute__((__unused__)) char **argv)
 {
-	if (argc != 0)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (argc != 0)
 		return EFI_INVALID_PARAMETER;
 
 	return _gpt_header_open(ctx, LOGICAL_UNIT_USER);
@@ -905,7 +948,9 @@ static EFI_STATUS gpt_header_open(reader_ctx_t *ctx, UINTN argc,
 static EFI_STATUS gpt_factory_header_open(reader_ctx_t *ctx, UINTN argc,
 					  __attribute__((__unused__)) char **argv)
 {
-	if (argc != 0)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (argc != 0)
 		return EFI_INVALID_PARAMETER;
 
 	return _gpt_header_open(ctx, LOGICAL_UNIT_FACTORY);
@@ -914,7 +959,9 @@ static EFI_STATUS gpt_factory_header_open(reader_ctx_t *ctx, UINTN argc,
 /* GPT-PARTS and GPT-FACTORY-PARTS */
 static EFI_STATUS _gpt_parts_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 {
-	UINTN size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN size;
 	EFI_STATUS ret;
 
 	ret = gpt_get_partitions((struct gpt_partition **)&ctx->private,
@@ -933,7 +980,9 @@ static EFI_STATUS _gpt_parts_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 static EFI_STATUS gpt_parts_open(reader_ctx_t *ctx, UINTN argc,
 				 __attribute__((__unused__)) char **argv)
 {
-	if (argc != 0)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (argc != 0)
 		return EFI_INVALID_PARAMETER;
 
 	return _gpt_parts_open(ctx, LOGICAL_UNIT_USER);
@@ -942,7 +991,9 @@ static EFI_STATUS gpt_parts_open(reader_ctx_t *ctx, UINTN argc,
 static EFI_STATUS gpt_factory_parts_open(reader_ctx_t *ctx, UINTN argc,
 					 __attribute__((__unused__)) char **argv)
 {
-	if (argc != 0)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (argc != 0)
 		return EFI_INVALID_PARAMETER;
 
 	return _gpt_parts_open(ctx, LOGICAL_UNIT_FACTORY);
@@ -954,7 +1005,9 @@ static const char BERR_MAGIC[4] = "BERR"; /* Boot Error Record Region */
 static EFI_STATUS bert_region_open(reader_ctx_t *ctx, UINTN argc,
 				   __attribute__((__unused__)) char **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct BERT_TABLE *bert_table;
 
 	if (argc != 0)
@@ -979,7 +1032,9 @@ static EFI_STATUS bert_region_open(reader_ctx_t *ctx, UINTN argc,
 
 static EFI_STATUS bert_region_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
-	struct BERT_TABLE *bert_table = ctx->private;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct BERT_TABLE *bert_table = ctx->private;
 
 	/* First byte, send the BERR magic */
 	if (ctx->cur == 0) {
@@ -1001,13 +1056,17 @@ static EFI_STATUS bert_region_read(reader_ctx_t *ctx, unsigned char **buf, UINT6
 static EFI_STATUS read_from_private(reader_ctx_t *ctx, unsigned char **buf,
 				    __attribute__((__unused__)) UINT64 *len)
 {
-	*buf = (unsigned char *)ctx->private + ctx->cur;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+*buf = (unsigned char *)ctx->private + ctx->cur;
 	return EFI_SUCCESS;
 }
 
 static void free_private(reader_ctx_t *ctx)
 {
-	FreePool(ctx->private);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+FreePool(ctx->private);
 }
 
 struct reader {
@@ -1034,7 +1093,9 @@ struct reader {
 
 EFI_STATUS reader_open(reader_ctx_t *ctx, char *args)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	INTN argc;
 	UINTN i;
 	char *argv[MAX_ARGS];
@@ -1065,7 +1126,9 @@ EFI_STATUS reader_open(reader_ctx_t *ctx, char *args)
 
 EFI_STATUS reader_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!ctx || !len || !*len || !ctx->reader)
 		return EFI_INVALID_PARAMETER;
@@ -1085,7 +1148,9 @@ EFI_STATUS reader_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 
 void reader_close(reader_ctx_t *ctx)
 {
-	if (!ctx || !ctx->reader)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!ctx || !ctx->reader)
 		return;
 
 	if (ctx->reader->close)

@@ -58,6 +58,7 @@
 #define _QVM_GUEST_SHM_H
 
 #include <stdint.h>
+#include <log.h>
 
 /*
  * Temporary VID definition until the updated <pci/pci_id.h> propogates around
@@ -112,7 +113,9 @@ struct guest_shm_control {
 
 static inline void
 guest_shm_create(volatile struct guest_shm_factory *const __factory, UINT32 const __size) {
-	/* Surround the size assignment with memory barriers so that
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Surround the size assignment with memory barriers so that
 	 * the compiler doesn't try to shift the assignment before/after
 	 * necessary bits (e.g. setting the name of the region) */
 	asm volatile( "" ::: "memory");
@@ -123,7 +126,9 @@ guest_shm_create(volatile struct guest_shm_factory *const __factory, UINT32 cons
 
 static inline void
 guest_shm_find(volatile struct guest_shm_factory *const __factory, UINT32 const __find_num) {
-	/* Surround the find assignment with memory barriers so that
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+/* Surround the find assignment with memory barriers so that
 	 * the compiler doesn't try to shift the assignment before/after
 	 * necessary bits (e.g. setting the name of the region) */
 	asm volatile( "" ::: "memory");

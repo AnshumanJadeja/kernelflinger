@@ -34,6 +34,7 @@
 #include "storage.h"
 #include "protocol/Mmc.h"
 #include "sdio.h"
+#include <log.h>
 
 /* eMMC card address is enforced to 1 by the BIOS at eMMC
    initialization.  */
@@ -41,7 +42,9 @@
 
 static EMMC_DEVICE_PATH *get_emmc_device_path(EFI_DEVICE_PATH *p)
 {
-	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_EMMC_DP)
 			return (EMMC_DEVICE_PATH *)p;
@@ -52,7 +55,9 @@ static EMMC_DEVICE_PATH *get_emmc_device_path(EFI_DEVICE_PATH *p)
 static EFI_STATUS get_mmc_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
 			       UINTN *erase_grp_size, UINTN *timeout)
 {
-	EXT_CSD *ext_csd;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EXT_CSD *ext_csd;
 	void *rawbuffer;
 	UINT32 status;
 	EFI_STATUS ret;
@@ -93,7 +98,9 @@ out:
 #define CONTROLLER_UNKNOWN ((UINT32)-1)
 static UINT32 log_unit_to_mmc_ctrl(logical_unit_t log_unit)
 {
-	switch(log_unit) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+switch(log_unit) {
 	case LOGICAL_UNIT_USER:
 		return CONTROLLER_EMMC_USER_PARTITION;
 	case LOGICAL_UNIT_FACTORY:
@@ -106,7 +113,9 @@ static UINT32 log_unit_to_mmc_ctrl(logical_unit_t log_unit)
 
 static EFI_STATUS mmc_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
-	UINT32 ctrl = log_unit_to_mmc_ctrl(log_unit);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 ctrl = log_unit_to_mmc_ctrl(log_unit);
 
 	if (ctrl == CONTROLLER_UNKNOWN)
 		return EFI_NOT_FOUND;
@@ -125,7 +134,9 @@ static EFI_STATUS mmc_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_
 
 static BOOLEAN is_emmc(EFI_DEVICE_PATH *p)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE handle = NULL;
 	CARD_TYPE type;
@@ -147,7 +158,9 @@ static BOOLEAN is_emmc(EFI_DEVICE_PATH *p)
 static EFI_STATUS mmc_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 				   EFI_LBA start, EFI_LBA end)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE sdio_handle = NULL;
 	EFI_DEVICE_PATH *dev_path;
@@ -177,7 +190,9 @@ static EFI_STATUS mmc_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 
 static EFI_STATUS mmc_get_erase_block_size(EFI_HANDLE handle, UINTN *erase_blk_size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE sdio_handle = NULL;
 	EFI_DEVICE_PATH *dev_path;

@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include <log.h>
 
 #pragma pack(1)
 
@@ -44,7 +45,9 @@ Tpm2FlushContext (
   IN      TPMI_DH_CONTEXT           FlushHandle
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_FLUSH_CONTEXT_COMMAND        SendBuffer;
   TPM2_FLUSH_CONTEXT_RESPONSE       RecvBuffer;
   UINT32                            SendBufferSize;

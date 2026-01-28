@@ -34,6 +34,7 @@
 #include "storage.h"
 #include "protocol/ufs.h"
 #include "protocol/ScsiPassThruExt.h"
+#include <log.h>
 
 /* Latest gnu-efi still does not define 'MSG_UFS_DP', Add this
  * macro definition here for adapt to UFS storage detect in
@@ -45,7 +46,9 @@
 
 static EFI_DEVICE_PATH *get_ufs_device_path(EFI_DEVICE_PATH *p)
 {
-	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_UFS_DP)
 			return p;
@@ -54,7 +57,9 @@ static EFI_DEVICE_PATH *get_ufs_device_path(EFI_DEVICE_PATH *p)
 
 static EFI_STATUS ufs_erase_blocks(EFI_HANDLE handle, __attribute__((unused)) EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_GUID ScsiPassThruProtocolGuid = EFI_EXT_SCSI_PASS_THRU_PROTOCOL_GUID;
 	EFI_EXT_SCSI_PASS_THRU_PROTOCOL *scsi;
 	EFI_EXT_SCSI_PASS_THRU_SCSI_REQUEST_PACKET scsi_req;
@@ -127,7 +132,9 @@ static UINT64 lun_user = UFS_DEFAULT_USER_LUN;
 
 static UINT64 log_unit_to_ufs_lun(logical_unit_t log_unit)
 {
-	switch(log_unit) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+switch(log_unit) {
 	case LOGICAL_UNIT_USER:
 		return lun_user;
 	case LOGICAL_UNIT_FACTORY:
@@ -140,7 +147,9 @@ static UINT64 log_unit_to_ufs_lun(logical_unit_t log_unit)
 
 static EFI_STATUS ufs_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
-	EFI_GUID ScsiPassThruProtocolGuid = EFI_EXT_SCSI_PASS_THRU_PROTOCOL_GUID;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID ScsiPassThruProtocolGuid = EFI_EXT_SCSI_PASS_THRU_PROTOCOL_GUID;
 	EFI_EXT_SCSI_PASS_THRU_PROTOCOL *scsi;
 	EFI_STATUS ret;
 	UINT8 target_bytes[TARGET_MAX_BYTES];
@@ -188,7 +197,9 @@ static EFI_STATUS ufs_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_
 
 static EFI_STATUS ufs_detect_user_unit(EFI_DEVICE_PATH *p)
 {
-	EFI_GUID ScsiPassThruProtocolGuid = EFI_EXT_SCSI_PASS_THRU_PROTOCOL_GUID;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_GUID ScsiPassThruProtocolGuid = EFI_EXT_SCSI_PASS_THRU_PROTOCOL_GUID;
 	EFI_EXT_SCSI_PASS_THRU_PROTOCOL *scsi;
 	EFI_STATUS ret;
 	UINT8 target_bytes[TARGET_MAX_BYTES];
@@ -235,7 +246,9 @@ static EFI_STATUS ufs_detect_user_unit(EFI_DEVICE_PATH *p)
 
 static BOOLEAN is_ufs(EFI_DEVICE_PATH *p)
 {
-	BOOLEAN ret = FALSE;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+BOOLEAN ret = FALSE;
 	if (get_ufs_device_path(p) != NULL) {
 		ufs_detect_user_unit(p);
 		ret = TRUE;
@@ -248,7 +261,9 @@ static BOOLEAN is_ufs(EFI_DEVICE_PATH *p)
  */
 static EFI_STATUS ufs_set_log_unit_lun(UINT64 new_lun_user, UINT64 new_lun_factory)
 {
-	if ((new_lun_user > UFS_MAX_LUN) || (new_lun_factory > UFS_MAX_LUN))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if ((new_lun_user > UFS_MAX_LUN) || (new_lun_factory > UFS_MAX_LUN))
 		return EFI_INVALID_PARAMETER;
 	lun_user = new_lun_user;
 	lun_factory = new_lun_factory;

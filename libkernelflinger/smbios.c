@@ -34,6 +34,7 @@
 #include <efilib.h>
 
 #include "smbios.h"
+#include <log.h>
 
 char *SMBIOS_UNDEFINED = "N/A";
 
@@ -43,7 +44,9 @@ char *SMBIOS_UNDEFINED = "N/A";
 
 char *smbios_get_string(UINT8 type, UINT8 offset)
 {
-	SMBIOS_STRUCTURE_TABLE *table;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+SMBIOS_STRUCTURE_TABLE *table;
 	EFI_STATUS ret;
 	SMBIOS_STRUCTURE_POINTER sm_struct;
 	UINT8 i;

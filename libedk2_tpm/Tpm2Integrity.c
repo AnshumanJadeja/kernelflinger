@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include <log.h>
 
 #pragma pack(1)
 
@@ -109,7 +110,9 @@ Tpm2PcrExtend (
   IN      TPML_DIGEST_VALUES        *Digests
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_PCR_EXTEND_COMMAND           Cmd;
   TPM2_PCR_EXTEND_RESPONSE          Res;
   UINT32                            CmdSize;
@@ -219,7 +222,9 @@ Tpm2PcrEvent (
      OUT  TPML_DIGEST_VALUES        *Digests
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_PCR_EVENT_COMMAND            Cmd;
   TPM2_PCR_EVENT_RESPONSE           Res;
   UINT32                            CmdSize;
@@ -333,7 +338,9 @@ Tpm2PcrRead (
      OUT  TPML_DIGEST               *PcrValues
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_PCR_READ_COMMAND             SendBuffer;
   TPM2_PCR_READ_RESPONSE            RecvBuffer;
   UINT32                            SendBufferSize;
@@ -467,7 +474,9 @@ Tpm2PcrAllocate (
   OUT UINT32                    *SizeAvailable
   )
 {
-  EFI_STATUS                  Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                  Status;
   TPM2_PCR_ALLOCATE_COMMAND   Cmd;
   TPM2_PCR_ALLOCATE_RESPONSE  Res;
   UINT32                      CmdSize;
@@ -586,7 +595,9 @@ Tpm2PcrAllocateBanks (
   IN UINT32                    PCRBanks
   )
 {
-  EFI_STATUS                Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                Status;
   TPMS_AUTH_COMMAND         *AuthSession;
   TPMS_AUTH_COMMAND         LocalAuthSession;
   TPML_PCR_SELECTION        PcrAllocation;
@@ -722,7 +733,9 @@ Tpm2PolicyPCR (
   IN TPML_PCR_SELECTION       *Pcrs
   )
 {
-  EFI_STATUS                   Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                   Status;
   TPM2_PCR_POLICYPCR_COMMAND   SendBuffer;
   TPM2_PCR_POLICYPCR_RESPONSE  RecvBuffer;
   UINT32                       SendBufferSize;

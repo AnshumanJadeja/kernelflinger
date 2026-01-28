@@ -16,6 +16,7 @@
 //
 #include <ProcessorBind.h>
 #include <stdarg.h>
+#include <log.h>
 
 //
 // Modifiers to abstract standard types to aid in debug of problems
@@ -165,7 +166,9 @@ typedef struct {
 ///
 #define ALIGN_VARIABLE(Value, Adjustment) \
   Adjustment = 0U; \
-  if ((UINTN) (Value) % sizeof (UINTN)) { \
+  if ((UINTN) (Value) % sizeof (UINTN)) {
+  	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+  	 \
     (Adjustment) = (UINTN)(sizeof (UINTN) - ((UINTN) (Value) % sizeof (UINTN))); \
   } \
   (Value) = (UINTN)((UINTN) (Value) + (UINTN) (Adjustment))

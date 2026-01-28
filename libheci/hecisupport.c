@@ -29,13 +29,16 @@
 
 #include <lib.h>
 #include <hecisupport.h>
+#include <log.h>
 
 /*
  * Send message with ack
  */
 static EFI_STATUS heci_send_w_ack(uint8_t *Message, uint32_t Length, uint32_t *RecLength, uint8_t HostAddress, uint8_t DevAddr)
 {
-	EFI_STATUS ret = EFI_NOT_READY;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_NOT_READY;
 
 	EFI_GUID guid = HECI_PROTOCOL_GUID;
 	EFI_HECI_PROTOCOL *protocol = NULL;
@@ -57,7 +60,9 @@ static EFI_STATUS heci_send_w_ack(uint8_t *Message, uint32_t Length, uint32_t *R
  */
 static EFI_STATUS heci_get_sec_mode (unsigned *sec_mode)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	EFI_GUID guid = HECI_PROTOCOL_GUID;
 	EFI_HECI_PROTOCOL *protocol = NULL;
@@ -79,7 +84,9 @@ static EFI_STATUS heci_get_sec_mode (unsigned *sec_mode)
 
 BOOLEAN heci_is_eop_received(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	uint32_t EopStatus;
 	uint32_t HeciSendLength;
 	uint32_t HeciRecvLength;
@@ -121,7 +128,9 @@ BOOLEAN heci_is_eop_received(void)
  */
 EFI_STATUS heci_end_of_post(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	uint32_t HeciSendLength;
 	uint32_t HeciRecvLength;

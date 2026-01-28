@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include <log.h>
 
 #pragma pack(1)
 
@@ -139,7 +140,9 @@ Tpm2SetPrimaryPolicy (
   IN  TPMI_ALG_HASH             HashAlg
   )
 {
-  EFI_STATUS                                 Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                                 Status;
   TPM2_SET_PRIMARY_POLICY_COMMAND            SendBuffer;
   TPM2_SET_PRIMARY_POLICY_RESPONSE           RecvBuffer;
   UINT32                                     SendBufferSize;
@@ -223,7 +226,9 @@ Tpm2Clear (
   IN TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_CLEAR_COMMAND                Cmd;
   TPM2_CLEAR_RESPONSE               Res;
   UINT32                            ResultBufSize;
@@ -313,7 +318,9 @@ Tpm2ClearControl (
   IN TPMI_YES_NO               Disable
   )
 {
-  EFI_STATUS                        Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                        Status;
   TPM2_CLEAR_CONTROL_COMMAND        Cmd;
   TPM2_CLEAR_CONTROL_RESPONSE       Res;
   UINT32                            ResultBufSize;
@@ -407,7 +414,9 @@ Tpm2HierarchyChangeAuth (
   IN TPM2B_AUTH                *NewAuth
   )
 {
-  EFI_STATUS                           Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                           Status;
   TPM2_HIERARCHY_CHANGE_AUTH_COMMAND   Cmd;
   TPM2_HIERARCHY_CHANGE_AUTH_RESPONSE  Res;
   UINT32                               CmdSize;
@@ -513,7 +522,9 @@ Tpm2ChangeEPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
-  EFI_STATUS                Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                Status;
   TPM2_CHANGE_EPS_COMMAND   Cmd;
   TPM2_CHANGE_EPS_RESPONSE  Res;
   UINT32                    CmdSize;
@@ -611,7 +622,9 @@ Tpm2ChangePPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
-  EFI_STATUS                Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                Status;
   TPM2_CHANGE_PPS_COMMAND   Cmd;
   TPM2_CHANGE_PPS_RESPONSE  Res;
   UINT32                    CmdSize;
@@ -713,7 +726,9 @@ Tpm2HierarchyControl (
   IN TPMI_YES_NO               State
   )
 {
-  EFI_STATUS                       Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS                       Status;
   TPM2_HIERARCHY_CONTROL_COMMAND   Cmd;
   TPM2_HIERARCHY_CONTROL_RESPONSE  Res;
   UINT32                           CmdSize;

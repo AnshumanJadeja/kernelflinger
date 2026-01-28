@@ -34,6 +34,7 @@
 
 #include "gpt.h"
 #include "bootmgr.h"
+#include <log.h>
 
 #define BOOTOPTION_LEN 8
 
@@ -46,7 +47,9 @@ typedef struct {
 
 static EFI_STATUS find_free_entry(UINT16 *entry)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	CHAR8 data;
 	CHAR16 name[BOOTOPTION_LEN + 1];
 	UINTN i, len, size;
@@ -78,7 +81,9 @@ static EFI_STATUS find_free_entry(UINT16 *entry)
 
 static EFI_STATUS find_load_option_entry(CHAR16 *description, UINT16 *entry)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN bufsize, namesize;
 	CHAR16 *name;
 	EFI_GUID guid = {0};
@@ -156,7 +161,9 @@ static CHAR8 *buffer;
 
 static EFI_STATUS create_buffer(UINTN initial_size)
 {
-	buffer = AllocatePool(initial_size);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+buffer = AllocatePool(initial_size);
 	if (!buffer)
 		return EFI_OUT_OF_RESOURCES;
 
@@ -166,7 +173,9 @@ static EFI_STATUS create_buffer(UINTN initial_size)
 
 static EFI_STATUS append_to_buffer(VOID *data, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	buffer = ReallocatePool(buffer, buf_size, buf_size + size);
 	if (!buffer)
@@ -183,14 +192,18 @@ static EFI_STATUS append_to_buffer(VOID *data, UINTN size)
 
 static void free_buffer()
 {
-	if (buffer)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (buffer)
 		FreePool(buffer);
 	buf_size = 0;
 }
 
 static EFI_STATUS set_file_path(CHAR16 *bootloader_path)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_DEVICE_PATH file_path;
 	UINTN path_size = StrSize(bootloader_path);
 
@@ -211,7 +224,9 @@ static EFI_STATUS set_file_path(CHAR16 *bootloader_path)
 
 static EFI_STATUS set_device_path(CHAR16 *part_label, CHAR16 *bootloader_path)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_HANDLE handle = NULL;
 	EFI_DEVICE_PATH *device_path;
 
@@ -247,7 +262,9 @@ static EFI_STATUS set_device_path(CHAR16 *part_label, CHAR16 *bootloader_path)
 static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_option,
 				     UINT16 entry)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_LOAD_OPTION *efi_load_option;
 	CHAR16 varname[BOOTOPTION_LEN + 1];
 	UINTN len, header_size;
@@ -302,7 +319,9 @@ exit:
 
 static BOOLEAN is_in_set(UINT16 value, UINT16 *set, UINTN set_length)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	for (i = 0; i < set_length; i++)
 		if (value == set[i])
@@ -313,7 +332,9 @@ static BOOLEAN is_in_set(UINT16 value, UINT16 *set, UINTN set_length)
 
 static EFI_STATUS install_in_boot_order(UINT16 *entries, UINTN entry_nb)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT16 *old_entries = NULL;
 	UINT16 *new_entries;
 	UINTN size = 0;
@@ -374,7 +395,9 @@ exit:
 EFI_STATUS bootmgr_register_entries(CHAR16 *part_label,
 				    load_option_t *load_options, UINTN load_option_nb)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT16 *entries;
 	UINTN i;
 

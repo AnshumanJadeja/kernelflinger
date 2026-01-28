@@ -36,6 +36,7 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
+#include <log.h>
 
 typedef struct IAvbKey {
   unsigned int len; /* Length of n[] in number of uint32_t */
@@ -45,7 +46,9 @@ typedef struct IAvbKey {
 } IAvbKey;
 
 static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
-  AvbRSAPublicKeyHeader h;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbRSAPublicKeyHeader h;
   IAvbKey* key = NULL;
   size_t expected_length;
   unsigned int i;
@@ -104,12 +107,16 @@ fail:
 }
 
 static void iavb_free_parsed_key(IAvbKey* key) {
-  avb_free(key);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_free(key);
 }
 
 /* a[] -= mod */
 static void subM(const IAvbKey* key, uint32_t* a) {
-  int64_t A = 0;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+int64_t A = 0;
   uint32_t i;
   for (i = 0; i < key->len; ++i) {
     A += (uint64_t)a[i] - key->n[i];
@@ -120,7 +127,9 @@ static void subM(const IAvbKey* key, uint32_t* a) {
 
 /* return a[] >= mod */
 static int geM(const IAvbKey* key, uint32_t* a) {
-  uint32_t i;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t i;
   for (i = key->len; i;) {
     --i;
     if (a[i] < key->n[i]) {
@@ -138,7 +147,9 @@ static void montMulAdd(const IAvbKey* key,
                        uint32_t* c,
                        const uint32_t a,
                        const uint32_t* b) {
-  uint64_t A = (uint64_t)a * b[0] + c[0];
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint64_t A = (uint64_t)a * b[0] + c[0];
   uint32_t d0 = (uint32_t)A * key->n0inv;
   uint64_t B = (uint64_t)d0 * key->n[0] + (uint32_t)A;
   uint32_t i;
@@ -160,7 +171,9 @@ static void montMulAdd(const IAvbKey* key,
 
 /* montgomery c[] = a[] * b[] / R % mod */
 static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
-  uint32_t i;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t i;
   for (i = 0; i < key->len; ++i) {
     c[i] = 0;
   }
@@ -173,7 +186,9 @@ static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
  * Input and output big-endian byte array in inout.
  */
 static void modpowF4(const IAvbKey* key, uint8_t* inout) {
-  uint32_t* a = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t* a = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aaR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   if (a == NULL || aR == NULL || aaR == NULL) {
@@ -236,7 +251,9 @@ bool avb_rsa_verify(const uint8_t* key,
                     size_t hash_num_bytes,
                     const uint8_t* padding,
                     size_t padding_num_bytes) {
-  uint8_t* buf = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t* buf = NULL;
   IAvbKey* parsed_key = NULL;
   bool success = false;
 

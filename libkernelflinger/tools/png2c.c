@@ -42,6 +42,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <log.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
 
@@ -49,7 +50,9 @@ static char *program_name;
 
 static void usage(int status)
 {
-	printf("Usage: %s -i FILE -o FILE -f FORMAT -p NAME\n",
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+printf("Usage: %s -i FILE -o FILE -f FORMAT -p NAME\n",
 	       basename((char *)program_name));
 	printf("\
 Transform PNG file to C source data structure.\n\
@@ -64,7 +67,9 @@ Transform PNG file to C source data structure.\n\
 
 static void error(const char *s)
 {
-	perror(s);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+perror(s);
 	exit(EXIT_FAILURE);
 }
 
@@ -73,7 +78,9 @@ static const unsigned int LINE_LENGTH = 80;
 static void write_to_c_source(const char *name, png_bytep buffer,
 			     unsigned int size, const char *path)
 {
-	unsigned int i, col;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+unsigned int i, col;
 	const unsigned int item_len = strlen("0x00, ");
 	FILE *f;
 	bool free_f = false;
@@ -102,7 +109,9 @@ static void write_to_c_source(const char *name, png_bytep buffer,
 
 static png_uint_32 get_format_from_string(const char *str)
 {
-	static struct str_to_format {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static struct str_to_format {
 		const char *str;
 		png_uint_32 format;
 	} formats[] = {
@@ -131,7 +140,9 @@ static struct option const long_options[] = {
 
 int main(int argc, char **argv)
 {
-	png_image image;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+png_image image;
 	png_bytep buffer;
 	unsigned int size;
 	bool format_initialized = false;

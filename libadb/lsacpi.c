@@ -34,10 +34,13 @@
 #include <acpi.h>
 
 #include "lsacpi.h"
+#include <log.h>
 
 static void print_table(struct ACPI_DESC_HEADER *table)
 {
-	ss_printf(L"%c%c%c%c  0x%08x  %5d\n",
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ss_printf(L"%c%c%c%c  0x%08x  %5d\n",
 		  table->signature[0], table->signature[1],
 		  table->signature[2], table->signature[3],
 		  table, table->length);
@@ -46,7 +49,9 @@ static void print_table(struct ACPI_DESC_HEADER *table)
 static EFI_STATUS lsacpi_main(INTN argc,
 			      __attribute__((__unused__)) const char **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct ACPI_DESC_HEADER *table;
 	struct XSDT_TABLE *xsdt;
 	UINTN i, count;

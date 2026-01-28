@@ -35,6 +35,7 @@
 #include "ioport.h"
 #include "lspci.h"
 #include "pci_class.h"
+#include <log.h>
 
 typedef union {
 	struct {
@@ -60,13 +61,17 @@ typedef struct {
 
 static UINT32 pci_read_config32(pci_dev_t dev, UINT16 reg)
 {
-	outl(0x80000000 | dev.raw << 8 | (reg & ~3), 0xcf8);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+outl(0x80000000 | dev.raw << 8 | (reg & ~3), 0xcf8);
 	return inl(0xcfc + (reg & 3));
 }
 
 static void pci_read_config(pci_dev_t dev, void *buf, UINT16 count)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 
 	for (i = 0; i < count; i += sizeof(UINT32))
 		*(UINT32 *)&buf[i] = pci_read_config32(dev, i);
@@ -93,7 +98,9 @@ static const struct {
 
 static EFI_STATUS lspci_main(INTN argc, const char **argv)
 {
-	UINTN i, j;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i, j;
 	pci_dev_t dev;
 	pci_header_t header;
 	unsigned char *buf = NULL;

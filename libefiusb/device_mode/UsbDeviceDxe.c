@@ -18,6 +18,7 @@
 #include "UsbDeviceDxe.h"
 #include "UsbDeviceMode.h"
 #include "XdciDWC.h"
+#include <log.h>
 
 static EFI_HANDLE xdci = 0;
 PCI_DEVICE_PATH xhci_path = {.Device = -1, .Function = -1};
@@ -28,7 +29,9 @@ PlatformSpecificInit (
   VOID
   )
 {
-  UINTN                 XhciPciMmBase;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN                 XhciPciMmBase;
   EFI_PHYSICAL_ADDRESS  XhciMemBaseAddress;
 
   XhciPciMmBase   = MmPciAddress (
@@ -56,7 +59,9 @@ UsbDeviceDxeExitBootService (
   VOID *Context
   )
 {
-  USB_XDCI_DEV_CONTEXT  *UsbXdciDevContext;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+USB_XDCI_DEV_CONTEXT  *UsbXdciDevContext;
 
   UsbXdciDevContext = (USB_XDCI_DEV_CONTEXT *) Context;
   DEBUG ((EFI_D_INFO, "UsbDeviceDxeExitBootService enter\n"));
@@ -77,7 +82,9 @@ UsbDeviceDxeExitBootService (
 
 static EFI_STATUS find_usb_device_controller (EFI_HANDLE Controller)
 {
-  EFI_STATUS status = EFI_UNSUPPORTED;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS status = EFI_UNSUPPORTED;
   EFI_PCI_IO *pci;
   USB_CLASSC class_reg;
   UINTN seg;
@@ -141,7 +148,9 @@ EFI_GUID gEfiEventExitBootServicesGuid  =  EventExitBootServices;
 
 static EFI_STATUS usb_device_mode_start (EFI_HANDLE Controller, EFI_USB_DEVICE_MODE_PROTOCOL **usb_device)
 {
-  EFI_STATUS Status;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS Status;
   USB_XDCI_DEV_CONTEXT *UsbXdciDevContext = NULL;
   EFI_PCI_IO *PciIo;
   EFI_EVENT ExitBootServicesEvent;
@@ -236,7 +245,9 @@ ErrorExit:
 
 static BOOLEAN usb_xdci_enabled(void)
 {
-  EFI_STATUS ret;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
   UINTN NumberHandles, Index;
   EFI_HANDLE *Handles;
 
@@ -270,7 +281,9 @@ static BOOLEAN usb_xdci_enabled(void)
 
 EFI_STATUS init_usb_device_mode_protocol(EFI_USB_DEVICE_MODE_PROTOCOL **usb_device)
 {
-  EFI_STATUS ret = EFI_UNSUPPORTED;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_UNSUPPORTED;
 
   if (usb_xdci_enabled()) {
     ret = usb_device_mode_start(xdci, usb_device);

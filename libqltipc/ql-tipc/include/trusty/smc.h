@@ -27,6 +27,7 @@
  * Execute SMC call into trusty or el3
  */
 
+#include <log.h>
 struct smc_ret8 {
     unsigned long r0;
     unsigned long r1;
@@ -51,5 +52,7 @@ static inline unsigned long smc(unsigned long r0,
                                 unsigned long r1,
                                 unsigned long r2,
                                 unsigned long r3) {
-    return smc8(r0, r1, r2, r3, 0, 0, 0, 0).r0;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return smc8(r0, r1, r2, r3, 0, 0, 0, 0).r0;
 }

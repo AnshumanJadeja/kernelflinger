@@ -16,6 +16,7 @@
 
 #include "elf32_ld.h"
 #include "elf_ld.h"
+#include <log.h>
 
 #define local_print(fmt, ...)
 //#define local_print(fmt, ...) debug(fmt, ##__VA_ARGS__)
@@ -24,7 +25,9 @@ BOOLEAN
 elf32_get_segment_info(const elf32_ehdr_t *ehdr,
 				uint16_t segment_no, elf_segment_info_t *p_info)
 {
-	const uint8_t *phdrtab;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const uint8_t *phdrtab;
 	const elf32_phdr_t *phdr;
 	if (segment_no < ehdr->e_phnum) {
 		phdrtab = (const uint8_t *)ehdr + ehdr->e_phoff;
@@ -52,7 +55,9 @@ elf32_get_segment_info(const elf32_ehdr_t *ehdr,
 static BOOLEAN
 elf32_update_rela_section(uint32_t relocation_offset, elf32_dyn_t *dyn_section, uint64_t dyn_section_sz)
 {
-	elf32_rela_t *rela = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+elf32_rela_t *rela = NULL;
 	uint32_t rela_sz = 0;
 	uint32_t rela_entsz = 0;
 	elf32_sym_t *symtab = NULL;
@@ -184,7 +189,9 @@ elf32_update_rela_section(uint32_t relocation_offset, elf32_dyn_t *dyn_section, 
 
 static void elf32_update_segment_table(module_file_info_t *file_info, uint32_t relocation_offset)
 {
-	elf32_ehdr_t *ehdr;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+elf32_ehdr_t *ehdr;
 	uint8_t *phdrtab;
 	uint32_t i;
 	ehdr = (elf32_ehdr_t *)(UINTN)(uint64_t)file_info->runtime_addr;
@@ -216,7 +223,9 @@ static void elf32_update_segment_table(module_file_info_t *file_info, uint32_t r
 BOOLEAN
 elf32_load_executable(module_file_info_t *file_info, uint64_t *p_entry)
 {
-	elf32_ehdr_t *ehdr;             /* ELF header */
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+elf32_ehdr_t *ehdr;             /* ELF header */
 	uint8_t *phdrtab;               /* Program Segment header Table */
 	uint32_t phsize;            /* Program Segment header Table size */
 	uint32_t low_addr = (uint32_t) ~0;

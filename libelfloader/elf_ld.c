@@ -17,6 +17,7 @@
 #include "elf32_ld.h"
 #include "elf64_ld.h"
 #include "elf_ld.h"
+#include <log.h>
 
 //#define local_print(fmt, ...)
 #define local_print(fmt, ...) debug(fmt, ##__VA_ARGS__);
@@ -24,7 +25,9 @@
 void *image_offset(module_file_info_t *file_info,
 				uint64_t src_offset, uint64_t bytes_to_read)
 {
-	if ((src_offset + bytes_to_read) > file_info->loadtime_size) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if ((src_offset + bytes_to_read) > file_info->loadtime_size) {
 		return NULL; /* read no more than size */
 	}
 	if ((src_offset + bytes_to_read) <= src_offset) {
@@ -37,7 +40,9 @@ void *image_offset(module_file_info_t *file_info,
 BOOLEAN image_copy(void *dest, module_file_info_t *file_info,
 				uint64_t src_offset, uint64_t bytes_to_copy)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	void *src;
 	src = image_offset(file_info, src_offset, bytes_to_copy);
 	if (!src) {
@@ -78,7 +83,9 @@ BOOLEAN relocate_elf_image(	IN uint64_t ld_addr,
 				IN uint64_t rt_size,
 				OUT uint64_t *p_entry)
 {
-	uint8_t *p_buffer;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t *p_buffer;
 	module_file_info_t file_info;
 
 	file_info.loadtime_addr = ld_addr;

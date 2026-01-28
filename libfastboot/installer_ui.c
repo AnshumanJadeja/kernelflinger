@@ -32,6 +32,7 @@
 
 #include "lib.h"
 #include "vars.h"
+#include <log.h>
 
 static const char *VENDOR_IMG_NAME = "splash_intel";
 
@@ -41,7 +42,9 @@ static UINTN wmargin;
 static UINTN hmargin;
 
 static EFI_STATUS ux_init_screen() {
-	static BOOLEAN initialized;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static BOOLEAN initialized;
 	EFI_STATUS ret;
 
 	if (!initialized) {
@@ -68,7 +71,9 @@ static EFI_STATUS ux_init_screen() {
 
 static EFI_STATUS installer_display_text()
 {
-	UINTN width, height, x, y, linesarea, colsarea;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN width, height, x, y, linesarea, colsarea;
 	ui_image_t *vendor;
 	EFI_STATUS ret;
 	ui_textline_t ui_texts[] = {
@@ -127,7 +132,9 @@ static EFI_STATUS installer_display_text()
 }
 
 static EFI_STATUS clear_text() {
-	if (swidth > sheight)	/* Landscape orientation. */
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (swidth > sheight)	/* Landscape orientation. */
 		return ui_clear_area(swidth / 2, hmargin,
 				     swidth / 2, sheight - (2 * hmargin));
 	/* Portrait orientation. */
@@ -139,7 +146,9 @@ static EFI_STATUS clear_text() {
 
 EFI_STATUS ux_prompt_user_confirm()
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	ui_events_t event;
 
 	if (is_running_on_kvm()) {

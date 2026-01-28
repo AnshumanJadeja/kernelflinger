@@ -11,6 +11,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
+#include <log.h>
 #ifndef __BASE_LIB__
 #define __BASE_LIB__
 
@@ -2477,7 +2478,9 @@ PathCleanUpDirectories(
   @param  ListHead  The head note of a list to initialize.
 
 **/
-#define INITIALIZE_LIST_HEAD_VARIABLE(ListHead)  {&(ListHead), &(ListHead)}
+#define INITIALIZE_LIST_HEAD_VARIABLE(ListHead)  {
+	log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+	&(ListHead), &(ListHead)}
 
 /**
   Iterates over each node in a doubly linked list using each node's forward link.

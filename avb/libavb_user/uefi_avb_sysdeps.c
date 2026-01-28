@@ -34,25 +34,35 @@
 #include "ui.h"
 
 int avb_memcmp(const void* src1, const void* src2, size_t n) {
-  return (int)CompareMem((VOID*)src1, (VOID*)src2, (UINTN)n);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return (int)CompareMem((VOID*)src1, (VOID*)src2, (UINTN)n);
 }
 
 int avb_strcmp(const char* s1, const char* s2) {
-  return (int)strcmpa((CHAR8*)s1, (CHAR8*)s2);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return (int)strcmpa((CHAR8*)s1, (CHAR8*)s2);
 }
 
 void* avb_memcpy(void* dest, const void* src, size_t n) {
-  CopyMem(dest, (VOID*)src, (UINTN)n);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CopyMem(dest, (VOID*)src, (UINTN)n);
   return dest;
 }
 
 void* avb_memset(void* dest, const int c, size_t n) {
-  SetMem(dest, (UINTN)n, (UINT8)c);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+SetMem(dest, (UINTN)n, (UINT8)c);
   return dest;
 }
 
 void avb_print(const char* message) {
-  CHAR16* p = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16* p = NULL;
 
   p = stra_to_str((const CHAR8 *)message);
   if (p != NULL) {
@@ -62,7 +72,9 @@ void avb_print(const char* message) {
 }
 
 void avb_printv(const char* message, ...) {
-  va_list ap;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list ap;
 
   va_start(ap, message);
   do {
@@ -73,7 +85,9 @@ void avb_printv(const char* message, ...) {
 }
 
 void avb_abort(void) {
-  avb_print("\nABORTING...\n");
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+avb_print("\nABORTING...\n");
   uefi_call_wrapper(BS->Stall, 1, 5 * 1000 * 1000);
   uefi_call_wrapper(BS->Exit, 4, NULL, EFI_NOT_FOUND, 0, NULL);
   while (true) {
@@ -84,7 +98,9 @@ void avb_abort(void) {
 #ifdef USE_UI
 void avb_print_ui(const char* message)
 {
-  CHAR16* p = stra_to_str(message);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16* p = stra_to_str(message);
   if (p != NULL) {
     ui_error(p);
     FreePool(p);
@@ -92,7 +108,9 @@ void avb_print_ui(const char* message)
 }
 
 void avb_printv_ui(const char* message, ...) {
-  va_list ap;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+va_list ap;
 
   if (ui_is_ready()) {
     va_start(ap, message);
@@ -106,7 +124,9 @@ void avb_printv_ui(const char* message, ...) {
 #endif
 
 void* avb_malloc_(size_t size) {
-  EFI_STATUS err;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS err;
   void* x;
 
   err = uefi_call_wrapper(
@@ -119,7 +139,9 @@ void* avb_malloc_(size_t size) {
 }
 
 void avb_free(void* ptr) {
-  EFI_STATUS err;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS err;
   err = uefi_call_wrapper(BS->FreePool, 1, ptr);
 
   if (EFI_ERROR(err)) {
@@ -129,11 +151,15 @@ void avb_free(void* ptr) {
 }
 
 size_t avb_strlen(const char* str) {
-  return strlena((CHAR8*)str);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return strlena((CHAR8*)str);
 }
 
 uint32_t avb_div_by_10(uint64_t* dividend) {
-  uint32_t rem = (uint32_t)(*dividend % 10);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint32_t rem = (uint32_t)(*dividend % 10);
   *dividend /= 10;
   return rem;
 }

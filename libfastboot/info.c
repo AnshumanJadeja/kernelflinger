@@ -36,19 +36,26 @@
 #include <lib.h>
 
 #include "info.h"
+#include <log.h>
 
 const char *info_bootloader_version(void)
 {
-	return KERNELFLINGER_VERSION_8;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return KERNELFLINGER_VERSION_8;
 }
 
 const char *info_baseband_version(void)
 {
-	return "N/A";
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return "N/A";
 }
 
 const char *info_variant(void)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #ifdef HAL_AUTODETECT
 	return get_property_device();
 #else
@@ -59,10 +66,14 @@ const char *info_variant(void)
 
 const char *info_product(void)
 {
-	return TARGET_BOOTLOADER_BOARD_NAME;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return TARGET_BOOTLOADER_BOARD_NAME;
 }
 
 const char *info_hw_revision(void)
 {
-	return SMBIOS_GET_STRING(1, Version);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return SMBIOS_GET_STRING(1, Version);
 }

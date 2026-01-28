@@ -40,6 +40,7 @@
 #include "gpt_bin.h"
 #include "storage.h"
 #include "pci.h"
+#include <log.h>
 
 #define PROTECTIVE_MBR 0xEE
 
@@ -100,7 +101,9 @@ uint64_t vm_offset = 0;
 
 static EFI_STATUS calculate_crc32(void *data, UINTN size, UINT32 *crc)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(BS->CalculateCrc32, 3, data, size, crc);
 	if (EFI_ERROR(ret))
@@ -110,7 +113,9 @@ static EFI_STATUS calculate_crc32(void *data, UINTN size, UINT32 *crc)
 
 static EFI_STATUS set_header_crc32(struct gpt_header *gh)
 {
-	UINT32 crc;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32 crc;
 	EFI_STATUS ret;
 
 	gh->header_crc32 = 0;
@@ -121,7 +126,9 @@ static EFI_STATUS set_header_crc32(struct gpt_header *gh)
 
 static EFI_STATUS read_gpt_header(struct gpt_disk *disk, UINT64 offset)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT32 saved_crc, crc;
 
 	ret = uefi_call_wrapper(disk->dio->ReadDisk, 5, disk->dio,
@@ -148,23 +155,31 @@ static EFI_STATUS read_gpt_header(struct gpt_disk *disk, UINT64 offset)
 
 static EFI_STATUS read_master_gpt_header(struct gpt_disk *disk)
 {
-	return read_gpt_header(disk, disk->bio->Media->BlockSize);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return read_gpt_header(disk, disk->bio->Media->BlockSize);
 }
 
 static EFI_STATUS read_backup_gpt_header(struct gpt_disk *disk)
 {
-	return read_gpt_header(disk, pdisk->bio->Media->LastBlock *
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return read_gpt_header(disk, pdisk->bio->Media->LastBlock *
 			       disk->bio->Media->BlockSize);
 }
 
 static BOOLEAN is_gpt_device(struct gpt_header *gpt)
 {
-	return CompareMem(gpt->signature, EFI_PTAB_HEADER_ID, sizeof(gpt->signature)) == 0;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return CompareMem(gpt->signature, EFI_PTAB_HEADER_ID, sizeof(gpt->signature)) == 0;
 }
 
 static EFI_STATUS read_gpt_partitions(struct gpt_disk *disk)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN offset;
 	UINTN size;
 	UINT32 crc;
@@ -194,7 +209,9 @@ static EFI_STATUS read_gpt_partitions(struct gpt_disk *disk)
 
 static EFI_STATUS gpt_prepare_disk(EFI_HANDLE handle, struct gpt_disk *disk)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	/* Call to connect to the controller. Don't check for errors
 	 * as it will report error if the controller is already
@@ -231,7 +248,9 @@ static EFI_STATUS gpt_prepare_disk(EFI_HANDLE handle, struct gpt_disk *disk)
 
 static EFI_STATUS gpt_list_partition_on_disk(struct gpt_disk *disk)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!is_gpt_device(&disk->gpt_hd))
 		return EFI_NOT_FOUND;
@@ -258,7 +277,9 @@ static EFI_STATUS gpt_list_partition_on_disk(struct gpt_disk *disk)
  * information into the global sdisk variable */
 static EFI_STATUS gpt_cache_partition(logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
 	UINTN i;
@@ -312,12 +333,16 @@ free_handles:
 
 void gpt_free_cache(void)
 {
-	ZeroMem(&sdisk, sizeof(sdisk));
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ZeroMem(&sdisk, sizeof(sdisk));
 }
 
 EFI_STATUS gpt_sync(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!sdisk.bio)
 		return EFI_SUCCESS;
@@ -331,7 +356,9 @@ EFI_STATUS gpt_sync(void)
 
 EFI_STATUS gpt_refresh(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = gpt_sync();
 	if (EFI_ERROR(ret))
@@ -355,7 +382,9 @@ EFI_STATUS gpt_refresh(void)
 
 EFI_STATUS gpt_get_root_disk(struct gpt_partition_interface *gpart, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!gpart)
 		return EFI_INVALID_PARAMETER;
@@ -383,7 +412,9 @@ static const CHAR16 ANDROID_PREFIX[] = L"android_";
 
 static CHAR16 *make_android_label(const CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	static CHAR16 android_label[GPT_NAME_LEN];
 	static CHAR16 *suffix = &android_label[ARRAY_SIZE(ANDROID_PREFIX) - 1];
 	UINTN label_size = StrLen(label) * sizeof(CHAR16);
@@ -403,7 +434,9 @@ static CHAR16 *make_android_label(const CHAR16 *label)
 
 static struct gpt_partition *gpt_find_partition(const CHAR16 *label)
 {
-	UINTN p;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN p;
 	CHAR16 *android_label;
 
 	android_label = make_android_label(label);
@@ -429,7 +462,9 @@ static struct gpt_partition *gpt_find_partition(const CHAR16 *label)
 
 static struct gpt_partition *gpt_find_partition_by_uuid(EFI_GUID * uuid)
 {
-	UINTN p;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN p;
 
 	for (p = 0; p < sdisk.gpt_hd.number_of_entries; p++) {
 		struct gpt_partition *part;
@@ -454,7 +489,9 @@ static struct gpt_partition *gpt_find_partition_by_uuid(EFI_GUID * uuid)
 
 static void copy_part(struct gpt_partition *in, struct gpt_partition *out)
 {
-	static const UINTN PREFIX_LEN = ARRAY_SIZE(ANDROID_PREFIX) - 1;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+static const UINTN PREFIX_LEN = ARRAY_SIZE(ANDROID_PREFIX) - 1;
 
 	CopyMem(out, in, sizeof(*in));
 	if (!memcmp(in->name, ANDROID_PREFIX, PREFIX_LEN * sizeof(CHAR16)))
@@ -466,7 +503,9 @@ static void copy_part(struct gpt_partition *in, struct gpt_partition *out)
 #ifdef MULTI_USER
 EFI_STATUS get_dedicated_disk(struct gpt_partition_interface *gpart)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
 	PCI_DEVICE_PATH *boot_device;
@@ -545,7 +584,9 @@ EFI_STATUS get_dedicated_disk(struct gpt_partition_interface *gpart)
 
 EFI_STATUS gpt_get_efi_partition( struct gpt_partition_interface *gpart)
 {
-	struct gpt_partition *part;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition *part;
     UINTN p;
 	if (!gpart)
 		return EFI_INVALID_PARAMETER;
@@ -570,7 +611,9 @@ EFI_STATUS gpt_get_partition_by_label(const CHAR16 *label,
 				      struct gpt_partition_interface *gpart,
 				      logical_unit_t log_unit)
 {
-	struct gpt_partition *part;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition *part;
 	EFI_STATUS ret;
 
 	if (!label || !gpart)
@@ -611,7 +654,9 @@ EFI_STATUS gpt_get_partition_by_label(const CHAR16 *label,
 
 EFI_STATUS gpt_list_partition(struct gpt_partition_interface **gpartlist, UINTN *part_count, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINTN p;
 
 	if (!gpartlist || !part_count)
@@ -652,7 +697,9 @@ EFI_STATUS gpt_list_partition(struct gpt_partition_interface **gpartlist, UINTN 
 
 static void gpt_new(struct gpt_header *gh, UINTN start_lba, UINTN blocksize, UINTN lastblock)
 {
-	UINTN gpt_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN gpt_size;
 
 	ZeroMem(gh, sizeof(struct gpt_header));
 	CopyMem(gh->signature, "EFI PART", 8);
@@ -684,7 +731,9 @@ static void gpt_new(struct gpt_header *gh, UINTN start_lba, UINTN blocksize, UIN
  */
 static EFI_STATUS gpt_check_partition_list(UINTN part_count, struct gpt_bin_part *gbp)
 {
-	UINTN i;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN i;
 	UINT64 totsize = 0;
 	UINT64 disksize;
 	INTN part_data = -1;
@@ -716,7 +765,9 @@ static EFI_STATUS gpt_check_partition_list(UINTN part_count, struct gpt_bin_part
 
 static VOID gpt_fill_entries(UINTN part_count, struct gpt_bin_part *gbp, struct gpt_partition *gp)
 {
-	UINT64 start_lba;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 start_lba;
 	UINTN i;
 
 	/* align on MiB boundaries ??? */
@@ -735,7 +786,9 @@ static VOID gpt_fill_entries(UINTN part_count, struct gpt_bin_part *gbp, struct 
 
 static EFI_STATUS gpt_write_mbr(void)
 {
-	struct mbr mbr;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct mbr mbr;
 	EFI_STATUS ret;
 
 	/* Write protective MBR */
@@ -758,7 +811,9 @@ static EFI_STATUS gpt_write_mbr(void)
 
 static EFI_STATUS gpt_write_table_to_disk(struct gpt_header *gh)
 {
-	UINT64 entries_offset, header_offset, entries_size;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 entries_offset, header_offset, entries_size;
 	EFI_STATUS ret;
 
 	entries_size = ((UINT64)gh->number_of_entries) * gh->size_of_entry;
@@ -783,7 +838,9 @@ static EFI_STATUS gpt_write_table_to_disk(struct gpt_header *gh)
 
 static EFI_STATUS gpt_write_partition_tables(void)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT64 entries_size;
 	struct gpt_header *gh;
 	struct gpt_header *gh_backup;
@@ -850,7 +907,9 @@ static EFI_STATUS gpt_write_partition_tables(void)
 EFI_STATUS gpt_create(struct gpt_header *gh, UINTN gh_size,
 		      UINT64 start_lba, UINTN part_count, struct gpt_bin_part *gbp, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (gh && gbp)
 		return EFI_INVALID_PARAMETER;
@@ -898,7 +957,9 @@ out:
 static EFI_STATUS get_partition_guid(const CHAR16 *label, EFI_GUID *guid,
 				     logical_unit_t log_unit, BOOLEAN uuid)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition *part;
 
 	if (!label || !guid)
@@ -921,17 +982,23 @@ static EFI_STATUS get_partition_guid(const CHAR16 *label, EFI_GUID *guid,
 
 EFI_STATUS gpt_get_partition_type(const CHAR16 *label, EFI_GUID *type, logical_unit_t log_unit)
 {
-	return get_partition_guid(label, type, log_unit, FALSE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return get_partition_guid(label, type, log_unit, FALSE);
 }
 
 EFI_STATUS gpt_get_partition_uuid(const CHAR16 *label, EFI_GUID *uuid, logical_unit_t log_unit)
 {
-	return get_partition_guid(label, uuid, log_unit, TRUE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return get_partition_guid(label, uuid, log_unit, TRUE);
 }
 
 EFI_STATUS gpt_swap_partition(const CHAR16 *label1, const CHAR16 *label2, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition *part1, *part2, save1;
 
 	if (!label1 || !label2)
@@ -967,7 +1034,9 @@ EFI_STATUS gpt_swap_partition(const CHAR16 *label1, const CHAR16 *label2, logica
 
 static HARDDRIVE_DEVICE_PATH *get_hd_device_path(EFI_DEVICE_PATH *p)
 {
-	while (!IsDevicePathEndType(p)) {
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+while (!IsDevicePathEndType(p)) {
 		if (DevicePathType(p) == MEDIA_DEVICE_PATH
 		    && DevicePathSubType(p) == MEDIA_HARDDRIVE_DP)
 			return (HARDDRIVE_DEVICE_PATH *)p;
@@ -980,7 +1049,9 @@ EFI_STATUS gpt_get_partition_handle(const CHAR16 *label,
 				    logical_unit_t log_unit,
 				    EFI_HANDLE *handle)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
@@ -1027,7 +1098,9 @@ EFI_STATUS gpt_get_partition_handle(const CHAR16 *label,
 
 EFI_STATUS gpt_get_header(struct gpt_header **header, UINTN *size, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!header || !size)
 		return EFI_INVALID_PARAMETER;
@@ -1046,7 +1119,9 @@ EFI_STATUS gpt_get_header(struct gpt_header **header, UINTN *size, logical_unit_
 
 EFI_STATUS gpt_get_partitions(struct gpt_partition **partitions, UINTN *size, logical_unit_t log_unit)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!partitions || !size)
 		return EFI_INVALID_PARAMETER;
@@ -1065,7 +1140,9 @@ EFI_STATUS gpt_get_partitions(struct gpt_partition **partitions, UINTN *size, lo
 
 UINT64 get_partition_start(struct gpt_partition_interface *gparti)
 {
-	if (gparti == NULL)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (gparti == NULL)
 		return 0;
 
 	return gparti->part.starting_lba * gparti->bio->Media->BlockSize;
@@ -1073,7 +1150,9 @@ UINT64 get_partition_start(struct gpt_partition_interface *gparti)
 
 UINT64 get_partition_size(struct gpt_partition_interface *gparti)
 {
-	if (gparti == NULL)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (gparti == NULL)
 		return 0;
 
 	return (gparti->part.ending_lba + 1 - gparti->part.starting_lba) *
@@ -1082,7 +1161,9 @@ UINT64 get_partition_size(struct gpt_partition_interface *gparti)
 
 UINT64 get_partition_size_by_label(const CHAR16 *label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 
 	ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
@@ -1096,7 +1177,9 @@ UINT64 get_partition_size_by_label(const CHAR16 *label)
 
 EFI_STATUS read_partition(struct gpt_partition_interface *gparti, INT64 offset, UINT64 len, void *data)
 {
-	UINT64 partlen;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64 partlen;
 	UINT64 partoffset;
 	EFI_STATUS ret;
 
@@ -1123,7 +1206,9 @@ EFI_STATUS read_partition(struct gpt_partition_interface *gparti, INT64 offset, 
 
 EFI_STATUS read_partition_by_label(const CHAR16 *label, INT64 offset, UINT64 len, void *data)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 
 	ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
@@ -1137,14 +1222,18 @@ EFI_STATUS read_partition_by_label(const CHAR16 *label, INT64 offset, UINT64 len
 
 void set_hard_disk()
 {
-	vm_offset = 0;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+vm_offset = 0;
 	pdisk = &sdisk;
 	part_select(0);
 }
 
 EFI_STATUS set_vm(const CHAR16 *vm_label)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface part1;
 
 	set_hard_disk();
@@ -1175,7 +1264,9 @@ EFI_STATUS gpt_get_partition_by_uuid( EFI_GUID * uuid,
 				      struct gpt_partition_interface *gpart,
 				      logical_unit_t log_unit)
 {
-	struct gpt_partition *part;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct gpt_partition *part;
 	EFI_STATUS ret;
 
 	if (!uuid || !gpart)

@@ -39,6 +39,7 @@
 
 #include "flash.h"
 #include "sparse_format.h"
+#include <log.h>
 
 /* Hunks buffer size.  */
 static const unsigned int BUFFER_SIZE = 10 * 1024 * 1024;
@@ -50,7 +51,9 @@ static unsigned int cur_size;
 
 BOOLEAN is_sparse_image(void *data, UINT64 size)
 {
-	struct sparse_header *sph;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct sparse_header *sph;
 
 	if (size < sizeof(struct sparse_header))
 		return FALSE;
@@ -77,7 +80,9 @@ BOOLEAN is_sparse_image(void *data, UINT64 size)
 
 static EFI_STATUS init_buffer()
 {
-	buffer = AllocatePool(BUFFER_SIZE);
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+buffer = AllocatePool(BUFFER_SIZE);
 	if (!buffer) {
 		debug(L"Allocation failed, sparse file buffer is disabled");
 		return EFI_OUT_OF_RESOURCES;
@@ -89,7 +94,9 @@ static EFI_STATUS init_buffer()
 
 static void free_buffer()
 {
-	if (!buffer)
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!buffer)
 		return;
 
 	FreePool(buffer);
@@ -98,7 +105,9 @@ static void free_buffer()
 
 static EFI_STATUS flush_buffer()
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 
 	if (buffer && cur_size != 0)
 		ret = flash_write(buffer, cur_size);
@@ -109,7 +118,9 @@ static EFI_STATUS flush_buffer()
 
 static EFI_STATUS flash_raw_data(void *data, unsigned size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	if (!buffer)
 		return flash_write(data, size);
@@ -138,7 +149,9 @@ static EFI_STATUS flash_raw_data(void *data, unsigned size)
 
 static EFI_STATUS flash_chunk(struct sparse_header *sph, struct chunk_header *ckh, CHAR8 *data, unsigned int size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	UINT64 chunk_szb = (UINT64)ckh->chunk_sz * (UINT64)sph->blk_sz;
 
 	switch (ckh->chunk_type) {
@@ -170,7 +183,9 @@ static EFI_STATUS flash_chunk(struct sparse_header *sph, struct chunk_header *ck
 
 EFI_STATUS flash_sparse(void *data, UINT64 size)
 {
-	struct sparse_header *sph;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+struct sparse_header *sph;
 	CHAR8 *s;
 	UINT64 rlen;
 	unsigned int i;

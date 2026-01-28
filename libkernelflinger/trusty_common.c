@@ -47,6 +47,7 @@
 #define AVB_COMPILATION
 #include "avb_sha.h"
 #include "slot.h"
+#include <log.h>
 
 extern char _binary_avb_pk_start;
 extern char _binary_avb_pk_end;
@@ -60,7 +61,9 @@ static EFI_STATUS android_query_image_and_size_from_avb_result(
                 OUT size_t *image_size
                 )
 {
-    AvbPartitionData *pdata = NULL;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbPartitionData *pdata = NULL;
 
     for (size_t n = 0; n < slot_data->num_loaded_partitions; ++n) {
         pdata = &slot_data->loaded_partitions[n];
@@ -77,7 +80,9 @@ static EFI_STATUS android_query_image_and_size_from_avb_result(
 
 static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *image_buf)
 {
-    AvbFooter footer;
+    
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbFooter footer;
     const AvbFooter *img_footer;
     const uint8_t* desc_partition_name = NULL;
     const uint8_t* desc_salt;
@@ -215,7 +220,9 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
 EFI_STATUS load_tos_image(OUT VOID **tosimage)
 {
-        EFI_STATUS ret;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
         UINT8 verify_state = BOOT_STATE_GREEN;
         UINT8 verify_state_new;
         AvbSlotVerifyData *slot_data;
@@ -261,6 +268,8 @@ EFI_STATUS load_tos_image(OUT VOID **tosimage)
 
 static VOID activate_vtd(VOID)
 {
+
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 #define VMCALL_ACTIVATE_VTD 0x56544400ULL        // "VTD"
         asm volatile ("vmcall" : : "a"(VMCALL_ACTIVATE_VTD));
 }
@@ -270,5 +279,7 @@ static VOID activate_vtd(VOID)
  */
 VOID trusty_late_init(VOID)
 {
-        activate_vtd();
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+activate_vtd();
 }

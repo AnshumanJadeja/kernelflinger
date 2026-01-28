@@ -20,6 +20,7 @@
 #include "XdciInterface.h"
 #include "XdciDWC.h"
 #include "UsbDeviceDxe.h"
+#include <log.h>
 
 static const struct UsbDeviceCoreDriver CoreDriverTbl[USB_CORE_ID_MAX] = { {
   DwcXdciCoreInit,
@@ -50,7 +51,9 @@ static const struct UsbDeviceCoreDriver CoreDriverTbl[USB_CORE_ID_MAX] = { {
 
 const struct UsbDeviceCoreDriver *UsbDeviceGetCoreDriver(USB_CONTROLLER_ID id)
 {
-  if (id >= USB_CORE_ID_MAX)
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (id >= USB_CORE_ID_MAX)
     return NULL;
 
   return &CoreDriverTbl[id];

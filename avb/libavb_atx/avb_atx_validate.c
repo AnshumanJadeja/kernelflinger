@@ -28,6 +28,7 @@
 #include <libavb/avb_sha.h>
 #include <libavb/avb_sysdeps.h>
 #include <libavb/avb_util.h>
+#include <log.h>
 
 /* The most recent unlock challenge generated. */
 static uint8_t last_unlock_challenge[AVB_ATX_UNLOCK_CHALLENGE_SIZE];
@@ -37,7 +38,9 @@ static bool last_unlock_challenge_set = false;
 static void sha256(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
-  AvbSHA256Ctx context;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbSHA256Ctx context;
   avb_sha256_init(&context);
   avb_sha256_update(&context, data, length);
   uint8_t* tmp = avb_sha256_final(&context);
@@ -48,7 +51,9 @@ static void sha256(const uint8_t* data,
 static void sha512(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA512_DIGEST_SIZE]) {
-  AvbSHA512Ctx context;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbSHA512Ctx context;
   avb_sha512_init(&context);
   avb_sha512_update(&context, data, length);
   uint8_t* tmp = avb_sha512_final(&context);
@@ -57,14 +62,18 @@ static void sha512(const uint8_t* data,
 
 /* Computes the SHA256 |hash| of a NUL-terminated |str|. */
 static void sha256_str(const char* str, uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
-  sha256((const uint8_t*)str, avb_strlen(str), hash);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+sha256((const uint8_t*)str, avb_strlen(str), hash);
 }
 
 /* Verifies structure and |expected_hash| of permanent |attributes|. */
 static bool verify_permanent_attributes(
     const AvbAtxPermanentAttributes* attributes,
     const uint8_t expected_hash[AVB_SHA256_DIGEST_SIZE]) {
-  uint8_t hash[AVB_SHA256_DIGEST_SIZE];
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t hash[AVB_SHA256_DIGEST_SIZE];
 
   if (attributes->version != 1) {
     avb_error("Unsupported permanent attributes version.\n");
@@ -84,7 +93,9 @@ static bool verify_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_key_version,
     const uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE]) {
-  const AvbAlgorithmData* algorithm_data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const AvbAlgorithmData* algorithm_data;
   uint8_t certificate_hash[AVB_SHA512_DIGEST_SIZE];
 
   if (certificate->signed_data.version != 1) {
@@ -124,7 +135,9 @@ static bool verify_pik_certificate(
     const AvbAtxCertificate* certificate,
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version) {
-  uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot.ca", expected_usage);
   if (!verify_certificate(
@@ -141,7 +154,9 @@ static bool verify_psk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
-  uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot", expected_usage);
@@ -166,7 +181,9 @@ static bool verify_puk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
-  uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot.unlock", expected_usage);
@@ -192,7 +209,9 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
     const uint8_t* public_key_metadata,
     size_t public_key_metadata_length,
     bool* out_is_trusted) {
-  AvbIOResult result = AVB_IO_RESULT_OK;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];
   AvbAtxPublicKeyMetadata metadata;
@@ -288,7 +307,9 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
 
 AvbIOResult avb_atx_generate_unlock_challenge(
     AvbAtxOps* atx_ops, AvbAtxUnlockChallenge* out_unlock_challenge) {
-  AvbIOResult result = AVB_IO_RESULT_OK;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
 
   /* We need the permanent attributes to compute the product_id_hash. */
@@ -318,7 +339,9 @@ AvbIOResult avb_atx_validate_unlock_credential(
     AvbAtxOps* atx_ops,
     const AvbAtxUnlockCredential* unlock_credential,
     bool* out_is_trusted) {
-  AvbIOResult result = AVB_IO_RESULT_OK;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];
   uint64_t minimum_version;

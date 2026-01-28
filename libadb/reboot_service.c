@@ -34,10 +34,13 @@
 
 #include "adb_socket.h"
 #include "service.h"
+#include <log.h>
 
 static EFI_STATUS reboot_service_open(const char *arg, void **context)
 {
-	CHAR16 *target = NULL;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+CHAR16 *target = NULL;
 
 	if (!arg || !context)
 		return EFI_INVALID_PARAMETER;
@@ -62,7 +65,9 @@ static EFI_STATUS reboot_service_open(const char *arg, void **context)
 
 static EFI_STATUS reboot_service_ready(asock_t s)
 {
-	if (!asock_context(s))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
 	adb_set_boot_target(name_to_boot_target(asock_context(s)));
@@ -72,7 +77,9 @@ static EFI_STATUS reboot_service_ready(asock_t s)
 
 static EFI_STATUS reboot_service_close(asock_t s)
 {
-	if (!asock_context(s))
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
 	FreePool(asock_context(s));
@@ -82,7 +89,9 @@ static EFI_STATUS reboot_service_close(asock_t s)
 
 static EFI_STATUS reboot_service_okay(__attribute__((__unused__)) asock_t s)
 {
-	error(L"reboot_service does not support OKAY message");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+error(L"reboot_service does not support OKAY message");
 	return EFI_UNSUPPORTED;
 }
 
@@ -90,7 +99,9 @@ static EFI_STATUS reboot_service_read(__attribute__((__unused__)) asock_t s,
 				      __attribute__((__unused__)) unsigned char *data,
 				      __attribute__((__unused__)) UINT32 length)
 {
-	error(L"reboot_service does not support READ message");
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+error(L"reboot_service does not support READ message");
 	return EFI_UNSUPPORTED;
 }
 

@@ -25,10 +25,13 @@
 #include "avb_descriptor.h"
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
+#include <log.h>
 
 bool avb_descriptor_validate_and_byteswap(const AvbDescriptor* src,
                                           AvbDescriptor* dest) {
-  dest->tag = avb_be64toh(src->tag);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+dest->tag = avb_be64toh(src->tag);
   dest->num_bytes_following = avb_be64toh(src->num_bytes_following);
 
   if ((dest->num_bytes_following & 0x07) != 0) {
@@ -42,7 +45,9 @@ bool avb_descriptor_foreach(const uint8_t* image_data,
                             size_t image_size,
                             AvbDescriptorForeachFunc foreach_func,
                             void* user_data) {
-  const AvbVBMetaImageHeader* header = NULL;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+const AvbVBMetaImageHeader* header = NULL;
   bool ret = false;
   const uint8_t* image_end;
   const uint8_t* desc_start;
@@ -118,7 +123,9 @@ out:
 
 static bool count_descriptors(const AvbDescriptor* descriptor,
                               void* user_data) {
-  size_t* num_descriptors = user_data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t* num_descriptors = user_data;
   *num_descriptors += 1;
   return true;
 }
@@ -129,7 +136,9 @@ typedef struct {
 } SetDescriptorData;
 
 static bool set_descriptors(const AvbDescriptor* descriptor, void* user_data) {
-  SetDescriptorData* data = user_data;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+SetDescriptorData* data = user_data;
   data->descriptors[data->descriptor_number++] = descriptor;
   return true;
 }
@@ -137,7 +146,9 @@ static bool set_descriptors(const AvbDescriptor* descriptor, void* user_data) {
 const AvbDescriptor** avb_descriptor_get_all(const uint8_t* image_data,
                                              size_t image_size,
                                              size_t* out_num_descriptors) {
-  size_t num_descriptors = 0;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+size_t num_descriptors = 0;
   SetDescriptorData data;
 
   avb_descriptor_foreach(

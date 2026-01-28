@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <efilib.h>
 #include "Tpm2Help.h"
 #include "Tcg2Protocol.h"
+#include <log.h>
 
 typedef struct {
   TPMI_ALG_HASH              HashAlgo;
@@ -44,7 +45,9 @@ GetHashSizeFromAlgo (
   IN TPMI_ALG_HASH    HashAlgo
   )
 {
-  UINTN  Index;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN  Index;
 
   for (Index = 0; Index < sizeof(mHashInfo)/sizeof(mHashInfo[0]); Index++) {
     if (mHashInfo[Index].HashAlgo == HashAlgo) {
@@ -73,7 +76,9 @@ SwapBytes16 (
   IN      UINT16                    Operand
   )
 {
-  return (UINT16) ((Operand << 8) | (Operand >> 8));
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return (UINT16) ((Operand << 8) | (Operand >> 8));
 }
 
 /**
@@ -95,7 +100,9 @@ SwapBytes32 (
   IN      UINT32                    Operand
   )
 {
-  UINT32  LowerBytes;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT32  LowerBytes;
   UINT32  HigherBytes;
 
   LowerBytes  = (UINT32) SwapBytes16 ((UINT16) Operand);
@@ -123,7 +130,9 @@ SwapBytes64 (
   IN      UINT64                    Operand
   )
 {
-  UINT64  LowerBytes;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT64  LowerBytes;
   UINT64  HigherBytes;
 
   LowerBytes  = (UINT64) SwapBytes32 ((UINT32) Operand);
@@ -155,7 +164,9 @@ WriteUnaligned32 (
   IN      UINT32                    Value
   )
 {
-  ASSERT (Buffer != NULL);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
 }
@@ -183,7 +194,9 @@ WriteUnaligned16 (
   IN      UINT16                    Value
   )
 {
-  ASSERT (Buffer != NULL);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
 }
@@ -208,7 +221,9 @@ ReadUnaligned16 (
   IN CONST UINT16              *Buffer
   )
 {
-  ASSERT (Buffer != NULL);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ASSERT (Buffer != NULL);
 
   return *Buffer;
 }
@@ -234,7 +249,9 @@ ReadUnaligned32 (
   )
 
 {
-  ASSERT (Buffer != NULL);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ASSERT (Buffer != NULL);
 
   return *Buffer;
 }
@@ -262,7 +279,9 @@ WriteUnaligned64 (
   IN      UINT64                    Value
   )
 {
-  ASSERT (Buffer != NULL);
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
 }
@@ -283,7 +302,9 @@ CopyAuthSessionCommand (
   OUT     UINT8                     *AuthSessionOut
   )
 {
-  UINT8  *Buffer;
+  
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINT8  *Buffer;
 
   Buffer = (UINT8 *)AuthSessionOut;
 

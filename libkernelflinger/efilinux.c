@@ -2,6 +2,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include "efilinux.h"
+#include <log.h>
 
 /**
  * memory_map - Allocate and fill out an array of memory descriptors
@@ -19,7 +20,9 @@ EFI_STATUS
 memory_map(EFI_MEMORY_DESCRIPTOR **map_buf, UINTN *map_size,
            UINTN *map_key, UINTN *desc_size, UINT32 *desc_version)
 {
-        EFI_STATUS err;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS err;
 
         *map_size = sizeof(**map_buf) * 31;
 get_map:
@@ -73,7 +76,9 @@ failed:
  */
 EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN low)
 {
-        UINTN map_size, map_key, desc_size;
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN map_size, map_key, desc_size;
         EFI_MEMORY_DESCRIPTOR *map_buf;
         UINTN d, map_end;
         UINT32 desc_version;
@@ -144,7 +149,9 @@ fail:
  */
 void efree(EFI_PHYSICAL_ADDRESS memory, UINTN size)
 {
-        UINTN nr_pages = EFI_SIZE_TO_PAGES(size);
+        
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN nr_pages = EFI_SIZE_TO_PAGES(size);
 
         free_pages(memory, nr_pages);
 }

@@ -34,11 +34,14 @@
 #include <gpt.h>
 
 #include "lspartition.h"
+#include <log.h>
 
 static EFI_STATUS lspartition_main(INTN argc,
 				   __attribute__((__unused__)) const char **argv)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	struct gpt_partition_interface *gparti = NULL;
 	UINTN part_count, i, max_len = 0;
 	CHAR16 title_fmt[64], part_fmt[64];

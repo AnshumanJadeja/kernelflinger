@@ -39,6 +39,7 @@
 #include "protocol.h"
 #include "uefi_utils.h"
 #include "options.h"
+#include <log.h>
 
 /* GUID for ESP partition on gmin */
 const EFI_GUID esp_ptn_guid = { 0x2568845d, 0x2332, 0x4675,
@@ -46,7 +47,9 @@ const EFI_GUID esp_ptn_guid = { 0x2568845d, 0x2332, 0x4675,
 
 EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 {
-	EFI_STATUS ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret = EFI_SUCCESS;
 	EFI_GUID SimpleFileSystemProtocol = SIMPLE_FILE_SYSTEM_PROTOCOL;
 	EFI_HANDLE esp_handle = NULL;
 	EFI_FILE_IO_INTERFACE *esp;
@@ -71,7 +74,9 @@ EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 
 EFI_STATUS uefi_open_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, EFI_FILE **file)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, file);
 	if (EFI_ERROR(ret))
@@ -88,7 +93,9 @@ EFI_STATUS uefi_open_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, EFI_FILE 
 
 EFI_STATUS uefi_get_file_size(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, UINTN *size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_INFO *info;
 	UINTN info_size;
 	EFI_FILE *file;
@@ -123,7 +130,9 @@ out:
 
 EFI_STATUS uefi_read_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void **data, UINTN *size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_INFO *info;
 	UINTN info_size;
 	EFI_FILE *file;
@@ -170,7 +179,9 @@ out:
 
 EFI_STATUS uefi_write_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void *data, UINTN *size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *file, *root;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &root);
@@ -192,7 +203,9 @@ out:
 
 EFI_STATUS uefi_create_dir(EFI_FILE *parent, EFI_FILE **dir, CHAR16 *dirname)
 {
-	return uefi_call_wrapper(parent->Open, 5, parent, dir, dirname,
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+return uefi_call_wrapper(parent->Open, 5, parent, dir, dirname,
 				 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
 				 EFI_FILE_DIRECTORY);
 }
@@ -200,7 +213,9 @@ EFI_STATUS uefi_create_dir(EFI_FILE *parent, EFI_FILE **dir, CHAR16 *dirname)
 #define MAX_SUBDIR 10
 EFI_STATUS uefi_write_file_with_dir(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void *data, UINTN size)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *dirs[MAX_SUBDIR];
 	EFI_FILE *file;
 	CHAR16 *start;
@@ -254,7 +269,9 @@ out:
 
 EFI_STATUS uefi_delete_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *file, *root;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &root);
@@ -277,7 +294,9 @@ out:
 
 BOOLEAN uefi_exist_file(EFI_FILE *parent, CHAR16 *filename)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *file;
 
 	ret = uefi_call_wrapper(parent->Open, 5, parent, &file, filename,
@@ -292,7 +311,9 @@ BOOLEAN uefi_exist_file(EFI_FILE *parent, CHAR16 *filename)
 
 BOOLEAN uefi_exist_file_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *root;
 	BOOLEAN ret2;
 
@@ -310,7 +331,9 @@ BOOLEAN uefi_exist_file_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 
 EFI_STATUS uefi_create_directory(EFI_FILE *parent, CHAR16 *dirname)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *dir;
 
 	ret = uefi_create_dir(parent, &dir, dirname);
@@ -326,7 +349,9 @@ EFI_STATUS uefi_create_directory(EFI_FILE *parent, CHAR16 *dirname)
 
 EFI_STATUS uefi_create_directory_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *dirname)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *root;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &root);
@@ -341,7 +366,9 @@ EFI_STATUS uefi_create_directory_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *dirname
 
 EFI_STATUS uefi_rename_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *oldname, CHAR16 *newname)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE *file = NULL, *root = NULL;
 	EFI_FILE_INFO *info = NULL;
 	UINTN info_size;
@@ -389,7 +416,9 @@ out:
 
 EFI_STATUS verify_image(EFI_HANDLE handle, CHAR16 *path)
 {
-	EFI_STATUS ret, unload_ret = EFI_SUCCESS;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret, unload_ret = EFI_SUCCESS;
 	EFI_DEVICE_PATH *edp;
 	EFI_HANDLE image;
 
@@ -415,7 +444,9 @@ EFI_STATUS verify_image(EFI_HANDLE handle, CHAR16 *path)
 
 EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 {
-	UINTN len = 0;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+UINTN len = 0;
 	UINT64 max = 0;
 	EFI_CAPSULE_HEADER *capHeader = NULL;
 	EFI_CAPSULE_HEADER **capHeaderArray = NULL;
@@ -511,7 +542,9 @@ out:
 EFI_STATUS uefi_enter_binary(EFI_HANDLE part_handle, CHAR16 *path,
 		BOOLEAN delete, UINT32 load_options_size, VOID *load_options)
 {
-	EFI_DEVICE_PATH *edp;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_DEVICE_PATH *edp;
 	EFI_STATUS ret;
 	EFI_HANDLE image;
 	EFI_LOADED_IMAGE *loaded_image;
@@ -566,7 +599,9 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 		CHAR16 *partition, CHAR16 *upgrade_file,
 		CHAR16 *self_path1, CHAR16 *bak_path1, CHAR16 *self_path2, CHAR16 *bak_path2)
 {
-	EFI_STATUS ret;
+	
+log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
+EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io = NULL;
 	EFI_GUID SimpleFileSystemProtocol = SIMPLE_FILE_SYSTEM_PROTOCOL;
 	EFI_HANDLE part_handle = NULL;
