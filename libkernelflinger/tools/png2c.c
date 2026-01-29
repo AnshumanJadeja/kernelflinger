@@ -42,7 +42,6 @@
 #include <getopt.h>
 #include <errno.h>
 #include <stdbool.h>
-#include <log.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
 
@@ -51,7 +50,6 @@ static char *program_name;
 static void usage(int status)
 {
 	
-log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 printf("Usage: %s -i FILE -o FILE -f FORMAT -p NAME\n",
 	       basename((char *)program_name));
 	printf("\
@@ -68,7 +66,6 @@ Transform PNG file to C source data structure.\n\
 static void error(const char *s)
 {
 	
-log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 perror(s);
 	exit(EXIT_FAILURE);
 }
@@ -79,7 +76,6 @@ static void write_to_c_source(const char *name, png_bytep buffer,
 			     unsigned int size, const char *path)
 {
 	
-log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 unsigned int i, col;
 	const unsigned int item_len = strlen("0x00, ");
 	FILE *f;
@@ -110,7 +106,6 @@ unsigned int i, col;
 static png_uint_32 get_format_from_string(const char *str)
 {
 	
-log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 static struct str_to_format {
 		const char *str;
 		png_uint_32 format;
@@ -141,7 +136,6 @@ static struct option const long_options[] = {
 int main(int argc, char **argv)
 {
 	
-log(L"INSTRUMENT:%a : %a", __FILE__, __func__);
 png_image image;
 	png_bytep buffer;
 	unsigned int size;
