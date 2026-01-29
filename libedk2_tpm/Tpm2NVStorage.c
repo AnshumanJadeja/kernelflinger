@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2DeviceLib.h>
 #include <Tcg2Protocol.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -188,6 +189,7 @@ Tpm2NvReadPublic (
   OUT     TPM2B_NAME                *NvName
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READPUBLIC_COMMAND        SendBuffer;
   TPM2_NV_READPUBLIC_RESPONSE       RecvBuffer;
@@ -296,6 +298,7 @@ Tpm2NvDefineSpace (
   IN      TPM2B_NV_PUBLIC           *NvPublic
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_DEFINESPACE_COMMAND       SendBuffer;
   TPM2_NV_DEFINESPACE_RESPONSE      RecvBuffer;
@@ -431,6 +434,7 @@ Tpm2NvUndefineSpace (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_UNDEFINESPACE_COMMAND     SendBuffer;
   TPM2_NV_UNDEFINESPACE_RESPONSE    RecvBuffer;
@@ -541,6 +545,7 @@ Tpm2NvRead (
   IN OUT  TPM2B_MAX_BUFFER          *OutData
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READ_COMMAND              SendBuffer;
   TPM2_NV_READ_RESPONSE             RecvBuffer;
@@ -679,6 +684,7 @@ Tpm2NvWrite (
   IN      UINT16                    Offset
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_WRITE_COMMAND             SendBuffer;
   TPM2_NV_WRITE_RESPONSE            RecvBuffer;
@@ -806,6 +812,7 @@ Tpm2NvReadLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READLOCK_COMMAND          SendBuffer;
   TPM2_NV_READLOCK_RESPONSE         RecvBuffer;
@@ -893,6 +900,7 @@ Tpm2NvWriteLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_WRITELOCK_COMMAND         SendBuffer;
   TPM2_NV_WRITELOCK_RESPONSE        RecvBuffer;
@@ -978,6 +986,7 @@ Tpm2NvGlobalWriteLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_GLOBALWRITELOCK_COMMAND   SendBuffer;
   TPM2_NV_GLOBALWRITELOCK_RESPONSE  RecvBuffer;
@@ -1064,6 +1073,7 @@ Tpm2NvSetBits (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL,
   IN      UINT64                    Bits)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_SETBITS_COMMAND           SendBuffer;
   TPM2_NV_SETBITS_RESPONSE          RecvBuffer;

@@ -24,9 +24,11 @@
 
 #include "avb_chain_partition_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_chain_partition_descriptor_validate_and_byteswap(
     const AvbChainPartitionDescriptor* src, AvbChainPartitionDescriptor* dest) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbChainPartitionDescriptor));

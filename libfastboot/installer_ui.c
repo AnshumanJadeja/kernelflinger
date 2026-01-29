@@ -32,6 +32,7 @@
 
 #include "lib.h"
 #include "vars.h"
+#include "log.h"
 
 static const char *VENDOR_IMG_NAME = "splash_intel";
 
@@ -41,6 +42,7 @@ static UINTN wmargin;
 static UINTN hmargin;
 
 static EFI_STATUS ux_init_screen() {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static BOOLEAN initialized;
 	EFI_STATUS ret;
 
@@ -68,20 +70,31 @@ static EFI_STATUS ux_init_screen() {
 
 static EFI_STATUS installer_display_text()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN width, height, x, y, linesarea, colsarea;
 	ui_image_t *vendor;
 	EFI_STATUS ret;
 	ui_textline_t ui_texts[] = {
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "Celadon Installer Notice:",		  TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_YELLOW, "Warning: You are installing celadon.",  FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_YELLOW, "All data on device will be destroyed!", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "To continue installing, press one of the following key:",	FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "UP/PG UP/RIGHT/HOME",	TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "To quit press one of the following key or wait timeout",	FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "DOWN/PG DOWN/LEFT/END",	TRUE },
 		{ &COLOR_WHITE, "", FALSE },
 		{ NULL, NULL, FALSE }
@@ -127,6 +140,7 @@ static EFI_STATUS installer_display_text()
 }
 
 static EFI_STATUS clear_text() {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (swidth > sheight)	/* Landscape orientation. */
 		return ui_clear_area(swidth / 2, hmargin,
 				     swidth / 2, sheight - (2 * hmargin));
@@ -139,6 +153,7 @@ static EFI_STATUS clear_text() {
 
 EFI_STATUS ux_prompt_user_confirm()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	ui_events_t event;
 

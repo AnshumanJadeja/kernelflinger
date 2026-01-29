@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -78,6 +79,7 @@ Tpm2GetCapability (
   OUT     TPMS_CAPABILITY_DATA      *CapabilityData
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_GET_CAPABILITY_COMMAND       SendBuffer;
   TPM2_GET_CAPABILITY_RESPONSE      RecvBuffer;
@@ -138,6 +140,7 @@ Tpm2GetCapabilityFamily (
   OUT     CHAR8                     *Family
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -173,6 +176,7 @@ Tpm2GetCapabilityManufactureID (
   OUT     UINT32                    *ManufactureId
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -210,6 +214,7 @@ Tpm2GetCapabilityFirmwareVersion (
   OUT     UINT32                    *FirmwareVersion2
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -259,6 +264,7 @@ Tpm2GetCapabilityMaxCommandResponseSize (
   OUT UINT32                    *MaxResponseSize
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status;
@@ -308,6 +314,7 @@ Tpm2GetCapabilitySupportedAlg (
   OUT TPML_ALG_PROPERTY      *AlgList
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   UINTN                   Index;
@@ -351,6 +358,7 @@ Tpm2GetCapabilityLockoutCounter (
   OUT     UINT32                    *LockoutCounter
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -386,6 +394,7 @@ Tpm2GetCapabilityLockoutInterval (
   OUT     UINT32                    *LockoutInterval
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -422,6 +431,7 @@ Tpm2GetCapabilityInputBufferSize (
   OUT     UINT32                    *InputBufferSize
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -457,6 +467,7 @@ Tpm2GetCapabilityPcrs (
   OUT TPML_PCR_SELECTION      *Pcrs
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status;
@@ -499,6 +510,7 @@ Tpm2GetCapabilityAlgorithmSet (
   OUT     UINT32      *AlgorithmSet
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -532,6 +544,7 @@ Tpm2TestParms (
   IN  TPMT_PUBLIC_PARMS           *Parameters
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_TEST_PARMS_COMMAND           SendBuffer;
   TPM2_TEST_PARMS_RESPONSE          RecvBuffer;

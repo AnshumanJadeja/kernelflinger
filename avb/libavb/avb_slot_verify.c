@@ -33,6 +33,7 @@
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
 #include "avb_version.h"
+#include "log.h"
 
 /* Maximum number of partitions that can be loaded with avb_slot_verify(). */
 #define MAX_NUMBER_OF_LOADED_PARTITIONS 32
@@ -56,6 +57,7 @@ static AvbSlotVerifyResult initialize_persistent_digest(
  * comments for the avb_slot_verify() function for more information.
  */
 static inline bool result_should_continue(AvbSlotVerifyResult result) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   switch (result) {
     case AVB_SLOT_VERIFY_RESULT_ERROR_OOM:
     case AVB_SLOT_VERIFY_RESULT_ERROR_IO:
@@ -79,6 +81,7 @@ static AvbSlotVerifyResult load_full_partition(AvbOps* ops,
                                                uint64_t image_size,
                                                uint8_t** out_image_buf,
                                                bool* out_image_preloaded) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t part_num_read;
   AvbIOResult io_ret;
 
@@ -162,6 +165,7 @@ static AvbSlotVerifyResult read_persistent_digest(AvbOps* ops,
                                                   size_t expected_digest_size,
                                                   const uint8_t* initial_digest,
                                                   uint8_t* out_digest) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char* persistent_value_name = NULL;
   AvbIOResult io_ret = AVB_IO_RESULT_OK;
   size_t stored_digest_size = 0;
@@ -229,6 +233,7 @@ static AvbSlotVerifyResult initialize_persistent_digest(
     size_t digest_size,
     const uint8_t* initial_digest,
     uint8_t* out_digest) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSlotVerifyResult ret;
   AvbIOResult io_ret = AVB_IO_RESULT_OK;
   bool is_device_unlocked = true;
@@ -282,6 +287,7 @@ static AvbSlotVerifyResult load_and_verify_hash_partition(
     bool allow_verification_error,
     const AvbDescriptor* descriptor,
     AvbSlotVerifyData* slot_data) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbHashDescriptor hash_desc;
   const uint8_t* desc_partition_name = NULL;
   const uint8_t* desc_salt;
@@ -475,6 +481,7 @@ static AvbSlotVerifyResult load_requested_partitions(
     const char* const* requested_partitions,
     const char* ab_suffix,
     AvbSlotVerifyData* slot_data) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSlotVerifyResult ret;
   uint8_t* image_buf = NULL;
   bool image_preloaded = false;
@@ -560,6 +567,7 @@ static AvbSlotVerifyResult load_and_verify_vbmeta(
     AvbSlotVerifyData* slot_data,
     AvbAlgorithmType* out_algorithm_type,
     AvbCmdlineSubstList* out_additional_cmdline_subst) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char full_partition_name[AVB_PART_NAME_MAX_SIZE];
   AvbSlotVerifyResult ret;
   AvbIOResult io_ret;
@@ -1198,6 +1206,7 @@ static AvbIOResult avb_manage_hashtree_error_mode(
     AvbSlotVerifyFlags flags,
     AvbSlotVerifyData* data,
     AvbHashtreeErrorMode* out_hashtree_error_mode) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbHashtreeErrorMode ret = AVB_HASHTREE_ERROR_MODE_RESTART;
   AvbIOResult io_ret = AVB_IO_RESULT_OK;
   uint8_t vbmeta_digest_sha256[AVB_SHA256_DIGEST_SIZE];
@@ -1289,6 +1298,7 @@ out:
 }
 
 static bool has_system_partition(AvbOps* ops, const char* ab_suffix) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char part_name[AVB_PART_NAME_MAX_SIZE];
   char* system_part_name = "system";
   char guid_buf[37];
@@ -1323,6 +1333,7 @@ AvbSlotVerifyResult avb_slot_verify(AvbOps* ops,
                                     AvbSlotVerifyFlags flags,
                                     AvbHashtreeErrorMode hashtree_error_mode,
                                     AvbSlotVerifyData** out_data) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSlotVerifyResult ret;
   AvbSlotVerifyData* slot_data = NULL;
   AvbAlgorithmType algorithm_type = AVB_ALGORITHM_TYPE_NONE;
@@ -1531,6 +1542,7 @@ fail:
 }
 
 void avb_slot_verify_data_free(AvbSlotVerifyData* data) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if (data->ab_suffix != NULL) {
     avb_free(data->ab_suffix);
   }
@@ -1567,6 +1579,7 @@ void avb_slot_verify_data_free(AvbSlotVerifyData* data) {
 }
 
 const char* avb_slot_verify_result_to_string(AvbSlotVerifyResult result) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char* ret = NULL;
 
   switch (result) {
@@ -1611,6 +1624,7 @@ const char* avb_slot_verify_result_to_string(AvbSlotVerifyResult result) {
 void avb_slot_verify_data_calculate_vbmeta_digest(AvbSlotVerifyData* data,
                                                   AvbDigestType digest_type,
                                                   uint8_t* out_digest) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   bool ret = false;
   size_t n;
 

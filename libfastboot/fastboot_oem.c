@@ -48,6 +48,7 @@
 #include "fastboot_oem.h"
 #include "fastboot_flashing.h"
 #include "intel_variables.h"
+#include "log.h"
 #include "text_parser.h"
 #include "libavb/libavb.h"
 #include "libavb_user/uefi_avb_ops.h"
@@ -65,6 +66,7 @@ static cmdlist_t cmdlist_fuse;
 
 static EFI_STATUS fastboot_oem_publish(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = fastboot_publish(OFF_MODE_CHARGE, get_off_mode_charge() ? "1" : "0");
@@ -77,6 +79,7 @@ static EFI_STATUS fastboot_oem_publish(void)
 static EFI_STATUS cmd_oem_set_boolean(INTN argc, CHAR8 **argv,
 				      char *name, EFI_STATUS (*set_fun)(BOOLEAN value))
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (argc != 2) {
@@ -99,6 +102,7 @@ static EFI_STATUS cmd_oem_set_boolean(INTN argc, CHAR8 **argv,
 
 static void cmd_oem_off_mode_charge(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = cmd_oem_set_boolean(argc, argv, OFF_MODE_CHARGE, set_off_mode_charge);
@@ -114,6 +118,7 @@ static void cmd_oem_off_mode_charge(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_crash_event_menu(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = cmd_oem_set_boolean(argc, argv, CRASH_EVENT_MENU, set_crash_event_menu);
@@ -129,6 +134,7 @@ static void cmd_oem_crash_event_menu(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_setvar(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *varname;
 	CHAR8 *value = NULL;
@@ -159,6 +165,7 @@ static void cmd_oem_setvar(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_reboot(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target bt;
 	CHAR16 *target;
 
@@ -186,6 +193,7 @@ static void cmd_oem_reboot(INTN argc, CHAR8 **argv)
 #ifdef USE_SBL
 UINT32 IoRead32(IN UINTN Port)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32   Data;
 
   __asm__ __volatile__ ("inl %w1,%0" : "=a" (Data) : "d" ((UINT16)Port));
@@ -195,11 +203,14 @@ UINT32 IoRead32(IN UINTN Port)
 
 UINT32 IoWrite32(IN UINTN Port, IN UINT32 Value)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     __asm__ __volatile__ ("outl %0,%w1" : : "a" (Value), "d" ((UINT16)Port));
     return Value;
 }
 
 static void cmd_oem_fw_update(INTN argc, CHAR8 **argv){
+
+debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	UINT32 wdt_ctl = 0;
     UINT32 ret;
@@ -225,6 +236,7 @@ static void cmd_oem_fw_update(INTN argc, CHAR8 **argv){
 #else
 static void cmd_oem_fw_update(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR8 *capsule_buf;
 	INTN capsule_buf_len;
@@ -256,6 +268,7 @@ static void cmd_oem_fw_update(INTN argc, CHAR8 **argv)
 static void cmd_oem_garbage_disk(__attribute__((__unused__)) INTN argc,
 				 __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = garbage_disk();
 
 	if (ret == EFI_SUCCESS)
@@ -300,6 +313,7 @@ static struct oem_hash {
 
 static void cmd_oem_gethashes(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -326,6 +340,7 @@ static void cmd_oem_gethashes(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_set_storage(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	enum storage_type types[STORAGE_ALL + 1];
 	INTN i, total_types = 0;
@@ -470,6 +485,7 @@ static void cmd_oem_reprovision(
 		__attribute__((__unused__)) INTN argc,
 		__attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (EFI_ERROR(reprovision_state_vars())) {
 		fastboot_fail("Unable to clear provisioning variables");
 		return;
@@ -479,6 +495,7 @@ static void cmd_oem_reprovision(
 
 static void cmd_oem_rm(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io;
 	const CHAR8 prefix[] = "/ESP/";
@@ -526,6 +543,7 @@ static void cmd_oem_rm(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_set_watchdog_counter_max(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	unsigned long value;
 	char *endptr;
@@ -552,6 +570,7 @@ static void cmd_oem_set_watchdog_counter_max(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_disable_slot_fallback(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = cmd_oem_set_boolean(argc, argv, SLOT_FALLBACK, set_slot_fallback);
@@ -564,6 +583,7 @@ static void cmd_oem_disable_slot_fallback(INTN argc, CHAR8 **argv)
 static void cmd_oem_erase_efivars(__attribute__((__unused__)) INTN argc,
 				  __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (argc != 1) {
@@ -584,6 +604,7 @@ static void cmd_oem_erase_efivars(__attribute__((__unused__)) INTN argc,
 
 static void cmd_oem_get_logs(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 flags;
 	char *buf;
@@ -612,6 +633,7 @@ static void cmd_oem_get_logs(INTN argc, __attribute__((__unused__)) CHAR8 **argv
 
 static void cmd_oem(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (argc < 2) {
 		fastboot_fail("Invalid parameter");
 		return;
@@ -623,6 +645,7 @@ static void cmd_oem(INTN argc, CHAR8 **argv)
 #ifndef USER
 static void cmd_oem_tpm_show_index(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	char *endptr;
 	CHAR8 out_buffer[2048];
@@ -644,6 +667,7 @@ static void cmd_oem_tpm_show_index(INTN argc, __attribute__((__unused__)) CHAR8 
 
 static void cmd_oem_tpm_delete_index(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	char *endptr;
 
@@ -664,6 +688,7 @@ static void cmd_oem_tpm_delete_index(INTN argc, __attribute__((__unused__)) CHAR
 
 static void cmd_fuse(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (argc < 2) {
 		fastboot_fail("Invalid parameter");
 		return;
@@ -674,6 +699,7 @@ static void cmd_fuse(INTN argc, CHAR8 **argv)
 
 static void cmd_fuse_vbmeta_key_hash(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct download_buffer *dl;
 
@@ -695,6 +721,7 @@ static void cmd_fuse_vbmeta_key_hash(INTN argc, __attribute__((__unused__)) CHAR
 
 static void cmd_fuse_bootloader_policy(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct download_buffer *dl;
 
@@ -718,6 +745,7 @@ static void cmd_fuse_bootloader_policy(INTN argc, __attribute__((__unused__)) CH
 IMPORTANCE: this command must be executed after all expected nv index are provisioned */
 static void cmd_fuse_tpm2_lock_owner(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	if (argc != 1) {
 		fastboot_fail("Invalid parameters");
@@ -735,6 +763,7 @@ static void cmd_fuse_tpm2_lock_owner(INTN argc, __attribute__((__unused__)) CHAR
 
 static void cmd_fuse_tpm2_provision_trusty_seed(INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	if (argc != 1) {
 		fastboot_fail("Invalid parameters");
@@ -753,6 +782,7 @@ static void cmd_fuse_tpm2_provision_trusty_seed(INTN argc, __attribute__((__unus
 static CHAR16 *saved_vm_label;
 static void cmd_oem_set_vm(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *part_label;
 	struct gpt_partition_interface part;
@@ -781,6 +811,7 @@ static void cmd_oem_set_vm(INTN argc, CHAR8 **argv)
 
 static void cmd_oem_unset_vm(__attribute__((__unused__)) INTN argc, __attribute__((__unused__)) CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	set_hard_disk();
 	FreePool(saved_vm_label);
 	fastboot_okay("");
@@ -827,6 +858,7 @@ static struct fastboot_cmd oem = { "oem", LOCKED, cmd_oem };
 
 EFI_STATUS fastboot_oem_init(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -855,6 +887,7 @@ EFI_STATUS fastboot_oem_init(void)
 
 void fastboot_oem_free(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_cmdlist_unregister(&cmdlist);
 	if (andr_tpm)
 		fastboot_cmdlist_unregister(&cmdlist_fuse);

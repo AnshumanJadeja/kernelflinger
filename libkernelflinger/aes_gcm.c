@@ -18,6 +18,7 @@
 
 static void dump(UINT8 *p, int size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int i;
 
 	(VOID)p;
@@ -45,6 +46,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 			const void *plain, size_t plain_size,
 			void *out, size_t *out_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rc = AES_GCM_ERR_GENERIC;
 	EVP_CIPHER_CTX *ctx;
 	int out_len, fin_len;
@@ -142,6 +144,7 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 			const void *cipher, size_t cipher_size,
 			void *out, size_t *out_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rc = AES_GCM_ERR_GENERIC;
 	EVP_CIPHER_CTX *ctx;
 	int out_len, data_len;

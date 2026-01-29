@@ -32,6 +32,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include <upng.h>
+#include "log.h"
 
 #define INT_MAX 0x7fffffff
 
@@ -221,6 +222,7 @@ static const unsigned FIXED_DISTANCE_TREE[NUM_DISTANCE_SYMBOLS * 2] = {
 
 static unsigned char read_bit(unsigned long *bitpointer, const unsigned char *bitstream)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned char result = ((bitstream[(*bitpointer) >> 3] >>
 				 ((*bitpointer) & 0x7)) & 1);
 	(*bitpointer)++;
@@ -230,6 +232,7 @@ static unsigned char read_bit(unsigned long *bitpointer, const unsigned char *bi
 static unsigned read_bits(unsigned long *bitpointer, const unsigned char *bitstream,
 			  unsigned long nbits)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned result = 0, i;
 	for (i = 0; i < nbits; i++)
 		result |= ((unsigned)read_bit(bitpointer, bitstream)) << i;
@@ -240,6 +243,7 @@ static unsigned read_bits(unsigned long *bitpointer, const unsigned char *bitstr
 static void huffman_tree_init(huffman_tree* tree, unsigned* buffer,
 			      unsigned numcodes, unsigned maxbitlen)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	tree->tree2d = buffer;
 	tree->numcodes = numcodes;
 	tree->maxbitlen = maxbitlen;
@@ -251,6 +255,7 @@ static void huffman_tree_init(huffman_tree* tree, unsigned* buffer,
 static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					const unsigned *bitlen)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned tree1d[MAX_SYMBOLS];
 	unsigned blcount[MAX_BIT_LENGTH];
 	unsigned nextcode[MAX_BIT_LENGTH+1];
@@ -320,6 +325,7 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					   course (it's just
 					   nodefilled + 1)... */
 				} else {
+					debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					nodefilled++;
 					/* Addresses encoded with
 					   numcodes added to it */
@@ -328,6 +334,7 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					treepos = nodefilled;
 				}
 			} else {
+				debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				treepos = tree->tree2d[2 * treepos + bit] -
 					tree->numcodes;
 			}
@@ -346,6 +353,7 @@ static unsigned huffman_decode_symbol(upng_t *upng, const unsigned char *in,
 				      unsigned long *bp, const huffman_tree* codetree,
 				      unsigned long inlength)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned treepos = 0, ct;
 	unsigned char bit;
 
@@ -383,6 +391,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 				     const unsigned char *in, unsigned long *bp,
 				     unsigned long inlength)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned codelengthcode[NUM_CODE_LENGTH_CODES];
 	unsigned bitlen[NUM_DEFLATE_CODE_SYMBOLS];
 	unsigned bitlenD[NUM_DISTANCE_SYMBOLS];
@@ -564,6 +573,7 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 			    unsigned long *pos, unsigned long inlength,
 			    unsigned btype)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned codetree_buffer[DEFLATE_CODE_BUFFER_SIZE];
 	unsigned codetreeD_buffer[DISTANCE_BUFFER_SIZE];
 	unsigned done = 0;
@@ -681,6 +691,7 @@ static void inflate_uncompressed(upng_t* upng, unsigned char* out,
 				 unsigned long *bp, unsigned long *pos,
 				 unsigned long inlength)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned long p;
 	unsigned len, nlen, n;
 
@@ -732,6 +743,7 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 				  unsigned long outsize, const unsigned char *in,
 				  unsigned long insize, unsigned long inpos)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Bit pointer in the "in" data, current byte is bp >> 3,
 	 * current bit is bp & 0x7 (from lsb to msb of the byte) */
 	unsigned long bp = 0;
@@ -778,6 +790,7 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long outsize,
 			     const unsigned char *in, unsigned long insize)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* We require two bytes for the zlib data header */
 	if (insize < 2) {
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
@@ -814,6 +827,7 @@ static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long out
 /* Paeth predictor, used by PNG filter type 4 */
 static int paeth_predictor(int a, int b, int c)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int p = a + b - c;
 	int pa = p > a ? p - a : a - p;
 	int pb = p > b ? p - b : b - p;
@@ -832,6 +846,7 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 			      const unsigned char *precon, unsigned long bytewidth,
 			      unsigned char filterType, unsigned long length)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* For PNG filter method 0
 
 	   unfilter a PNG image scanline by scanline. when the pixels
@@ -901,6 +916,7 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 static void unfilter(upng_t* upng, unsigned char *out, const unsigned char *in,
 		     unsigned w, unsigned h, unsigned bpp)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* For PNG filter method 0
 
 	   this function unfilters a single image (e.g. without
@@ -943,6 +959,7 @@ static void remove_padding_bits(unsigned char *out, const unsigned char *in,
 				unsigned long olinebits, unsigned long ilinebits,
 				unsigned h)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* After filtering there are still padding bpp if scanlines
 	   have non multiple of 8 bit amounts. They need to be removed
 	   (except at last scanline of (Adam7-reduced) image) before
@@ -981,6 +998,7 @@ static void remove_padding_bits(unsigned char *out, const unsigned char *in,
 
 static unsigned upng_get_components(const upng_t* upng)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (upng->color_type) {
 	case UPNG_LUM:
 		return 1;
@@ -997,11 +1015,13 @@ static unsigned upng_get_components(const upng_t* upng)
 
 static unsigned upng_get_bitdepth(const upng_t* upng)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return upng->color_depth;
 }
 
 static unsigned upng_get_bpp(const upng_t* upng)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return upng_get_bitdepth(upng) * upng_get_components(upng);
 }
 
@@ -1009,6 +1029,7 @@ static unsigned upng_get_bpp(const upng_t* upng)
    contain the full decompressed data from the IDAT chunks. */
 static void post_process_scanlines(upng_t* upng, unsigned char *out, unsigned char *in, const upng_t* info_png)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned bpp = upng_get_bpp(info_png);
 	unsigned w = info_png->width;
 	unsigned h = info_png->height;
@@ -1032,6 +1053,7 @@ static void post_process_scanlines(upng_t* upng, unsigned char *out, unsigned ch
 }
 
 static upng_format determine_format(upng_t* upng) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (upng->color_type) {
 	case UPNG_RGBA:
 		switch (upng->color_depth) {
@@ -1051,6 +1073,7 @@ static upng_format determine_format(upng_t* upng) {
    upng_Info. return value is error */
 static EFI_STATUS upng_header(upng_t* upng)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* if we have an error state, bail now */
 	if (upng->error != EFI_SUCCESS) {
 		return upng->error;
@@ -1127,6 +1150,7 @@ static EFI_STATUS upng_header(upng_t* upng)
  * (hence "generic") */
 static EFI_STATUS upng_decode(upng_t* upng)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const unsigned char *chunk;
 	unsigned char* compressed;
 	unsigned char* inflated;
@@ -1290,6 +1314,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 static inline EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 swap_color(EFI_GRAPHICS_OUTPUT_BLT_PIXEL color)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL swapped = {
 		.Blue = color.Red,
 		.Red = color.Blue,
@@ -1302,6 +1327,7 @@ EFI_STATUS upng_load(const char *data, UINTN size,
 		     EFI_GRAPHICS_OUTPUT_BLT_PIXEL **blt,
 		     UINTN *width, UINTN *height)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	upng_t upng = {
 		.color_type = UPNG_RGBA,
 		.color_depth = 8,

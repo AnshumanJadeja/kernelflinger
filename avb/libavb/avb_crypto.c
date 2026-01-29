@@ -26,6 +26,7 @@
 #include "avb_rsa.h"
 #include "avb_sha.h"
 #include "avb_util.h"
+#include "log.h"
 
 /* NOTE: The PKC1-v1.5 padding is a blob of binary DER of ASN.1 and is
  * obtained from section 5.2.2 of RFC 4880.
@@ -355,6 +356,7 @@ static AvbAlgorithmData algorithm_data[_AVB_ALGORITHM_NUM_TYPES] = {
 };
 
 const AvbAlgorithmData* avb_get_algorithm_data(AvbAlgorithmType algorithm) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if ((size_t)algorithm < _AVB_ALGORITHM_NUM_TYPES) {
     return &algorithm_data[algorithm];
   }
@@ -363,6 +365,7 @@ const AvbAlgorithmData* avb_get_algorithm_data(AvbAlgorithmType algorithm) {
 
 bool avb_rsa_public_key_header_validate_and_byteswap(
     const AvbRSAPublicKeyHeader* src, AvbRSAPublicKeyHeader* dest) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_memcpy(dest, src, sizeof(AvbRSAPublicKeyHeader));
 
   dest->key_num_bits = avb_be32toh(dest->key_num_bits);

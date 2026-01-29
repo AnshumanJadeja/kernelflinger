@@ -37,6 +37,7 @@
 #include "vars.h"
 #ifdef CRASHMODE_USE_ADB
 #include "adb.h"
+#include "log.h"
 #endif
 
 #define FIRST_TIMEOUT_SECS	5
@@ -92,19 +93,31 @@ static const ui_textline_t device_untrusted_bootimage[] = {
 #define CRASHMODE_TIMEOUT_SECS	(5 * 60)
 static const ui_textline_t crash_event_message[] = {
 	{ &COLOR_LIGHTRED,	"WARNING:",				TRUE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"Multiple crash events have been",	FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"reported.",				FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"",					FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"Use the above menu to select",		FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"the next boot option.",		FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"If the problem persists, please",	FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"contact the technical assistance.",	FALSE },
+	    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef CRASHMODE_USE_ADB
 	{ &COLOR_LIGHTGRAY,	"",					FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"The device will power off in 5",	FALSE },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_LIGHTGRAY,	"minutes.",				FALSE },
+	    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 	{ NULL, NULL, FALSE }
+	    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 static const ui_textline_t not_bootable_message[] = {
 	{ &COLOR_LIGHTRED,	"WARNING:",				TRUE },
@@ -179,6 +192,7 @@ static UINTN wmargin;
 static UINTN hmargin;
 
 static EFI_STATUS ux_init_screen() {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static BOOLEAN initialized;
 	EFI_STATUS ret;
 
@@ -207,11 +221,15 @@ static EFI_STATUS ux_init_screen() {
 static ui_textline_t *build_error_code_text(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *ecolor,
 					    UINT32 error_code)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char buf[26];
 	static ui_textline_t code_text[] = {
 		{ NULL, buf, TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ NULL, NULL, FALSE }
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	};
 
 	code_text[0].color = ecolor;
@@ -227,6 +245,7 @@ static EFI_STATUS display_text(UINT32 error_code,
 			       const ui_textline_t *text2,
 			       const ui_textline_t *text3)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN width, height, x, y, linesarea, colsarea;
 	ui_image_t *vendor;
 	EFI_STATUS ret;
@@ -274,6 +293,7 @@ static EFI_STATUS display_text(UINT32 error_code,
 }
 
 static EFI_STATUS clear_text() {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (swidth > sheight)	/* Landscape orientation. */
 		return ui_clear_area(swidth / 2, hmargin,
 				     swidth / 2, sheight - (2 * hmargin));
@@ -286,10 +306,13 @@ static EFI_STATUS clear_text() {
 #define MIN_HASH_SIZE	6
 
 static const ui_textline_t *format_hash(UINT8 *hash, UINTN hash_size) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char buf[19];
 	static const ui_textline_t hash_text[] = {
 		{ &COLOR_WHITE, buf, FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ NULL, NULL, FALSE }
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	};
 	int len;
 
@@ -312,6 +335,7 @@ static const ui_textline_t empty_text[] = {
 enum boot_target ux_prompt_user(enum ux_error_code code, BOOLEAN power_off, UINT8 boot_state,
 				UINT8 *hash, UINTN hash_size)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_POWER_BUTTON
 	ui_events_t expected = EV_POWER;
 	CHAR8 *button = (CHAR8 *)"Power";
@@ -324,10 +348,15 @@ enum boot_target ux_prompt_user(enum ux_error_code code, BOOLEAN power_off, UINT
 		  strlen(button) + strlen(boot) + 1];
 	ui_textline_t footer_text[] = {
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "Please contact customer support",	FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "from your device's manufacturer.",	FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_GREEN, (char *)msg, TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_GREEN, NULL, TRUE },
 		{ NULL, NULL, FALSE }
 	};
@@ -393,6 +422,7 @@ static ui_boot_action_t BOOT_ACTIONS[] = {
 };
 
 enum boot_target ux_prompt_user_for_boot_target(enum ux_error_code code) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_image_t *img;
 	ui_boot_menu_t *menu = NULL;
 	UINTN width, height, img_x, img_y, area_x, area_y, colsarea, linesarea;
@@ -407,7 +437,9 @@ enum boot_target ux_prompt_user_for_boot_target(enum ux_error_code code) {
 	ui_textline_t *texts[4];
 	ui_textline_t crashmode_text[] = {
 		{ &COLOR_RED, "CRASHMODE", TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ NULL, NULL, FALSE }
 	};
 
@@ -560,6 +592,7 @@ error:
 
 
 VOID ux_display_img_battery(const char *battery_img_name, UINTN delay) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_image_t *battery;
 	EFI_STATUS ret;
 
@@ -585,14 +618,18 @@ VOID ux_display_img_battery(const char *battery_img_name, UINTN delay) {
 }
 
 VOID ux_display_low_battery(UINTN delay) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ux_display_img_battery(LOW_BATTERY_IMG_NAME, delay);
 }
 
 VOID ux_display_empty_battery(VOID) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ux_display_img_battery(EMPTY_BATTERY_IMG_NAME, 0);
 }
 
 VOID ux_display_vendor_splash(VOID) {
+
+debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (get_display_splash()) {
 		if (EFI_ERROR(ux_init_screen()))

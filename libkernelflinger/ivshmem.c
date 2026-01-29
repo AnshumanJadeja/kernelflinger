@@ -32,6 +32,7 @@
 
 #include "ivshmem.h"
 #include "qnx_guest_shm.h"
+#include "log.h"
 
 #define PCI_MAX_DEV_NUM     32
 #define PCI_MAX_FUNC_NUM    8
@@ -188,6 +189,7 @@ volatile uint32_t *smc_evt_src = NULL;
 
 static UINT8 hw_read_port_8(UINT16 port)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 val8;
 
 	__asm__ __volatile__ (
@@ -201,6 +203,7 @@ static UINT8 hw_read_port_8(UINT16 port)
 
 static UINT16 hw_read_port_16(UINT16 port)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UINT16 val16;
 
     __asm__ __volatile__ (
@@ -214,6 +217,7 @@ static UINT16 hw_read_port_16(UINT16 port)
 
 static UINT32 hw_read_port_32(UINT16 port)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UINT32 val32;
 
     __asm__ __volatile__ (
@@ -227,6 +231,7 @@ static UINT32 hw_read_port_32(UINT16 port)
 
 static void hw_write_port_8(UINT16 port, UINT8 val8)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     __asm__ __volatile__ (
         "out %1, %0"
         :
@@ -236,6 +241,7 @@ static void hw_write_port_8(UINT16 port, UINT8 val8)
 
 static void hw_write_port_16(UINT16 port, UINT16 val16)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     __asm__ __volatile__ (
         "out %1, %0"
         :
@@ -245,6 +251,7 @@ static void hw_write_port_16(UINT16 port, UINT16 val16)
 
 static void hw_write_port_32(UINT16 port, UINT32 val32)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     __asm__ __volatile__ (
         "out %1, %0"
         :
@@ -254,6 +261,7 @@ static void hw_write_port_32(UINT16 port, UINT32 val32)
 
 static UINT8 pci_read8(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     pci_config_address_t addr;
 
     addr.uint32 = 0;
@@ -269,6 +277,7 @@ static UINT8 pci_read8(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 
 static UINT16 pci_read16(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     pci_config_address_t addr;
 
     addr.uint32 = 0;
@@ -284,6 +293,7 @@ static UINT16 pci_read16(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 
 static UINT32 pci_read32(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     pci_config_address_t addr;
 
     addr.uint32 = 0;
@@ -299,6 +309,7 @@ static UINT32 pci_read32(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg)
 
 static void pci_write16(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg, UINT8 value)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     pci_config_address_t addr;
 
     addr.uint32 = 0;
@@ -314,6 +325,7 @@ static void pci_write16(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg, UINT
 
 static void pci_write32(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg, UINT32 value)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	pci_config_address_t addr;
 
 	addr.uint32 = 0;
@@ -332,6 +344,7 @@ static void pci_write32(UINT8 bus, UINT8 device, UINT8 function, UINT8 reg, UINT
 #define rmb()       __asm__ volatile ("lfence":::"memory");
 
 static inline UINT32 io_read_32(const volatile void* addr) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 out;
 
 	__asm__ __volatile__("movl (%%edx), %%eax" : "=a"(out) : "d"(addr));
@@ -341,6 +354,7 @@ static inline UINT32 io_read_32(const volatile void* addr) {
 }
 
 static inline void io_write_32(volatile void* addr, UINT32 val) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	wmb();
 	__asm__ __volatile__("movl %%eax, (%%edx)" ::"a"(val), "d"(addr) : "memory");
 }
@@ -348,12 +362,14 @@ static inline void io_write_32(volatile void* addr, UINT32 val) {
 static UINT32 pci_resource_start(UINT8 bus, UINT8 device, UINT8 function,
         UINT8 bar_off)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return (pci_read32(bus, device, function, bar_off) & 0xFFFFFFF0);
 }
 
 static UINT32 pci_resource_len(UINT8 bus, UINT8 device, UINT8 function,
         UINT8 bar_off)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 bar = 0, len = 0;
 
 	bar = pci_read32(bus, device, function, bar_off);
@@ -369,6 +385,7 @@ static UINT32 pci_resource_len(UINT8 bus, UINT8 device, UINT8 function,
 
 static bool ivshmem_get_dev_func(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 device, function;
 	UINT32 expect;
 
@@ -402,6 +419,7 @@ static bool ivshmem_get_dev_func(void)
 
 EFI_STATUS ivshmem_init(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 dev, func;
 	UINT16 val16 = 0;
 
@@ -493,6 +511,7 @@ EFI_STATUS ivshmem_init(void)
 
 void ivshmem_rot_interrupt(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if(is_running_on_qnx()) {
 		*smc_evt_src = EVENT_ROT;
 		g_ivshmem_dev.ctrl->notify = 1 << smc_vm_ids->tee_id;
@@ -505,6 +524,7 @@ void ivshmem_rot_interrupt(void)
 
 void ivshmem_rollback_index_interrupt(struct tpm2_int_req* req)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (NULL == req)
 		return;
 
@@ -542,6 +562,7 @@ void ivshmem_rollback_index_interrupt(struct tpm2_int_req* req)
 }
 
 void ivshmem_detach(void) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if(is_running_on_qnx())
 		g_ivshmem_dev.ctrl->detach = 1 << smc_vm_ids->ree_id;
 }

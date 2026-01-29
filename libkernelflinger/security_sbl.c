@@ -34,6 +34,7 @@
 #include "security_interface.h"
 #include "life_cycle.h"
 #include "security.h"
+#include "log.h"
 
 #ifdef RPMB_STORAGE
 
@@ -63,6 +64,7 @@ typedef struct _seed_entry {
 						// For RPMB, // Bit 0 => 0 = RPMB Seed is based on card serial number
 						// 1 = RPMB Seed is not based on card serial number. Based on Zero based Serial Number.
 	UINT8     Index;          // If Same type and Usage, which seed Idx is this: {0,1,2,3,...}
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8     Reserved;
 	UINT16    Flags;          // Reserved for future use
 	UINT16    SeedEntrySize;  // Total size: if SVN seed, this is sizeof (SVN_SEED_INFO) + sizeof(SEED_ENTRY)
@@ -72,6 +74,7 @@ typedef struct _seed_entry {
 
 EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	Image_boot_param_t *image_boot_param = (Image_boot_param_t *)boot_param;
 	seed_list_t *SeedListCmdlinePtr = NULL;
 	seed_entry_t *SeedEntryData = NULL;
@@ -140,6 +143,7 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 
 EFI_STATUS set_device_security_info(IN VOID * sbl_cmdline_seed_rpmb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 *size_structure = NULL;
 	EFI_STATUS ret = EFI_SUCCESS;
 
@@ -161,12 +165,14 @@ EFI_STATUS set_device_security_info(IN VOID * sbl_cmdline_seed_rpmb)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID * security_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_SUCCESS;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
@@ -188,6 +194,7 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN sbflags;
 	EFI_STATUS ret;
 	BOOLEAN enduser;
@@ -205,6 +212,7 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
 	debug(L"Setting platform secure boot to %d", secure);

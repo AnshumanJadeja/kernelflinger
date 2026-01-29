@@ -45,6 +45,7 @@
 #ifdef USE_TRUSTY
 #include "trusty_interface.h"
 #include "trusty_common.h"
+#include "log.h"
 #endif
 
 #ifdef USE_TPM
@@ -55,6 +56,7 @@
 
 EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID gEfiLoadedImageProtocolGuid = LOADED_IMAGE_PROTOCOL;
 	EFI_STATUS Status = EFI_SUCCESS;
 	EFI_HANDLE efi_handle = NULL;
@@ -100,6 +102,7 @@ EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 
 CHAR16 *get_base_path(EFI_HANDLE image_handle)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LOADED_IMAGE *g_loaded_image = NULL;
 	CHAR16 *self_path = NULL;
@@ -116,6 +119,7 @@ CHAR16 *get_base_path(EFI_HANDLE image_handle)
 
 CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *base_path = NULL;
 	CHAR16 *abs_path = NULL;
 	UINTN len;
@@ -164,6 +168,7 @@ CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 
 static VOID show_disable_secure_boot_warnning()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target bt = NORMAL_BOOT;
 
 #ifdef USE_UI
@@ -177,6 +182,7 @@ static VOID show_disable_secure_boot_warnning()
 
 EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *boot_path = NULL;
 
@@ -193,6 +199,7 @@ EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 #ifdef USE_TRUSTY
 static EFI_STATUS load_and_start_tos(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VOID *tosimage = NULL;
 
@@ -215,6 +222,7 @@ static EFI_STATUS load_and_start_tos(void)
 
 static EFI_STATUS update_rollback_indexes()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	AvbOps *ops;
 	AvbSlotVerifyResult verify_result;
@@ -251,6 +259,7 @@ static EFI_STATUS update_rollback_indexes()
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 boot_state;
 

@@ -37,9 +37,11 @@
 #include <lib.h>
 
 #include "ui.h"
+#include "log.h"
 
 ui_boot_menu_t *ui_boot_menu_create(ui_boot_action_t *actions)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_boot_menu_t *menu;
 	UINTN i;
 
@@ -63,16 +65,22 @@ static const UINTN MARGIN = 20;
 
 static EFI_STATUS ui_boot_menu_redraw(ui_boot_menu_t *menu, UINTN *y)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	ui_textline_t lines[] = {
 #ifdef USE_POWER_BUTTON
 		{ &COLOR_LIGHTGRAY, "Volume UP/DOWN buttons to move the selection", TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "Power button to select the option", TRUE },
+		    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #else
 		{ &COLOR_LIGHTGRAY, "Volume DOWN button to move the selection", TRUE },
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "Volume UP button to select boot option", TRUE },
+		    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 		{ NULL, NULL, TRUE }
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	};
 
 	if (is_UEFI() == 0)
@@ -102,6 +110,7 @@ static EFI_STATUS ui_boot_menu_redraw(ui_boot_menu_t *menu, UINTN *y)
 
 EFI_STATUS ui_boot_menu_draw(ui_boot_menu_t *menu, UINTN x, UINTN *y, UINTN max_width)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	menu->x = x;
 	menu->y = *y;
 	menu->max_width = max_width;
@@ -110,6 +119,7 @@ EFI_STATUS ui_boot_menu_draw(ui_boot_menu_t *menu, UINTN x, UINTN *y, UINTN max_
 
 enum boot_target ui_boot_menu_event_handler(ui_boot_menu_t *menu, ui_events_t event)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN y;
 
 	switch (event) {
@@ -136,5 +146,6 @@ enum boot_target ui_boot_menu_event_handler(ui_boot_menu_t *menu, ui_events_t ev
 
 void ui_boot_menu_free(ui_boot_menu_t *menu)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FreePool(menu);
 }

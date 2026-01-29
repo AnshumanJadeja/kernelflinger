@@ -28,6 +28,7 @@
 #include <libavb/avb_sha.h>
 #include <libavb/avb_sysdeps.h>
 #include <libavb/avb_util.h>
+#include "log.h"
 
 /* The most recent unlock challenge generated. */
 static uint8_t last_unlock_challenge[AVB_ATX_UNLOCK_CHALLENGE_SIZE];
@@ -37,6 +38,7 @@ static bool last_unlock_challenge_set = false;
 static void sha256(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSHA256Ctx context;
   avb_sha256_init(&context);
   avb_sha256_update(&context, data, length);
@@ -48,6 +50,7 @@ static void sha256(const uint8_t* data,
 static void sha512(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA512_DIGEST_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSHA512Ctx context;
   avb_sha512_init(&context);
   avb_sha512_update(&context, data, length);
@@ -57,6 +60,7 @@ static void sha512(const uint8_t* data,
 
 /* Computes the SHA256 |hash| of a NUL-terminated |str|. */
 static void sha256_str(const char* str, uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   sha256((const uint8_t*)str, avb_strlen(str), hash);
 }
 
@@ -64,6 +68,7 @@ static void sha256_str(const char* str, uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
 static bool verify_permanent_attributes(
     const AvbAtxPermanentAttributes* attributes,
     const uint8_t expected_hash[AVB_SHA256_DIGEST_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t hash[AVB_SHA256_DIGEST_SIZE];
 
   if (attributes->version != 1) {
@@ -84,6 +89,7 @@ static bool verify_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_key_version,
     const uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const AvbAlgorithmData* algorithm_data;
   uint8_t certificate_hash[AVB_SHA512_DIGEST_SIZE];
 
@@ -124,6 +130,7 @@ static bool verify_pik_certificate(
     const AvbAtxCertificate* certificate,
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot.ca", expected_usage);
@@ -141,6 +148,7 @@ static bool verify_psk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
@@ -166,6 +174,7 @@ static bool verify_puk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
@@ -192,6 +201,7 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
     const uint8_t* public_key_metadata,
     size_t public_key_metadata_length,
     bool* out_is_trusted) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];
@@ -288,6 +298,7 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
 
 AvbIOResult avb_atx_generate_unlock_challenge(
     AvbAtxOps* atx_ops, AvbAtxUnlockChallenge* out_unlock_challenge) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
 
@@ -318,6 +329,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
     AvbAtxOps* atx_ops,
     const AvbAtxUnlockCredential* unlock_credential,
     bool* out_is_trusted) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];

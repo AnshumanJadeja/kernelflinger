@@ -37,12 +37,14 @@
 #include <vars.h>
 #include "efiapi.h"
 #include "CpuIo2.h"
+#include "log.h"
 
 EFI_GUID gEfiCpuIo2ProtocolGuid = EFI_CPU_IO2_PROTOCOL_GUID;
 static EFI_CPU_IO2_PROTOCOL  *mCpuIo = NULL;
 
 UINT32 MmioRead32(UINTN address)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
@@ -72,6 +74,7 @@ UINT32 MmioRead32(UINTN address)
 
 UINT16 MmioRead16(UINTN address)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
@@ -101,6 +104,7 @@ UINT16 MmioRead16(UINTN address)
 
 UINT8 MmioRead8(UINTN address)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
@@ -130,6 +134,7 @@ UINT8 MmioRead8(UINTN address)
 
 UINT32 MmioWrite32(UINTN add, UINT32 data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
@@ -158,6 +163,7 @@ UINT32 MmioWrite32(UINTN add, UINT32 data)
 
 UINT16 MmioWrite16(UINTN add, UINT16 data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
@@ -186,6 +192,7 @@ UINT16 MmioWrite16(UINTN add, UINT16 data)
 
 UINT8 MmioWrite8(UINTN add, UINT8 data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {

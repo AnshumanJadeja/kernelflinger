@@ -31,6 +31,7 @@
  */
 
 #include "pci_class.h"
+#include "log.h"
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
 
@@ -254,6 +255,7 @@ static const struct {
 
 const char *pci_class_string(UINT8 base, UINT8 sub)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, j;
 	assoc_t *subclass;
 
