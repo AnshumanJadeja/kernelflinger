@@ -19,6 +19,7 @@
 #include "XdciDevice.h"
 #include "XdciInterface.h"
 #include "UsbDeviceDxe.h"
+#include "log.h"
 
 /**
   This function is used to initialize the device controller
@@ -33,6 +34,7 @@ UsbDeviceInit (
   IN OUT VOID                 **DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE    *DevCorePtr;
   EFI_STATUS      Status = EFI_INVALID_PARAMETER;
 
@@ -45,6 +47,7 @@ UsbDeviceInit (
   DEBUG ((DEBUG_INFO, "device handle = 0x%x\n", DevCorePtr));
 
   if (DevCorePtr == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceInit. ERROR: Failed to allocate memory\n"));
     return EFI_OUT_OF_RESOURCES;
   }
@@ -56,12 +59,14 @@ UsbDeviceInit (
   //
   DevCorePtr->CoreDriver = UsbDeviceGetCoreDriver(ConfigParams->ControllerId);
   if (DevCorePtr->CoreDriver != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "call DevCoreInit\n"));
     Status = DevCorePtr->CoreDriver->DevCoreInit(
                                         ConfigParams,
                                         (VOID*)DevCorePtr,
                                         &DevCorePtr->ControllerHandle);
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceInit. ERROR: Driver not found\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -83,19 +88,24 @@ UsbDeviceDeinit (
   IN UINT32    Flags
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE    *Core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS      Status = EFI_DEVICE_ERROR;
 
   if (Core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceDeinit: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (Core->CoreDriver != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = Core->CoreDriver->DevCoreDeinit(
                                     Core->ControllerHandle,
                                     Flags
                                     );
       FreePool(DevCoreHandle);
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "UsbDeviceDeinit: Driver not found\n"));
       Status = EFI_INVALID_PARAMETER;
     }
@@ -121,15 +131,19 @@ UsbDeviceRegisterCallback (
   IN USB_DEVICE_CALLBACK_FUNC  CallbackFunc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
 
   DEBUG ((DEBUG_INFO, "UsbDeviceRegisterCallback start\n"));
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceRegisterCallback: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (core->CoreDriver != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "Call DevCoreRegisterCallback\n"));
       Status = core->CoreDriver->DevCoreRegisterCallback (
                                     core->ControllerHandle,
@@ -156,13 +170,17 @@ UsbDeviceUnregisterCallback (
   IN USB_DEVICE_EVENT_ID       EventId
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceUnregisterCallback: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (core->CoreDriver != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = core->CoreDriver->DevCoreUnregisterCallback(
                                     core->ControllerHandle,
                                     EventId
@@ -187,13 +205,17 @@ UsbDeviceIsrRoutine (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceIsrRoutine: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (core->CoreDriver != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = core->CoreDriver->DevCoreIsrRoutine (core->ControllerHandle);
     }
   }
@@ -216,13 +238,17 @@ UsbDeviceIsrRoutineTimerBased (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceIsrRoutine: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (core->CoreDriver != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = core->CoreDriver->DevCoreIsrRoutineTimerBased (core->ControllerHandle);
     }
   }
@@ -243,12 +269,15 @@ UsbXdciDeviceConnect (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbXdciDeviceConnect: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbXdciDeviceConnect\n"));
     Status = core->CoreDriver->DevCoreConnect (core->ControllerHandle);
   }
@@ -268,12 +297,15 @@ UsbDeviceDisconnect (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core =(USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceDisconnect: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceDisconnect\n"));
     Status = core->CoreDriver->DevCoreDisconnect(core->ControllerHandle);
   }
@@ -294,12 +326,15 @@ UsbDeviceGetSpeed (
   IN USB_SPEED                 *Speed
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceGetSpeed: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreGetSpeed(core->ControllerHandle, Speed);
   }
 
@@ -319,13 +354,16 @@ UsbDeviceSetAddress (
   IN UINT32                    Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   DEBUG ((DEBUG_INFO, "UsbDeviceSetAddress: enter......\n"));
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceSetAddress: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreSetAddress(core->ControllerHandle, Address);
   }
   DEBUG ((DEBUG_INFO, "UsbDeviceSetAddress: exit......\n"));
@@ -347,12 +385,15 @@ UsbDeviceSetConfiguration (
   IN UINT32                    ConfigNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceSetConfiguration: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreSetConfig (core->ControllerHandle, ConfigNum);
   }
 
@@ -372,12 +413,15 @@ UsbDeviceSetLinkState (
   IN USB_DEVICE_SS_LINK_STATE  State
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceSetLinkState: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreSetLinkState (core->ControllerHandle, State);
   }
 
@@ -397,12 +441,15 @@ UsbDeviceInitEp (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceInitEp: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreInitEp (core->ControllerHandle, EpInfo);
   }
 
@@ -422,12 +469,15 @@ UsbDeviceEpEnable (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpEnable: ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpEnable (core->ControllerHandle, EpInfo);
   }
 
@@ -447,12 +497,15 @@ UsbDeviceEpDisable (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpDisable ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpDisable (core->ControllerHandle, EpInfo);
   }
 
@@ -472,12 +525,15 @@ UsbDeviceEpStall (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpStall ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpStall (core->ControllerHandle, EpInfo);
   }
 
@@ -497,12 +553,15 @@ UsbDeviceEpClearStall (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpClearStall ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpClearStall (core->ControllerHandle, EpInfo);
   }
 
@@ -523,12 +582,15 @@ UsbDeviceEpSetNrdy (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpSetNrdy ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpSetNrdy (core->ControllerHandle, EpInfo);
   }
 
@@ -549,12 +611,15 @@ UsbDeviceEp0RxSetup (
   IN UINT8                     *Buffer
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEp0RxSetup ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEp0RxSetupPkt (core->ControllerHandle, Buffer);
   }
 
@@ -573,12 +638,15 @@ UsbDeviceEp0RxStatus (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEp0RxStatus ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEp0RxStatusPkt (core->ControllerHandle);
   }
   return Status;
@@ -596,12 +664,15 @@ UsbDeviceEp0TxStatus (
   IN VOID                      *DevCoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEp0TxStatus ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEp0TxStatusPkt (core->ControllerHandle);
   }
 
@@ -627,12 +698,15 @@ UsbXdciDeviceEpTxData (
   IN USB_XFER_REQUEST          *XferReq
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbXdciDeviceEpTxData ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpTxData (core->ControllerHandle, XferReq);
   }
 
@@ -658,12 +732,15 @@ UsbXdciDeviceEpRxData (
   IN USB_XFER_REQUEST          *XferReq
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbXdciDeviceEpRxData ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpRxData (core->ControllerHandle, XferReq);
   }
 
@@ -684,12 +761,15 @@ UsbDeviceEpCancelTransfer (
   IN USB_EP_INFO               *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_DEV_CORE  *core = (USB_DEV_CORE *)DevCoreHandle;
   EFI_STATUS    Status = EFI_DEVICE_ERROR;
 
   if (core == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "UsbDeviceEpCancelTransfer ERROR: INVALID HANDLE\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = core->CoreDriver->DevCoreEpCancelTransfer (core->ControllerHandle, EpInfo);
   }
 

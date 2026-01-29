@@ -43,6 +43,7 @@
 #include "slot.h"
 
 #include "libavb_ab.h"
+#include "log.h"
 
 /* BIOS Capsule update file */
 #define FWUPDATE_FILE             L"\\BIOSUPDATE.fv"
@@ -67,6 +68,7 @@ static EFI_LOADED_IMAGE *g_loaded_image;
 
 EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	UINT32 MediaId;
@@ -76,10 +78,12 @@ EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 
 	ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Partition %s not found", label);
 		return ret;
 	}
 	if (gpart.part.ending_lba < gpart.part.starting_lba) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_COMPROMISED_DATA;
 		efi_perror(ret, L"Partition LBA is wrong");
 		return ret;
@@ -89,6 +93,7 @@ EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 	partition_start = gpart.part.starting_lba * gpart.bio->Media->BlockSize;
 	partition_size = (gpart.part.ending_lba + 1 - gpart.part.starting_lba) * gpart.bio->Media->BlockSize;
 	if (partition_size < 2048 + sizeof(*avbABData)) { // AB_METADATA_MISC_PARTITION_OFFSET = 2048;
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_COMPROMISED_DATA;
 		efi_perror(ret, L"Partition %s is too small", label);
 		return ret;
@@ -98,11 +103,13 @@ EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 			sizeof(*avbABData), avbABData);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read partition %s failed", label);
 		return ret;
 	}
 
 	if (avbABData->magic != BOOT_CTRL_MAGIC) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"AVB AB Magic is incorrect");
 		return EFI_COMPROMISED_DATA;
 	}
@@ -112,6 +119,7 @@ EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 
 EFI_STATUS get_active_slot(UINT8 *slot)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	AvbABData avbABData;
 	UINT8 i;
@@ -122,15 +130,18 @@ EFI_STATUS get_active_slot(UINT8 *slot)
 
 	ret = avb_ab_read_misc(&avbABData);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		// Read AVB AVB data failed
 		return ret;
 	}
 	for (i = 0, highest_priority = 0; i < ARRAY_SIZE(avbABData.slot_info); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (avbABData.slot_info[i].successful_boot == 0
 				&& avbABData.slot_info[i].tries_remaining == 0)
 			continue;
 
 		if (highest_priority < avbABData.slot_info[i].priority) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			highest_priority = avbABData.slot_info[i].priority;
 			*slot = i;
 		}
@@ -141,6 +152,7 @@ EFI_STATUS get_active_slot(UINT8 *slot)
 
 EFI_STATUS load_kf(UINT8 slot)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, unload_ret;
 	CHAR16 *label;
 	EFI_HANDLE kf_handle = NULL;
@@ -155,6 +167,7 @@ EFI_STATUS load_kf(UINT8 slot)
 	ret = gpt_get_partition_handle(label, LOGICAL_UNIT_USER,
 			 &kf_handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		goto out;
 	}
@@ -162,17 +175,20 @@ EFI_STATUS load_kf(UINT8 slot)
 	ret = handle_protocol(kf_handle, &SimpleFileSystemProtocol,
 			(void **)&io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Load FAT for partition %s failed", label);
 		goto out;
 	}
 
 	if (!uefi_exist_file_root(io, KF_FILE)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"File %s is not exist", KF_FILE);
 		goto out;
 	}
 
 	edp = FileDevicePath(kf_handle, KF_FILE);
 	if (!edp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Couldn't generate a path for '%s'", KF_FILE);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -181,19 +197,23 @@ EFI_STATUS load_kf(UINT8 slot)
 			edp, NULL, 0, &kf_image);
 	FreePool(edp);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to load '%s'", KF_FILE);
 		goto out;
 	}
 
 	if (g_loaded_image->LoadOptionsSize > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->OpenProtocol, 6, kf_image,
 				&LoadedImageProtocol, (VOID **)&loaded_image,
 				kf_image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"OpenProtocol: LoadedImageProtocol");
 			goto out;
 		}
 		if (loaded_image == NULL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"LoadedImageProtocol, but return image is NULL");
 			ret = EFI_INVALID_PARAMETER;
 			goto out;
@@ -205,6 +225,7 @@ EFI_STATUS load_kf(UINT8 slot)
 	// Set the active slot efi variable
 	ret = set_efi_loaded_slot(slot);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to set loaded slot %d to efi variable", slot);
 		return ret;
 	}
@@ -213,6 +234,7 @@ EFI_STATUS load_kf(UINT8 slot)
 
 out:
 	if (kf_image != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unload_ret = uefi_call_wrapper(BS->UnloadImage, 1, kf_image);
 		if (EFI_ERROR(unload_ret))
 			efi_perror(unload_ret, L"Failed to unload image");
@@ -222,6 +244,7 @@ out:
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 active_slot;
 
@@ -235,6 +258,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 			&LoadedImageProtocol, (VOID **)&g_loaded_image,
 			image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"OpenProtocol: LoadedImageProtocol");
 		return ret;
 	}
@@ -242,13 +266,16 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 	/* loaded from mass storage (not DnX) */
 	if (g_disk_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = storage_set_boot_device(g_disk_device);
 		if (EFI_ERROR(ret))
 			error(L"Failed to set boot device");
 	}
 	// Set the boot device now
 	if (!get_boot_device_handle()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!get_boot_device()) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			// Get boot device failed
 			error(L"Failed to find boot device");
 			return EFI_NO_MEDIA;
@@ -268,6 +295,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	debug(L"Try to load slot: %d", active_slot);
 	ret = load_kf(active_slot);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Load slot %d failed", active_slot);
 		set_efi_loaded_slot_failed(active_slot, ret);
 		// Set the slot to unbootable

@@ -34,6 +34,7 @@
 #include "security_interface.h"
 #include "life_cycle.h"
 #include "security.h"
+#include "log.h"
 
 #ifdef RPMB_STORAGE
 
@@ -72,6 +73,7 @@ typedef struct _seed_entry {
 
 EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	Image_boot_param_t *image_boot_param = (Image_boot_param_t *)boot_param;
 	seed_list_t *SeedListCmdlinePtr = NULL;
 	seed_entry_t *SeedEntryData = NULL;
@@ -85,31 +87,38 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 
 	SeedListCmdlinePtr = (seed_list_t *)(UINTN)image_boot_param->SeedListInfoAddr;
 	if (!SeedListCmdlinePtr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_INVALID_PARAMETER;
 		efi_perror(ret, L"SeedListCmdlinePtr is NULL");
 		return ret;
 	}
 
 	if ((SeedListCmdlinePtr != NULL) && (SeedListCmdlinePtr->BufferSize > 0)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"TotalSeedCount: %d", SeedListCmdlinePtr->TotalSeedCount);
 		debug(L"BufferSize: %d", SeedListCmdlinePtr->BufferSize);
 
 		SeedEntryData = (seed_entry_t  *)((UINT8 *)SeedListCmdlinePtr + sizeof(seed_list_t));
 		if (SeedListCmdlinePtr->TotalSeedCount > 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (Index = 0; Index < SeedListCmdlinePtr->TotalSeedCount; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				debug(L"SeedEntryData Pointer: 0x%x", (UINT8 *)SeedEntryData);
 				if (SeedEntryData->Type == SEED_ENTRY_TYPE_RPMBSEED) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					debug(L"Type: %x", SeedEntryData->Type);
 					debug(L"Usage: %x", SeedEntryData->Usage);
 					debug(L"Index: %x", SeedEntryData->Index);
 					debug(L"SeedEntrySize: %x", SeedEntryData->SeedEntrySize);
 					RpmbSeedInfo = (UINT8 *)SeedEntryData->Seed;
 					if (!RpmbSeedInfo) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						ret = EFI_ABORTED;
 						efi_perror(ret, L"RpmbSeedInfo is NULL");
 						return ret;
 					}
 					if (num_rpmb_key < RPMB_MAX_PARTITION_NUMBER + 1) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						ret = memcpy_s(rpmb_key[num_rpmb_key], sizeof(rpmb_key), RpmbSeedInfo,
 									   RPMB_KEY_SIZE);
 						if (EFI_ERROR(ret))
@@ -123,6 +132,7 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 			}
 
 			if (num_rpmb_key == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = EFI_NOT_FOUND;
 				efi_perror(ret, L"RPMB key not found");
 				return ret;
@@ -131,6 +141,7 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 			if (EFI_ERROR(ret))
 				efi_perror(ret, L"Failed to generate the rpmb key");
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_NOT_FOUND;
 		}
 	}
@@ -140,10 +151,12 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 
 EFI_STATUS set_device_security_info(IN VOID * sbl_cmdline_seed_rpmb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 *size_structure = NULL;
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!sbl_cmdline_seed_rpmb) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"sbl cmdline for seed/rpmb is NULL");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -161,12 +174,14 @@ EFI_STATUS set_device_security_info(IN VOID * sbl_cmdline_seed_rpmb)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID * security_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_SUCCESS;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
@@ -175,6 +190,7 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 	ret = get_efi_variable(&global_guid, SECURE_BOOT_VAR, &cursize, (VOID **)&curdata, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get secure boot var");
 		return FALSE;
 	}
@@ -188,12 +204,14 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN sbflags;
 	EFI_STATUS ret;
 	BOOLEAN enduser;
 
 	ret = life_cycle_is_enduser(&enduser);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get eom var");
 		return FALSE;
 	}
@@ -205,6 +223,7 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
 	debug(L"Setting platform secure boot to %d", secure);

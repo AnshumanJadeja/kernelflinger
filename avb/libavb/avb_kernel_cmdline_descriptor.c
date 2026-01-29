@@ -24,9 +24,11 @@
 
 #include "avb_kernel_cmdline_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_kernel_cmdline_descriptor_validate_and_byteswap(
     const AvbKernelCmdlineDescriptor* src, AvbKernelCmdlineDescriptor* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbKernelCmdlineDescriptor));
@@ -36,6 +38,7 @@ bool avb_kernel_cmdline_descriptor_validate_and_byteswap(
     return false;
 
   if (dest->parent_descriptor.tag != AVB_DESCRIPTOR_TAG_KERNEL_CMDLINE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid tag for kernel cmdline descriptor.\n");
     return false;
   }
@@ -46,10 +49,12 @@ bool avb_kernel_cmdline_descriptor_validate_and_byteswap(
   /* Check that kernel_cmdline is fully contained. */
   expected_size = sizeof(AvbKernelCmdlineDescriptor) - sizeof(AvbDescriptor);
   if (!avb_safe_add_to(&expected_size, dest->kernel_cmdline_length)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow while adding up sizes.\n");
     return false;
   }
   if (expected_size > dest->parent_descriptor.num_bytes_following) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptor payload size overflow.\n");
     return false;
   }

@@ -24,9 +24,11 @@
 
 #include "avb_property_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_property_descriptor_validate_and_byteswap(
     const AvbPropertyDescriptor* src, AvbPropertyDescriptor* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbPropertyDescriptor));
@@ -36,6 +38,7 @@ bool avb_property_descriptor_validate_and_byteswap(
     return false;
 
   if (dest->parent_descriptor.tag != AVB_DESCRIPTOR_TAG_PROPERTY) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid tag for property descriptor.\n");
     return false;
   }
@@ -47,10 +50,12 @@ bool avb_property_descriptor_validate_and_byteswap(
   expected_size = sizeof(AvbPropertyDescriptor) - sizeof(AvbDescriptor) + 2;
   if (!avb_safe_add_to(&expected_size, dest->key_num_bytes) ||
       !avb_safe_add_to(&expected_size, dest->value_num_bytes)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow while adding up sizes.\n");
     return false;
   }
   if (expected_size > dest->parent_descriptor.num_bytes_following) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptor payload size overflow.\n");
     return false;
   }
@@ -73,24 +78,29 @@ static bool property_lookup_desc_foreach(const AvbDescriptor* header,
   bool ret = true;
 
   if (header->tag != AVB_DESCRIPTOR_TAG_PROPERTY) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto out;
   }
 
   if (!avb_property_descriptor_validate_and_byteswap(
           (const AvbPropertyDescriptor*)header, &prop_desc)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto out;
   }
 
   p = (const uint8_t*)header;
   if (p[sizeof(AvbPropertyDescriptor) + prop_desc.key_num_bytes] != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("No terminating NUL byte in key.\n");
     goto out;
   }
 
   if (data->key_size == prop_desc.key_num_bytes) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (avb_memcmp(p + sizeof(AvbPropertyDescriptor),
                    data->key,
                    data->key_size) == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       data->ret_value = (const char*)(p + sizeof(AvbPropertyDescriptor) +
                                       prop_desc.key_num_bytes + 1);
       data->ret_value_size = prop_desc.value_num_bytes;
@@ -109,9 +119,11 @@ const char* avb_property_lookup(const uint8_t* image_data,
                                 const char* key,
                                 size_t key_size,
                                 size_t* out_value_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PropertyIteratorData data;
 
   if (key_size == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     key_size = avb_strlen(key);
   }
 
@@ -120,13 +132,16 @@ const char* avb_property_lookup(const uint8_t* image_data,
 
   if (avb_descriptor_foreach(
           image_data, image_size, property_lookup_desc_foreach, &data) == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (out_value_size != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       *out_value_size = data.ret_value_size;
     }
     return data.ret_value;
   }
 
   if (out_value_size != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_value_size = 0;
   }
   return NULL;
@@ -137,6 +152,7 @@ bool avb_property_lookup_uint64(const uint8_t* image_data,
                                 const char* key,
                                 size_t key_size,
                                 uint64_t* out_value) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char* value;
   bool ret = false;
   uint64_t parsed_val;
@@ -145,29 +161,36 @@ bool avb_property_lookup_uint64(const uint8_t* image_data,
 
   value = avb_property_lookup(image_data, image_size, key, key_size, NULL);
   if (value == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto out;
   }
 
   base = 10;
   if (avb_memcmp(value, "0x", 2) == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     base = 16;
     value += 2;
   }
 
   parsed_val = 0;
   for (n = 0; value[n] != '\0'; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int c = value[n];
     int digit;
 
     parsed_val *= base;
 
     if (c >= '0' && c <= '9') {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       digit = c - '0';
     } else if (base == 16 && c >= 'a' && c <= 'f') {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       digit = c - 'a' + 10;
     } else if (base == 16 && c >= 'A' && c <= 'F') {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       digit = c - 'A' + 10;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_error("Invalid digit.\n");
       goto out;
     }
@@ -177,6 +200,7 @@ bool avb_property_lookup_uint64(const uint8_t* image_data,
 
   ret = true;
   if (out_value != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_value = parsed_val;
   }
 

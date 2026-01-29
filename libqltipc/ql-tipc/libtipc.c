@@ -28,6 +28,7 @@
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
+#include "log.h"
 
 #define LOCAL_LOG 0
 
@@ -37,6 +38,7 @@ static struct trusty_ipc_dev* _ipc_dev;
 static struct trusty_dev _tdev; /* There should only be one trusty device */
 
 void trusty_ipc_shutdown(void) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     (void)km_tipc_shutdown(_ipc_dev);
 
     /* shutdown Trusty IPC device */
@@ -47,11 +49,13 @@ void trusty_ipc_shutdown(void) {
 }
 
 int trusty_ipc_init(void) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     /* init Trusty device */
     trusty_info("Initializing Trusty device\n");
     rc = trusty_dev_init(&_tdev, NULL);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("Initializing Trusty device failed (%d)\n", rc);
         return rc;
     }
@@ -61,6 +65,7 @@ int trusty_ipc_init(void) {
     rc = trusty_ipc_dev_create(&_ipc_dev, &_tdev,
                                TRUSTY_QL_TIPC_MAX_BUFFER_LEN);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("Initializing Trusty IPC device failed (%d)\n", rc);
         return rc;
     }
@@ -68,6 +73,7 @@ int trusty_ipc_init(void) {
     trusty_info("Initializing Trusty Keymaster client\n");
     rc = km_tipc_init(_ipc_dev);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("Initlializing Trusty Keymaster client failed (%d)\n", rc);
         return rc;
     }

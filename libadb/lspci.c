@@ -35,6 +35,7 @@
 #include "ioport.h"
 #include "lspci.h"
 #include "pci_class.h"
+#include "log.h"
 
 typedef union {
 	struct {
@@ -66,6 +67,7 @@ static UINT32 pci_read_config32(pci_dev_t dev, UINT16 reg)
 
 static void pci_read_config(pci_dev_t dev, void *buf, UINT16 count)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < count; i += sizeof(UINT32))
@@ -85,14 +87,20 @@ static const struct {
 	UINTN *variable;
 	UINTN value;
 } OPTIONS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .option = "-x", .variable = &dump_size, .value = 0x40 },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .option = "-xxx", .variable = &dump_size, .value = 0x100 },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .option = "-n", .variable = &class_fmt, .value = NUMERIC },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .option = "-nn", .variable = &class_fmt, .value = BOTH }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static EFI_STATUS lspci_main(INTN argc, const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, j;
 	pci_dev_t dev;
 	pci_header_t header;
@@ -101,8 +109,11 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 
 	dump_size = class_fmt = 0;
 	for (i = 1; i < (UINTN)argc; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (j = 0; j < ARRAY_SIZE(OPTIONS); j++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (!strcmp(argv[i], OPTIONS[j].option)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				*(OPTIONS[j].variable) = OPTIONS[j].value;
 				break;
 			}
@@ -112,8 +123,10 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 	}
 
 	if (dump_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		buf = AllocatePool(dump_size);
 		if (!buf) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to allocate the dump buffer");
 			return EFI_OUT_OF_RESOURCES;
 		}
@@ -122,6 +135,7 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 	memset_s(&header, sizeof(header), 0, sizeof(header));
 
 	for (i = 0, dev.raw = 0; i <= (UINT16)-1; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		dev.raw = i;
 		UINT32 val = pci_read_config32(dev, 0);
 
@@ -135,8 +149,10 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 
 		class = pci_class_string(header.class.base, header.class.sub);
 		switch (class_fmt) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case DEFAULT:
 			if (class) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ss_printf(L"%a", class);
 				break;
 			}
@@ -156,6 +172,7 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 			  header.vendor, header.device, header.revision);
 
 		if (buf) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			pci_read_config(dev, buf, dump_size);
 			ss_hexdump(buf, dump_size, 0, FALSE);
 			ss_printf(L"\n");
@@ -169,6 +186,7 @@ static EFI_STATUS lspci_main(INTN argc, const char **argv)
 }
 
 shcmd_t lspci_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "lspci",
 	.summary = "List the PCI Devices",
 	.help = "Usage: lspci [OPTIONS]\n"

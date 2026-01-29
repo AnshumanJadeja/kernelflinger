@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -44,6 +45,7 @@ Tpm2FlushContext (
   IN      TPMI_DH_CONTEXT           FlushHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_FLUSH_CONTEXT_COMMAND        SendBuffer;
   TPM2_FLUSH_CONTEXT_RESPONSE       RecvBuffer;
@@ -67,14 +69,17 @@ Tpm2FlushContext (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2FlushContext - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2FlushContext - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }

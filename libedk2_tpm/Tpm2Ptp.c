@@ -20,6 +20,7 @@
 #include <IoLib.h>
 #include <RegisterFilterLib.h>
 #include "lib.h"
+#include "log.h"
 
 typedef enum {
   PtpInterfaceTis,
@@ -52,10 +53,12 @@ Tpm2IsPtpPresence (
   IN VOID *Reg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             RegRead;
 
   RegRead = MmioRead8 ((UINTN)Reg);
   if (RegRead == 0xFF) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // No TPM chip
     //
@@ -83,12 +86,15 @@ PtpCrbWaitRegisterBits (
   IN      UINT32                    TimeOut
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32                            RegRead;
   UINT32                            WaitTime;
 
   for (WaitTime = 0; WaitTime < TimeOut; WaitTime += 100) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     RegRead = MmioRead32 ((UINTN)Register);
     if ((RegRead & BitSet) == BitSet && (RegRead & BitClear) == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return EFI_SUCCESS;
     }
     pause_us(100);
@@ -111,10 +117,12 @@ PtpCrbRequestUseTpm (
   IN      PTP_CRB_REGISTERS_PTR      CrbReg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   UINT32                            LocalityState;
 
   if (!Tpm2IsPtpPresence (CrbReg)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_NOT_FOUND;
   }
 
@@ -123,6 +131,7 @@ PtpCrbRequestUseTpm (
 
   if ((((LocalityState & PTP_CRB_LOCALITY_STATE_ACTIVE_LOCALITY_MASK) >> 2) == 0) &&
       ((LocalityState & PTP_CRB_LOCALITY_STATE_LOCALITY_ASSIGNED) != 0)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_VERBOSE, "TPM2: Locality 0 already assigned. LocalityState: 0x%08x \n ", LocalityState));
     return EFI_SUCCESS;
   }
@@ -160,6 +169,7 @@ PtpCrbTpmCommand (
   IN OUT UINT32                     *SizeOut
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   UINT32                            Index;
   UINT32                            TpmOutSize;
@@ -182,6 +192,7 @@ PtpCrbTpmCommand (
              PTP_TIMEOUT_C
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_DEVICE_ERROR;
     goto Exit;
   }
@@ -192,6 +203,7 @@ PtpCrbTpmCommand (
              PTP_TIMEOUT_C
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_DEVICE_ERROR;
     goto Exit;
   }
@@ -203,6 +215,7 @@ PtpCrbTpmCommand (
   // of 1 to Start.
   //
   for (Index = 0; Index < SizeIn; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MmioWrite8 ((UINTN)&CrbReg->CrbDataBuffer[Index], BufferIn[Index]);
   }
   MmioWrite32 ((UINTN)&CrbReg->CrbControlCommandAddressHigh, (UINT32)RShiftU64 ((UINTN)CrbReg->CrbDataBuffer, 32));
@@ -225,6 +238,7 @@ PtpCrbTpmCommand (
              PTP_TIMEOUT_MAX
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_DEVICE_ERROR;
     goto Exit;
   }
@@ -240,6 +254,7 @@ PtpCrbTpmCommand (
   // Get response data header
   //
   for (Index = 0; Index < sizeof (TPM2_RESPONSE_HEADER); Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     BufferOut[Index] = MmioRead8 ((UINTN)&CrbReg->CrbDataBuffer[Index]);
   }
   //
@@ -248,6 +263,7 @@ PtpCrbTpmCommand (
   CopyMem (&Data16, BufferOut, sizeof (UINT16));
   // TPM2 should not use this RSP_COMMAND
   if (SwapBytes16 (Data16) == TPM_ST_RSP_COMMAND) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "TPM2: TPM_ST_RSP error - %x\n", TPM_ST_RSP_COMMAND));
     Status = EFI_UNSUPPORTED;
     goto Exit;
@@ -256,6 +272,7 @@ PtpCrbTpmCommand (
   CopyMem (&Data32, (BufferOut + 2), sizeof (UINT32));
   TpmOutSize  = SwapBytes32 (Data32);
   if (*SizeOut < TpmOutSize) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_BUFFER_TOO_SMALL;
     goto Exit;
   }
@@ -264,6 +281,7 @@ PtpCrbTpmCommand (
   // Continue reading the remaining data
   //
   for (Index = sizeof (TPM2_RESPONSE_HEADER); Index < TpmOutSize; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     BufferOut[Index] = MmioRead8 ((UINTN)&CrbReg->CrbDataBuffer[Index]);
   }
 Exit:
@@ -331,10 +349,12 @@ Tpm2GetPtpInterface (
   IN VOID *Register
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_CRB_INTERFACE_IDENTIFIER  InterfaceId;
   PTP_FIFO_INTERFACE_CAPABILITY InterfaceCapability;
 
   if (!Tpm2IsPtpPresence (Register)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return PtpInterfaceMax;
   }
   //
@@ -346,12 +366,14 @@ Tpm2GetPtpInterface (
   if ((InterfaceId.Bits.InterfaceType == PTP_INTERFACE_IDENTIFIER_INTERFACE_TYPE_CRB) &&
       (InterfaceId.Bits.InterfaceVersion == PTP_INTERFACE_IDENTIFIER_INTERFACE_VERSION_CRB) &&
       (InterfaceId.Bits.CapCRB != 0)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return PtpInterfaceCrb;
   }
   if ((InterfaceId.Bits.InterfaceType == PTP_INTERFACE_IDENTIFIER_INTERFACE_TYPE_FIFO) &&
       (InterfaceId.Bits.InterfaceVersion == PTP_INTERFACE_IDENTIFIER_INTERFACE_VERSION_FIFO) &&
       (InterfaceId.Bits.CapFIFO != 0) &&
       (InterfaceCapability.Bits.InterfaceVersion == INTERFACE_CAPABILITY_INTERFACE_VERSION_PTP)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return PtpInterfaceFifo;
   }
   return PtpInterfaceTis;
@@ -367,6 +389,7 @@ DumpPtpInfo (
   IN VOID *Register
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_CRB_INTERFACE_IDENTIFIER  InterfaceId;
   PTP_FIFO_INTERFACE_CAPABILITY InterfaceCapability;
   UINT8                         StatusEx;
@@ -376,6 +399,7 @@ DumpPtpInfo (
   PTP_INTERFACE_TYPE            PtpInterface;
 
   if (!Tpm2IsPtpPresence (Register)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return ;
   }
 
@@ -389,6 +413,7 @@ DumpPtpInfo (
   DEBUG ((DEBUG_INFO, "InterfaceId - 0x%08x\n", InterfaceId.Uint32));
   DEBUG ((DEBUG_INFO, "  InterfaceType    - 0x%02x\n", InterfaceId.Bits.InterfaceType));
   if (InterfaceId.Bits.InterfaceType != PTP_INTERFACE_IDENTIFIER_INTERFACE_TYPE_TIS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "  InterfaceVersion - 0x%02x\n", InterfaceId.Bits.InterfaceVersion));
     DEBUG ((DEBUG_INFO, "  CapFIFO          - 0x%x\n", InterfaceId.Bits.CapFIFO));
     DEBUG ((DEBUG_INFO, "  CapCRB           - 0x%x\n", InterfaceId.Bits.CapCRB));
@@ -400,6 +425,7 @@ DumpPtpInfo (
   DEBUG ((DEBUG_INFO, "InterfaceCapability - 0x%08x\n", InterfaceCapability.Uint32));
   if ((InterfaceId.Bits.InterfaceType == PTP_INTERFACE_IDENTIFIER_INTERFACE_TYPE_TIS) ||
       (InterfaceId.Bits.InterfaceType == PTP_INTERFACE_IDENTIFIER_INTERFACE_TYPE_FIFO)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "  InterfaceVersion - 0x%x\n", InterfaceCapability.Bits.InterfaceVersion));
   }
 
@@ -408,6 +434,7 @@ DumpPtpInfo (
   //
   DEBUG ((DEBUG_INFO, "StatusEx - 0x%02x\n", StatusEx));
   if (InterfaceCapability.Bits.InterfaceVersion == INTERFACE_CAPABILITY_INTERFACE_VERSION_PTP) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "  TpmFamily - 0x%x\n",
             (StatusEx & PTP_FIFO_STS_EX_TPM_FAMILY) >> PTP_FIFO_STS_EX_TPM_FAMILY_OFFSET));
   }
@@ -418,6 +445,7 @@ DumpPtpInfo (
   PtpInterface = Tpm2GetPtpInterface (Register);
   DEBUG ((DEBUG_INFO, "PtpInterface - %x\n", PtpInterface));
   switch (PtpInterface) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case PtpInterfaceCrb:
     Vid = MmioRead16_1 ((UINTN) & ((PTP_CRB_REGISTERS *)Register)->Vid);
     Did = MmioRead16_1 ((UINTN) & ((PTP_CRB_REGISTERS *)Register)->Did);
@@ -458,10 +486,12 @@ Tpm2SubmitCommand (
   IN UINT8             *OutputParameterBlock
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
   switch (PtpInterface) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case PtpInterfaceCrb:
     return PtpCrbTpmCommand (
              (PTP_CRB_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress),
@@ -497,10 +527,12 @@ Tpm2RequestUseTpm (
   VOID
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
   switch (PtpInterface) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case PtpInterfaceCrb:
     return PtpCrbRequestUseTpm ((PTP_CRB_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress));
   case PtpInterfaceFifo:
@@ -523,10 +555,12 @@ IsSupportedTpmPresent (
   VOID
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
   switch (PtpInterface) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case PtpInterfaceCrb:
   case PtpInterfaceFifo:
   case PtpInterfaceTis:
@@ -552,11 +586,13 @@ UpdateAcpiInterfaceInfo (
   IN EFI_TPM2_ACPI_TABLE *Tpm2Acpi
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE              PtpInterface;
   EFI_TPM2_ACPI_CONTROL_AREA     *ControlArea;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
   switch (PtpInterface) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case PtpInterfaceCrb:
     Tpm2Acpi->StartMethod = EFI_TPM2_ACPI_TABLE_START_METHOD_COMMAND_RESPONSE_BUFFER_INTERFACE;
     Tpm2Acpi->AddressOfControlArea = PcdGet64 (PcdTpmBaseAddress) + 0x40;

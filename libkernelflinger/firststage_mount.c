@@ -40,10 +40,12 @@
 #include "lib.h"
 #include "protocol/AcpiTableProtocol.h"
 #include "storage.h"
+#include "log.h"
 
 #ifdef AUTO_DISKBUS
 static CHAR8 csum(void *base, UINTN n)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *p;
 	CHAR8 sum;
 	UINTN bytesDone;
@@ -52,6 +54,7 @@ static CHAR8 csum(void *base, UINTN n)
 
 	sum = 0;
 	for (bytesDone = 0; bytesDone < n; bytesDone++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		sum += *p;
 		p++;
 	}
@@ -61,6 +64,7 @@ static CHAR8 csum(void *base, UINTN n)
 
 EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const CHAR8 *pattern = (CHAR8 *)"/0000:00:ff.ff/";
 	const UINTN diskbus_sufix_len = 6; /* Sample: "ff.ff/" or "ff.f//" */
 	UINTN pattern_len;
@@ -71,6 +75,7 @@ EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 
 	header_len = sizeof(struct ACPI_DESC_HEADER);
 	if (ssdt_len < header_len) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"ACPI: invalid parameter for revise diskbus.");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -79,6 +84,7 @@ EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 	pattern_len = strlen(pattern);
 	boot_device = get_boot_device();
 	if (!boot_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Boot device not found!");
 		return EFI_DEVICE_ERROR;
 	}
@@ -88,8 +94,10 @@ EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 
 	/* Find and revise the diskbus. */
 	while (p < max_end) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Find the diskbus. */
 		if (*p != pattern[0] || memcmp(p, pattern, pattern_len)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			p++;
 			continue;
 		}
@@ -121,6 +129,7 @@ EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 
 EFI_STATUS install_firststage_mount_aml(enum boot_target target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR8 *ssdt;
 	UINTN ssdt_len;
@@ -131,11 +140,13 @@ EFI_STATUS install_firststage_mount_aml(enum boot_target target)
 
 	if ((target == NORMAL_BOOT) || (target == RECOVERY) || (target == CHARGER)
 		|| (target == ESP_BOOTIMAGE) || (target == MEMORY)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Install firststage_mount_ssdt, target=%d", target);
 
 #ifdef AUTO_DISKBUS
 		ret = revise_diskbus_from_ssdt((CHAR8 *)ssdt, ssdt_len);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"ACPI: fail to revise diskbus");
 			return ret;
 		}
@@ -143,6 +154,7 @@ EFI_STATUS install_firststage_mount_aml(enum boot_target target)
 
 		ret = install_acpi_table(ssdt, ssdt_len, &TableKey);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Warning: failed to install ssdt.");
 			return EFI_SUCCESS;
 		}

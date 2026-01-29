@@ -37,6 +37,7 @@
 #include "rpmb_storage.h"
 #include "life_cycle.h"
 #include "security.h"
+#include "log.h"
 
 #ifdef RPMB_STORAGE
 #define SECURITY_ABL_SEED_LEN 32
@@ -63,12 +64,16 @@
 
 EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT8 serial[MMC_PROD_NAME_WITH_PSN_LEN] = {0};
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char *serialno;
         /* HWCRYPTO Server App UUID */
         const EFI_GUID  crypo_uuid = { 0x23fe5938, 0xccd5, 0x4a78,
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 { 0x8b, 0xaf, 0x0f, 0x3d, 0x05, 0xff, 0xc2, 0xdf } };
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
         if (!seed || !rpmb_key)
                 return EFI_INVALID_PARAMETER;
@@ -93,6 +98,7 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
                 (const uint8_t *)seed, RPMB_SEED_SIZE,
                 (const uint8_t *)&crypo_uuid, sizeof(EFI_GUID),
                 (const uint8_t *)serial, sizeof(serial))) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"HDKF failed \n");
                 return EFI_INVALID_PARAMETER;
         }
@@ -102,6 +108,7 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
  EFI_STATUS set_device_security_info(IN VOID *security_data)
  {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
  	EFI_STATUS ret;
 	device_sec_info_t *dev_sec;
 	UINT8 rpmb_key[SECURITY_ABL_SEED_MAX_ENTRIES * RPMB_KEY_SIZE];
@@ -118,8 +125,10 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 	seed_cnt = min(dev_sec->num_seeds, SECURITY_ABL_SEED_MAX_ENTRIES);
 	for (i = 0; i < seed_cnt; i++)
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (EFI_SUCCESS != derive_rpmb_key_with_seed(dev_sec->seed_list[i].seed, rpmb_key + i * RPMB_KEY_SIZE))
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			memset_s(rpmb_key + i * RPMB_KEY_SIZE, RPMB_KEY_SIZE, 0, RPMB_KEY_SIZE);
 			break;
 		}
@@ -133,6 +142,7 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
 	if (EFI_ERROR(ret))
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to generate the rpmb key");
 	}
 
@@ -142,12 +152,14 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID *security_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         EFI_STATUS ret;
         UINT8 value;
@@ -157,6 +169,7 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
         ret = get_efi_variable(&global_guid, SECURE_BOOT_VAR, &cursize, (VOID **)&curdata, NULL);
         if (EFI_ERROR(ret))
         {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to get secure boot var");
                 return FALSE;
         }
@@ -169,12 +182,14 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         BOOLEAN sbflags;
         EFI_STATUS ret;
         BOOLEAN enduser;
 
         ret = life_cycle_is_enduser(&enduser);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to get eom var");
                 return FALSE;
         }
@@ -186,6 +201,7 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
         debug(L"Setting abl secure boot to %d", secure);

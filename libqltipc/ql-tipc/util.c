@@ -23,15 +23,20 @@
  */
 
 #include <trusty/util.h>
+#include "log.h"
 
 const char* trusty_basename(const char* str) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int64_t n;
     size_t len;
 
     len = trusty_strlen(str);
     if (len >= 2) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         for (n = len - 2; n >= 0; n--) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             if (str[n] == '/') {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 return str + n + 1;
             }
         }

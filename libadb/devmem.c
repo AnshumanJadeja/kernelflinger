@@ -34,13 +34,16 @@
 #include <pae.h>
 
 #include "devmem.h"
+#include "log.h"
 
 static const CHAR16 *VALUE_FORMAT[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	L"0x%02x\n", L"0x%04x\n", L"0x%08x\n", NULL, L"0x%016x\n"
 };
 
 #define READ_OR_WRITE(DO_READ, WIDTH, ADDRESS, VALUE)		\
 	do {							\
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (DO_READ)					\
 			VALUE = *(volatile WIDTH *)ADDRESS;	\
 		else						\
@@ -49,10 +52,12 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS devmem_main(INTN argc, const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_PHYSICAL_ADDRESS address, width = 8 * sizeof(UINT32), value;
 
 	switch (argc) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case 4:
 		ret = ss_read_number(argv[3], "VALUE", &value);
 		if (EFI_ERROR(ret))
@@ -72,6 +77,7 @@ static EFI_STATUS devmem_main(INTN argc, const char **argv)
 
 #ifndef __LP64__
 	if (address > UINT32_MAX) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = ss_pae_map(&address, sizeof(UINT64));
 		if (EFI_ERROR(ret))
 			return ret;
@@ -79,6 +85,7 @@ static EFI_STATUS devmem_main(INTN argc, const char **argv)
 #endif
 
 	switch (width) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case 8:
 		READ_OR_WRITE(argc < 4, UINT8, address, value);
 		break;
@@ -110,6 +117,7 @@ static EFI_STATUS devmem_main(INTN argc, const char **argv)
 }
 
 shcmd_t devmem_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "devmem",
 	.summary = "Read/write from physical address",
 	.help = "Usage: devmem ADDRESS [WIDTH [VALUE]]\n"

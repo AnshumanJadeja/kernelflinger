@@ -47,6 +47,7 @@
 #include "efilinux.h"
 #include "libelfloader.h"
 #include <uefi_utils.h>
+#include "log.h"
 
 #define TRUSTY_MEM_SIZE        0x1200000
 #define BARRIER_MEM_SIZE       0x100000
@@ -113,6 +114,7 @@ struct tos_image_header {
 static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UINTN base,
 	UINTN size, trusty_boot_param_t *boot_param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT64 entry_addr = 0;
 
 	if (!param || !boot_param)
@@ -120,6 +122,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 
 	if (!relocate_elf_image(base, size, boot_param->trusty_mem_base + 0x1000 + BARRIER_MEM_SIZE,
 				((boot_param->trusty_mem_size - 2*BARRIER_MEM_SIZE) << 10) - 0x1000, &entry_addr)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"relocate tos image failed");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -138,6 +141,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #define TRUSTY_VMCALL_SMC 0x74727500
 static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!param)
 		return EFI_INVALID_PARAMETER;
 
@@ -150,6 +154,7 @@ static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 
 EFI_STATUS set_trusty_param(__attribute__((unused)) IN VOID *param_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
@@ -158,6 +163,7 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 	IN EFI_PHYSICAL_ADDRESS min_addr,
 	IN EFI_PHYSICAL_ADDRESS max_addr)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_MEMORY_DESCRIPTOR entries[64];
 	EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS  start, end;
@@ -176,6 +182,7 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 				(EFI_MEMORY_DESCRIPTOR *)entries,
 				&key, &entry_sz, &descr_ver);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the current memory map");
 		return ret;
 	}
@@ -184,6 +191,7 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 
 	*lp_mem = 0;
 	for (i = 0; i < nr_entries; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cur = (EFI_MEMORY_DESCRIPTOR *)(entries + i);
 		if (cur->Type != EfiConventionalMemory)
 			continue;
@@ -194,6 +202,7 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 
 		if (min_addr != 0 && max_addr > min_addr)
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (start + alloc_size + align_size > max_addr)
 				continue;
 			if (end < min_addr + alloc_size + align_size)
@@ -220,6 +229,7 @@ static EFI_STATUS search_usable_memory(OUT EFI_PHYSICAL_ADDRESS *lp_mem,
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	const struct boot_img_hdr *header;
 	UINTN load_base;
@@ -236,6 +246,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
 	ret = search_usable_memory(&Memory, TRUSTY_MEM_SIZE, TRUSTY_MEM_ALIGNED,
 				TRUSTY_MEM_MIN_ADDRESS, TRUSTY_MEM_MAX_ADDRESS);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to allocate trusty pages");
 		goto fail;
 	}
@@ -243,6 +254,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
 	ret = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAddress,
 				EfiRuntimeServicesData,  EFI_SIZE_TO_PAGES(TRUSTY_MEM_SIZE), &Memory);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to allocate trusty pages");
 		goto fail;
 	}
@@ -252,12 +264,14 @@ EFI_STATUS start_trusty(VOID *tosimage)
 
 	ret = init_trusty_startup_params(&trusty_startup_params, load_base, header->kernel_size, &trusty_boot_params);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to init trusty startup params");
 		goto fail;
 	}
 
 	ret = launch_trusty_os(&trusty_startup_params);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to launch trusty os");
 		goto fail;
 	}

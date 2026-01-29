@@ -34,6 +34,7 @@
 #include "storage.h"
 #include "protocol/Mmc.h"
 #include "sdio.h"
+#include "log.h"
 
 /* eMMC card address is enforced to 1 by the BIOS at eMMC
    initialization.  */
@@ -41,6 +42,7 @@
 
 static EMMC_DEVICE_PATH *get_emmc_device_path(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_EMMC_DP)
@@ -52,6 +54,7 @@ static EMMC_DEVICE_PATH *get_emmc_device_path(EFI_DEVICE_PATH *p)
 static EFI_STATUS get_mmc_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
 			       UINTN *erase_grp_size, UINTN *timeout)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EXT_CSD *ext_csd;
 	void *rawbuffer;
 	UINT32 status;
@@ -66,6 +69,7 @@ static EFI_STATUS get_mmc_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
 				CARD_ADDRESS << 16, InData, (void *)ext_csd,
 				sizeof(EXT_CSD), ResponseR1, SDIO_DFLT_TIMEOUT, &status);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed get eMMC EXT_CSD");
 		goto out;
 	}
@@ -93,7 +97,9 @@ out:
 #define CONTROLLER_UNKNOWN ((UINT32)-1)
 static UINT32 log_unit_to_mmc_ctrl(logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch(log_unit) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case LOGICAL_UNIT_USER:
 		return CONTROLLER_EMMC_USER_PARTITION;
 	case LOGICAL_UNIT_FACTORY:
@@ -106,12 +112,14 @@ static UINT32 log_unit_to_mmc_ctrl(logical_unit_t log_unit)
 
 static EFI_STATUS mmc_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 ctrl = log_unit_to_mmc_ctrl(log_unit);
 
 	if (ctrl == CONTROLLER_UNKNOWN)
 		return EFI_NOT_FOUND;
 
 	while (!IsDevicePathEndType(p)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (DevicePathType(p) == HARDWARE_DEVICE_PATH
 		    && DevicePathSubType(p) == HW_CONTROLLER_DP
 		    && ((CONTROLLER_DEVICE_PATH *)p)->Controller == ctrl)
@@ -125,6 +133,7 @@ static EFI_STATUS mmc_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_
 
 static BOOLEAN is_emmc(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE handle = NULL;
@@ -147,6 +156,7 @@ static BOOLEAN is_emmc(EFI_DEVICE_PATH *p)
 static EFI_STATUS mmc_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 				   EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE sdio_handle = NULL;
@@ -155,18 +165,21 @@ static EFI_STATUS mmc_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 
 	dev_path = DevicePathFromHandle(handle);
 	if (!dev_path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path");
 		return EFI_UNSUPPORTED;
 	}
 
 	ret = sdio_get(dev_path, &sdio_handle, &sdio);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get SDIO protocol");
 		return ret;
 	}
 
 	ret = get_mmc_info(sdio, &erase_grp_size, &timeout);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get erase group size");
 		return ret;
 	}
@@ -177,6 +190,7 @@ static EFI_STATUS mmc_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio,
 
 static EFI_STATUS mmc_get_erase_block_size(EFI_HANDLE handle, UINTN *erase_blk_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_SD_HOST_IO_PROTOCOL *sdio;
 	EFI_HANDLE sdio_handle = NULL;
@@ -185,18 +199,21 @@ static EFI_STATUS mmc_get_erase_block_size(EFI_HANDLE handle, UINTN *erase_blk_s
 
 	dev_path = DevicePathFromHandle(handle);
 	if (!dev_path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path");
 		return EFI_UNSUPPORTED;
 	}
 
 	ret = sdio_get(dev_path, &sdio_handle, &sdio);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get SDIO protocol");
 		return ret;
 	}
 
 	ret = get_mmc_info(sdio, &erase_grp_size, &timeout);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get erase group size");
 		return ret;
 	}

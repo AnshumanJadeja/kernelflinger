@@ -35,6 +35,7 @@
 #include "protocol/ChargingAppletProtocol.h"
 
 #include "em.h"
+#include "log.h"
 
 #ifdef USE_CHARGING_APPLET
 static EFI_GUID gChargingAppletProtocolGuid = CHARGING_APPLET_PROTOCOL_GUID;
@@ -78,6 +79,7 @@ error:
 
 BOOLEAN is_charger_plugged_in(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHARGING_APPLET_PROTOCOL *charging_protocol;
         CHARGER_TYPE type;
         EFI_STATUS ret;
@@ -101,6 +103,7 @@ error:
 
 BOOLEAN is_battery_below_boot_OS_threshold(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct battery_status status;
         EFI_STATUS ret;
         UINTN value, threshold;
@@ -112,19 +115,23 @@ BOOLEAN is_battery_below_boot_OS_threshold(void)
 
         ia_apps_to_use = oem1_get_ia_apps_to_use();
         if (ia_apps_to_use == (UINT8)-1) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"OEM1 ACPI table parse error");
                 return FALSE;
         }
 
         if (status.CapacityReadable && ia_apps_to_use == OEM1_USE_IA_APPS_CAP) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 value = status.BatteryCapacityLevel;
                 threshold = oem1_get_ia_apps_cap();
                 debug(L"Battery: %d%% Threshold: %d%%", value, threshold);
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 value = status.BatteryVoltageLevel;
                 threshold = oem1_get_ia_apps_run();
                 debug(L"Battery: %dmV Threshold: %dmV", value, threshold);
                 if (value == 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /* This is very common to have such an issue
                            when we are working on a new hardware.
                            Instead of blocking the boot flow, we raise
@@ -140,6 +147,7 @@ BOOLEAN is_battery_below_boot_OS_threshold(void)
 
 EFI_STATUS get_battery_voltage(UINTN *voltage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct battery_status status;
         EFI_STATUS ret;
 
@@ -154,18 +162,21 @@ EFI_STATUS get_battery_voltage(UINTN *voltage)
 #else
 BOOLEAN is_charger_plugged_in(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         debug(L"WARNING: charging protocol disabled, assume charger is not plugged-in");
         return FALSE;
 }
 
 BOOLEAN is_battery_below_boot_OS_threshold(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         debug(L"WARNING: charging protocol disabled, assume battery level is above BOOT_OS");
         return FALSE;
 }
 
 EFI_STATUS get_battery_voltage(__attribute__((__unused__)) UINTN *voltage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         debug(L"WARNING: charging protocol is disabled");
         return EFI_UNSUPPORTED;
 }

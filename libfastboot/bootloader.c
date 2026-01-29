@@ -39,6 +39,7 @@
 #include "text_parser.h"
 #include "uefi_utils.h"
 #include "slot.h"
+#include "log.h"
 
 #define ESP_TMP_PART		ESP_LABEL L"2"
 #define BOOTLOADER_TMP_PART	BOOTLOADER_LABEL L"2"
@@ -52,7 +53,9 @@
 #define KFLD_UEFI_LOAD_PATH 	L"\\EFI\\INTEL\\KF4UEFI.EFI"
 
 static const load_option_t DEFAULT_LOAD_OPTIONS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"Android-IA", DEFAULT_UEFI_LOAD_PATH, NULL }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static load_option_t *load_options;
@@ -60,12 +63,14 @@ static UINTN load_option_nb;
 
 static void free_load_options()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	if (!load_options || load_options == DEFAULT_LOAD_OPTIONS)
 		return;
 
 	for (i = 0; i < load_option_nb; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (load_options[i].description)
 			FreePool(load_options[i].description);
 		if (load_options[i].path)
@@ -81,19 +86,23 @@ static void free_load_options()
 
 static EFI_STATUS add_load_option(CHAR8 *description, CHAR8 *path, CHAR8 *opt_params)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	load_option_t *new_load_options;
 	load_option_t *current;
 
 	new_load_options = AllocatePool((load_option_nb + 1) * sizeof(*load_options));
 	if (!new_load_options) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_load_options();
 		return EFI_OUT_OF_RESOURCES;
 	}
 	if (load_option_nb != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = memcpy_s(new_load_options, sizeof(*new_load_options), load_options,
 					   load_option_nb * sizeof(*load_options));
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			free_load_options();
 			return ret;
 		}
@@ -108,19 +117,23 @@ static EFI_STATUS add_load_option(CHAR8 *description, CHAR8 *path, CHAR8 *opt_pa
 
 	current->description = stra_to_str(description);
 	if (!current->description) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_load_options();
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	current->path = stra_to_str(path);
 	if (!current->path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_load_options();
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	if (opt_params) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		current->opt_params = stra_to_str(opt_params);
 		if (!current->opt_params) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			free_load_options();
 			return EFI_OUT_OF_RESOURCES;
 		}
@@ -131,6 +144,7 @@ static EFI_STATUS add_load_option(CHAR8 *description, CHAR8 *path, CHAR8 *opt_pa
 
 static EFI_STATUS parse_line(char *line, VOID *context _unused)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *description = (CHAR8 *)line;
 	CHAR8 *path;
 	CHAR8 *opt_params;
@@ -152,6 +166,7 @@ static EFI_STATUS parse_line(char *line, VOID *context _unused)
 
 static EFI_STATUS read_load_options(EFI_HANDLE handle)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *file_io_interface;
 	VOID *data;
@@ -160,12 +175,14 @@ static EFI_STATUS read_load_options(EFI_HANDLE handle)
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, handle,
 				&FileSystemProtocol, (void *)&file_io_interface);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get FileSystemProtocol");
 		return ret;
 	}
 
 	ret = uefi_read_file(file_io_interface, MANIFEST_PATH, &data, &size);
 	if (ret == EFI_NOT_FOUND) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"'%s' file not found, using default load options",
 		      MANIFEST_PATH);
 		load_options = (load_option_t *)DEFAULT_LOAD_OPTIONS;
@@ -178,11 +195,13 @@ static EFI_STATUS read_load_options(EFI_HANDLE handle)
 	ret = parse_text_buffer(data, size, parse_line, NULL);
 	FreePool(data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to parse '%s' file", MANIFEST_PATH);
 		return ret;
 	}
 
 	if (load_option_nb == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Did not find any load option in '%s' file", MANIFEST_PATH);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -200,6 +219,7 @@ static EFI_STATUS read_load_options(EFI_HANDLE handle)
 static EFI_STATUS flash_efi_partition(CHAR16 *label, CHAR16 *tmp_part,
 		CHAR16 *uefi_load_path, BOOLEAN is_load_options, VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, erase_ret;
 	EFI_HANDLE handle;
 	UINTN i;
@@ -215,6 +235,7 @@ static EFI_STATUS flash_efi_partition(CHAR16 *label, CHAR16 *tmp_part,
 	ret = gpt_get_partition_handle(tmp_part,
 				       LOGICAL_UNIT_USER, &handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get handle for '%s' partition",
 			   tmp_part);
 		ret = EFI_NOT_FOUND;
@@ -226,13 +247,16 @@ static EFI_STATUS flash_efi_partition(CHAR16 *label, CHAR16 *tmp_part,
 		goto exit;
 
 	if (is_load_options) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = read_load_options(handle);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to get load options");
 			goto exit;
 		}
 
 		for (i = 0; i < load_option_nb; i++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = verify_image(handle, load_options->path);
 			if (EFI_ERROR(ret))
 				goto exit;
@@ -244,6 +268,7 @@ static EFI_STATUS flash_efi_partition(CHAR16 *label, CHAR16 *tmp_part,
 		efi_perror(ret, L"Failed to swap partitions");
 
 	if (is_load_options) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = bootmgr_register_entries(label, load_options, load_option_nb);
 		if (EFI_ERROR(ret))
 			efi_perror(ret, L"Failed to install the load options");
@@ -268,6 +293,7 @@ exit:
  */
 static EFI_STATUS flash_bootloader_verify(CHAR16 *label, VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID type;
 	EFI_STATUS ret;
 
@@ -287,17 +313,20 @@ static EFI_STATUS flash_bootloader_verify(CHAR16 *label, VOID *data, UINTN size)
  */
 EFI_STATUS flash_esp(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_efi_partition(ESP_LABEL, ESP_TMP_PART,
 				DEFAULT_UEFI_LOAD_PATH, TRUE, data, size);
 }
 
 EFI_STATUS flash_bootloader_a(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_bootloader_verify(BOOTLOADER_A_LABEL, data, size);
 }
 
 EFI_STATUS flash_bootloader_b(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_bootloader_verify(BOOTLOADER_B_LABEL, data, size);
 }
 
@@ -308,6 +337,7 @@ EFI_STATUS flash_bootloader_b(VOID *data, UINTN size)
  */
 EFI_STATUS flash_bootloader(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID type;
 	CHAR16 *label;
@@ -315,11 +345,13 @@ EFI_STATUS flash_bootloader(VOID *data, UINTN size)
 	label = (CHAR16 *)slot_label(BOOTLOADER_LABEL);
 
 	if (!label) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"invalid bootloader label");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	if (StrCmp(label, BOOTLOADER_LABEL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"bootloader slot ab is enable.");
 		return flash_bootloader_verify(label, data, size);
 	}

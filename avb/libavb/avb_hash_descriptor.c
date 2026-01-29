@@ -24,9 +24,11 @@
 
 #include "avb_hash_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_hash_descriptor_validate_and_byteswap(const AvbHashDescriptor* src,
                                                AvbHashDescriptor* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbHashDescriptor));
@@ -36,6 +38,7 @@ bool avb_hash_descriptor_validate_and_byteswap(const AvbHashDescriptor* src,
     return false;
 
   if (dest->parent_descriptor.tag != AVB_DESCRIPTOR_TAG_HASH) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid tag for hash descriptor.\n");
     return false;
   }
@@ -51,10 +54,12 @@ bool avb_hash_descriptor_validate_and_byteswap(const AvbHashDescriptor* src,
   if (!avb_safe_add_to(&expected_size, dest->partition_name_len) ||
       !avb_safe_add_to(&expected_size, dest->salt_len) ||
       !avb_safe_add_to(&expected_size, dest->digest_len)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow while adding up sizes.\n");
     return false;
   }
   if (expected_size > dest->parent_descriptor.num_bytes_following) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptor payload size overflow.\n");
     return false;
   }

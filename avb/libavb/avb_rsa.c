@@ -36,6 +36,7 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
+#include "log.h"
 
 typedef struct IAvbKey {
   unsigned int len; /* Length of n[] in number of uint32_t */
@@ -54,18 +55,21 @@ static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
 
   if (!avb_rsa_public_key_header_validate_and_byteswap(
           (const AvbRSAPublicKeyHeader*)data, &h)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid key.\n");
     goto fail;
   }
 
   if (!(h.key_num_bits == 2048 || h.key_num_bits == 4096 ||
         h.key_num_bits == 8192)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unexpected key length.\n");
     goto fail;
   }
 
   expected_length = sizeof(AvbRSAPublicKeyHeader) + 2 * h.key_num_bits / 8;
   if (length != expected_length) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Key does not match expected length.\n");
     goto fail;
   }
@@ -78,6 +82,7 @@ static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
    */
   key = (IAvbKey*)(avb_malloc(sizeof(IAvbKey) + 2 * h.key_num_bits / 8));
   if (key == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
 
@@ -91,6 +96,7 @@ static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
    * key in), so convert it.
    */
   for (i = 0; i < key->len; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     key->n[i] = avb_be32toh(((uint32_t*)n)[key->len - i - 1]);
     key->rr[i] = avb_be32toh(((uint32_t*)rr)[key->len - i - 1]);
   }
@@ -98,20 +104,24 @@ static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
 
 fail:
   if (key != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_free(key);
   }
   return NULL;
 }
 
 static void iavb_free_parsed_key(IAvbKey* key) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_free(key);
 }
 
 /* a[] -= mod */
 static void subM(const IAvbKey* key, uint32_t* a) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   int64_t A = 0;
   uint32_t i;
   for (i = 0; i < key->len; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     A += (uint64_t)a[i] - key->n[i];
     a[i] = (uint32_t)A;
     A >>= 32;
@@ -120,13 +130,17 @@ static void subM(const IAvbKey* key, uint32_t* a) {
 
 /* return a[] >= mod */
 static int geM(const IAvbKey* key, uint32_t* a) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t i;
   for (i = key->len; i;) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     --i;
     if (a[i] < key->n[i]) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return 0;
     }
     if (a[i] > key->n[i]) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return 1;
     }
   }
@@ -138,12 +152,14 @@ static void montMulAdd(const IAvbKey* key,
                        uint32_t* c,
                        const uint32_t a,
                        const uint32_t* b) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t A = (uint64_t)a * b[0] + c[0];
   uint32_t d0 = (uint32_t)A * key->n0inv;
   uint64_t B = (uint64_t)d0 * key->n[0] + (uint32_t)A;
   uint32_t i;
 
   for (i = 1; i < key->len; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     A = (A >> 32) + (uint64_t)a * b[i] + c[i];
     B = (B >> 32) + (uint64_t)d0 * key->n[i] + (uint32_t)A;
     c[i - 1] = (uint32_t)B;
@@ -154,17 +170,21 @@ static void montMulAdd(const IAvbKey* key,
   c[i - 1] = (uint32_t)A;
 
   if (A >> 32) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     subM(key, c);
   }
 }
 
 /* montgomery c[] = a[] * b[] / R % mod */
 static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t i;
   for (i = 0; i < key->len; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     c[i] = 0;
   }
   for (i = 0; i < key->len; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     montMulAdd(key, c, a[i], b);
   }
 }
@@ -173,10 +193,12 @@ static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
  * Input and output big-endian byte array in inout.
  */
 static void modpowF4(const IAvbKey* key, uint8_t* inout) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t* a = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aaR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   if (a == NULL || aR == NULL || aaR == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto out;
   }
 
@@ -185,6 +207,7 @@ static void modpowF4(const IAvbKey* key, uint8_t* inout) {
 
   /* Convert from big endian byte array to little endian word array. */
   for (i = 0; i < (int)key->len; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint32_t tmp = (inout[((key->len - 1 - i) * 4) + 0] << 24) |
                    (inout[((key->len - 1 - i) * 4) + 1] << 16) |
                    (inout[((key->len - 1 - i) * 4) + 2] << 8) |
@@ -194,6 +217,7 @@ static void modpowF4(const IAvbKey* key, uint8_t* inout) {
 
   montMul(key, aR, a, key->rr); /* aR = a * RR / R mod M   */
   for (i = 0; i < 16; i += 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     montMul(key, aaR, aR, aR);  /* aaR = aR * aR / R mod M */
     montMul(key, aR, aaR, aaR); /* aR = aaR * aaR / R mod M */
   }
@@ -201,11 +225,13 @@ static void modpowF4(const IAvbKey* key, uint8_t* inout) {
 
   /* Make sure aaa < mod; aaa is at most 1x mod too large. */
   if (geM(key, aaa)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     subM(key, aaa);
   }
 
   /* Convert to bigendian byte array */
   for (i = (int)key->len - 1; i >= 0; --i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint32_t tmp = aaa[i];
     *inout++ = (uint8_t)(tmp >> 24);
     *inout++ = (uint8_t)(tmp >> 16);
@@ -215,12 +241,15 @@ static void modpowF4(const IAvbKey* key, uint8_t* inout) {
 
 out:
   if (a != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_free(a);
   }
   if (aR != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_free(aR);
   }
   if (aaR != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_free(aaR);
   }
 }
@@ -236,33 +265,39 @@ bool avb_rsa_verify(const uint8_t* key,
                     size_t hash_num_bytes,
                     const uint8_t* padding,
                     size_t padding_num_bytes) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t* buf = NULL;
   IAvbKey* parsed_key = NULL;
   bool success = false;
 
   if (key == NULL || sig == NULL || hash == NULL || padding == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid input.\n");
     goto out;
   }
 
   parsed_key = iavb_parse_key_data(key, key_num_bytes);
   if (parsed_key == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Error parsing key.\n");
     goto out;
   }
 
   if (sig_num_bytes != (parsed_key->len * sizeof(uint32_t))) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Signature length does not match key length.\n");
     goto out;
   }
 
   if (padding_num_bytes != sig_num_bytes - hash_num_bytes) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Padding length does not match hash and signature lengths.\n");
     goto out;
   }
 
   buf = (uint8_t*)avb_malloc(sig_num_bytes);
   if (buf == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Error allocating memory.\n");
     goto out;
   }
@@ -276,12 +311,14 @@ bool avb_rsa_verify(const uint8_t* key,
    * avb_safe_memcmp() just to be on the safe side.
    */
   if (avb_safe_memcmp(buf, padding, padding_num_bytes)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Padding check failed.\n");
     goto out;
   }
 
   /* Check hash. */
   if (avb_safe_memcmp(buf + padding_num_bytes, hash, hash_num_bytes)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Hash check failed.\n");
     goto out;
   }
@@ -290,9 +327,11 @@ bool avb_rsa_verify(const uint8_t* key,
 
 out:
   if (parsed_key != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     iavb_free_parsed_key(parsed_key);
   }
   if (buf != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_free(buf);
   }
   return success;

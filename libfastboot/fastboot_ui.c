@@ -43,68 +43,115 @@
 #include "smbios.h"
 #include "info.h"
 #include "android.h"
+#include "log.h"
 
 static const ui_textline_t unlocked_headers[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"        Unlock bootloader?",			TRUE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"If you unlock the bootloader, you will",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"be able to install custom operating",		FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"system software on this device. A custom",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"OS is not subject to the same level of",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"testing as the original OS, and can cause",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"your device and installed applications",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"to stop working properly. Software",		FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"integrity cannot be guaranteed with a",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"custom OS so any data stored on the",		FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"device while the bootloader is unlocked",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"may be at risk.",				FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	{ &COLOR_WHITE,		"To prevent unauthorized access to your",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"personal data, unlocking the bootloader",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_RED, 		"will also delete all personal data on",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_RED, 		"your device.",					FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ NULL, NULL, FALSE }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static ui_textline_t locked_headers[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"         Lock bootloader?", 			TRUE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"If you lock the bootloader, you will", 	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"not be able to install custom operating",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"system software on this device.",		FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	{ &COLOR_WHITE,		"To prevent unauthorized access to your",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"personal data, locking the bootloader",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_RED, 		"will also delete all personal data on",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_RED, 		"your device.",					FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",						FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ NULL, NULL, FALSE }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static struct msg_for_state {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const ui_textline_t *msg;
 	enum device_state state;
 } const FASTBOOT_UI_CONFIRM[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ unlocked_headers,	UNLOCKED },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ locked_headers,	LOCKED }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static const char *DROID_IMG_NAME = "droid_operation";
 
 /* Boot menu. */
 static ui_boot_action_t BOOT_ACTIONS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "start",		NULL,	NORMAL_BOOT },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "restartbootloader",	NULL,	FASTBOOT },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "recoverymode",	NULL,	RECOVERY },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "reboot",		NULL,	NORMAL_BOOT },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "power_off",		NULL,	POWER_OFF },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef CRASHMODE_USE_ADB
 	{ "crashmode",		NULL,	CRASHMODE },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 	{ NULL,			NULL,	UNKNOWN_TARGET }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static BOOLEAN fastboot_ui_initialized = FALSE;
@@ -116,6 +163,7 @@ static ui_boot_menu_t *boot_menu;
 
 static EFI_STATUS fastboot_ui_clear_dynamic_part(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return ui_clear_area(area_x, area_y,
 			     swidth - area_x,
 			     sheight - area_y - margin);
@@ -123,27 +171,32 @@ static EFI_STATUS fastboot_ui_clear_dynamic_part(void)
 
 static EFI_GRAPHICS_OUTPUT_BLT_PIXEL *fastboot_ui_default_color(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return &COLOR_WHITE;
 }
 
 static const char *fastboot_ui_info_ifwi_version(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return SMBIOS_GET_STRING(0, BiosVersion);
 }
 
 static const char *fastboot_ui_info_serial_number(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *serial = get_serial_number();
 	return serial ? serial : "N/A";
 }
 
 static const char *fastboot_ui_info_secure_boot(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return is_platform_secure_boot_enabled() ? "ENABLED" : "DISABLED";
 }
 
 static EFI_GRAPHICS_OUTPUT_BLT_PIXEL *fastboot_ui_info_secure_boot_color(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return is_platform_secure_boot_enabled() ? &COLOR_GREEN : &COLOR_RED;
 }
 
@@ -159,14 +212,18 @@ struct info_text_fun {
 	{ "IFWI VERSION",	fastboot_ui_info_ifwi_version,	fastboot_ui_default_color },
 	{ "SERIAL NUMBER",	fastboot_ui_info_serial_number,	fastboot_ui_default_color },
 	{ "SECURE BOOT",	fastboot_ui_info_secure_boot,	fastboot_ui_info_secure_boot_color },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "LOCK STATE",		get_current_state_string,	get_current_state_color },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "BOOT REASON",	get_boot_reason_string,		fastboot_ui_default_color }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static const char *FASTBOOT_TITLE = "FASTBOOT MODE";
 
 static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, line_nb = ARRAY_SIZE(FASTBOOT_INFOS) + 2;
 	ui_textline_t *lines;
 
@@ -181,6 +238,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 	lines[1].str = "";
 
 	for (i = 2; i < line_nb; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		const struct info_text_fun *info = &FASTBOOT_INFOS[i - 2];
 		ui_textline_t *line = &lines[i];
 		char *value;
@@ -188,6 +246,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 
 		line->color = info->get_color();
 		if (!line->color) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to get fastboot info line %d color", i);
 			goto exit;
 		}
@@ -195,6 +254,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 
 		value = (char *)info->get_value();
 		if (!value) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to get fastboot info line %d value", i);
 			goto exit;
 		}
@@ -202,6 +262,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 		len = strlen((CHAR8 *)info->header) + strlen((CHAR8 *)value) + 4;
 		line->str = AllocatePool(len);
 		if (!line->str) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to allocate fastboot line %d buffer len=%d", i, len);
 			goto exit;
 		}
@@ -209,6 +270,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 		len = efi_snprintf((CHAR8 *)line->str, len, (CHAR8 *)"%a - %a",
 				   info->header, value);
 		if (len < 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to format fastboot info line %d", i);
 			goto exit;
 		}
@@ -219,6 +281,7 @@ static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 
 exit:
 	if (lines) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (i = 2; i < line_nb && lines[i].str; i++)
 			FreePool(lines[i].str);
 		FreePool(lines);
@@ -228,6 +291,7 @@ exit:
 
 BOOLEAN fastboot_ui_confirm_for_state(enum device_state target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 	BOOLEAN result = FALSE;
 
@@ -237,6 +301,7 @@ BOOLEAN fastboot_ui_confirm_for_state(enum device_state target)
 
 	for (i = 0; i < ARRAY_SIZE(FASTBOOT_UI_CONFIRM); i++)
 		if (target == FASTBOOT_UI_CONFIRM[i].state) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_ui_clear_dynamic_part();
 			result = ui_confirm(FASTBOOT_UI_CONFIRM[i].msg, swidth - area_x - margin,
 					    sheight - area_y - margin, area_x, area_y);
@@ -249,6 +314,7 @@ BOOLEAN fastboot_ui_confirm_for_state(enum device_state target)
 
 void fastboot_ui_refresh(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN y = area_y;
 
 	if (!fastboot_ui_initialized)
@@ -263,12 +329,14 @@ void fastboot_ui_refresh(void)
 
 EFI_STATUS fastboot_ui_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_image_t *droid;
 	UINTN width, height, x, y;
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	ret = ui_init(&swidth, &sheight);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Init screen failed");
 		return ret;
 	}
@@ -282,6 +350,7 @@ EFI_STATUS fastboot_ui_init(void)
 
 	droid = ui_image_get(DROID_IMG_NAME);
 	if (!droid) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(EFI_OUT_OF_RESOURCES,
 			   L"Unable to load '%a' image",
 			   DROID_IMG_NAME);
@@ -289,11 +358,13 @@ EFI_STATUS fastboot_ui_init(void)
 	}
 
 	if (swidth > sheight) {	/* Landscape orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		width = (swidth / 2) - (2 * margin);
 		height = droid->height * width / droid->width;
 		x = margin;
 		y = (sheight / 2) - (height / 2);
 	} else {		/* Portrait orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		height = sheight / 3;
 		width = droid->width * height / droid->height;
 		x = (swidth / 2) - (width / 2);
@@ -305,15 +376,18 @@ EFI_STATUS fastboot_ui_init(void)
 		return ret;
 
 	if (swidth > sheight) {	/* Landscape orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		area_x = swidth / 2 + margin;
 		area_y = y;
 	} else {		/* Portrait orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		area_x = margin;
 		area_y = sheight / 2;
 	}
 
 	boot_menu = ui_boot_menu_create(BOOT_ACTIONS);
 	if (!boot_menu) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to build boot menu");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -339,6 +413,7 @@ enum boot_target fastboot_ui_event_handler()
 
 void fastboot_ui_destroy(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_boot_menu_free(boot_menu);
 	ui_print_clear();
 	ui_display_vendor_splash();

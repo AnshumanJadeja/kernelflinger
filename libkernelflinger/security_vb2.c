@@ -31,21 +31,25 @@
  */
 #include "security.h"
 #include "security_vb2.h"
+#include "log.h"
 
 EFI_STATUS rot_pub_key_sha256(IN VBDATA *vb_data,
                         OUT UINT8 **hash_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	const uint8_t *vbmeta_pub_key;
 	UINTN vbmeta_pub_key_len;
 
 	if (vb_data && hash_p) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = avb_vbmeta_image_verify(vb_data->vbmeta_images[0].vbmeta_data,
 			vb_data->vbmeta_images[0].vbmeta_size,
 			&vbmeta_pub_key,
 			&vbmeta_pub_key_len);
 
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to get the vbmeta_pub_key");
 			return ret;
 		}

@@ -56,6 +56,7 @@
 #include "ui.h"
 #endif
 #include "tpm2_security.h"
+#include "log.h"
 
 static BOOLEAN last_cmd_succeeded;
 static fastboot_handle fastboot_flash_cmd;
@@ -87,7 +88,9 @@ BOOLEAN user_build = false;
 
 static void flush_tx_buffer(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	while (need_tx_cb) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		need_tx_cb = FALSE;
 		fastboot_tx_cb(NULL, 0);
 	}
@@ -95,18 +98,21 @@ static void flush_tx_buffer(void)
 
 static void do_erase(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_erase_cmd(argc, argv);
 	flush_tx_buffer();
 }
 
 static EFI_STATUS find_partition(CHAR8 *target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *target16;
 	struct gpt_partition_interface gparti;
 
 	target16 = stra_to_str(target);
 	if (!target16) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Failed to convert target to CHAR16");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -119,6 +125,7 @@ static EFI_STATUS find_partition(CHAR8 *target)
 
 static CHAR8 *get_target(CHAR8 *target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *target16;
 	const CHAR16 *label16;
@@ -137,11 +144,13 @@ static CHAR8 *get_target(CHAR8 *target)
 
 	label16 = slot_label(target16);
 	if (!label16) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret_target = target;
 		goto out;
 	}
 
 	if (StrLen(label16) + 1 > sizeof(label)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Label name is too long");
 		goto out;
 	}
@@ -159,7 +168,9 @@ out:
 
 static void installer_erase(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (argc != 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Erase command requires exactly 2 arguments");
 		return;
 	}
@@ -174,6 +185,7 @@ static void installer_erase(INTN argc, CHAR8 **argv)
 static void installer_flash_buffer(void *data, unsigned size,
 				   INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	void *data_save = dl->data;
 
 	dl->data = data;
@@ -188,15 +200,18 @@ static void installer_flash_buffer(void *data, unsigned size,
 
 static EFI_STATUS read_file(EFI_FILE *file, UINTN size, void *data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN nsize = size;
 
 	ret = uefi_call_wrapper(file->Read, 3, file, &nsize, data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(ret, "Failed to read file");
 		return ret;
 	}
 	if (size != nsize) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Failed to read %d bytes (only %d read)",
 		    		  size, nsize);
 		return EFI_INVALID_PARAMETER;
@@ -232,6 +247,7 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 	fb->sph.total_chunks = 2; /* skip and data chunks. */
 
 	for (ckh_blks = ckh->chunk_sz; ckh_blks; ckh_blks -= ckh->chunk_sz) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ckh->chunk_sz = min(MAX_BLKS, ckh_blks);
 		data_size = (UINTN)ckh->chunk_sz * (UINTN)fb->sph.blk_sz;
 		ckh->total_sz = sizeof(*ckh) + data_size;
@@ -249,6 +265,7 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 		read_ptr = fb->ckh_data;
 		read_size = min(payload_size, MAX_DATA_SIZE);
 		if (data_size < MAX_DATA_SIZE) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			already_read = MAX_DATA_SIZE - data_size;
 			ret = memcpy_s(read_ptr, MAX_DATA_SIZE, fb->d.data + ckh->total_sz, already_read);
 			if (EFI_ERROR(ret))
@@ -256,6 +273,7 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 			read_size -= already_read;
 			read_ptr += already_read;
 			if (read_size > file_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = read_file(file[*read_flags], file_size, read_ptr);
 				if (EFI_ERROR(ret))
 					return ret;
@@ -284,6 +302,7 @@ static EFI_STATUS installer_flash_big_chunk_multiple(EFI_FILE **file, UINTN *rea
 static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_data,
 					    flash_buffer_t *fb, UINTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	UINTN payload_size, read_size, already_read, ckh_blks, data_size;
 	const UINTN MAX_DATA_SIZE = dl->max_size - offsetof(flash_buffer_t, ckh_data);
@@ -297,6 +316,7 @@ static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_dat
 	fb->sph.total_chunks = 2; /* skip and data chunks. */
 
 	for (ckh_blks = ckh->chunk_sz; ckh_blks; ckh_blks -= ckh->chunk_sz) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ckh->chunk_sz = min(MAX_BLKS, ckh_blks);
 		data_size = (UINTN)ckh->chunk_sz * (UINTN)fb->sph.blk_sz;
 		ckh->total_sz = sizeof(*ckh) + data_size;
@@ -315,6 +335,7 @@ static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_dat
 		read_ptr = fb->ckh_data;
 		read_size = min(payload_size, MAX_DATA_SIZE);
 		if (data_size < MAX_DATA_SIZE) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			already_read = MAX_DATA_SIZE - data_size;
 			ret = memcpy_s(read_ptr, MAX_DATA_SIZE, fb->d.data + ckh->total_sz, already_read);
 			if (EFI_ERROR(ret))
@@ -340,6 +361,7 @@ static EFI_STATUS installer_flash_big_chunk(EFI_FILE *file, UINTN *remaining_dat
 static void installer_split_and_joint_flash(CHAR16 **filename,
 						UINTN *size, UINTN num, UINTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	flash_buffer_t *fb;
 	UINTN  read_flags = 0;
@@ -355,9 +377,11 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 	const UINTN HEADER_SIZE = offsetof(flash_buffer_t, d);
 	const UINTN MAX_DATA_SIZE = dl->max_size - HEADER_SIZE;
 	for (UINTN i = 0; i < num; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		remaining_data = remaining_data + size[i];
 		ret = uefi_open_file(file_io_interface, filename[i], &file[i]);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			inst_perror(ret, "Failed to open %s file", filename[i]);
 			return;
 		}
@@ -369,6 +393,7 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 	remaining_data -= sizeof(sph);
 	size[read_flags] -=  sizeof(sph);
 	if (!is_sparse_image((void *) &sph, sizeof(sph))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("sparse file expected");
 		return;
 	}
@@ -384,6 +409,7 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 	read_ptr = fb->d.data;
 	blk_count = 0;
 	while (nb_chunks > 0 && remaining_data > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fb->sph.total_chunks = 1;
 		fb->sph.total_blks = fb->skip_ckh.chunk_sz = blk_count;
 		if (remaining_data < read_size)
@@ -400,6 +426,7 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 		ckh = &fb->d.ckh;
 		while ((void *)ckh + sizeof(*ckh) <= read_ptr + read_size &&
 				(void *)ckh + ckh->total_sz <= read_ptr + read_size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (nb_chunks == 0)
 				goto exit;
 			flash_size += ckh->total_sz;
@@ -411,8 +438,10 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 		}
 		/* chunk is too big to fit in the download buffer. */
 		if (flash_size == HEADER_SIZE) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (ckh->chunk_type != CHUNK_TYPE_RAW ||
 					remaining_data < ckh->total_sz - MAX_DATA_SIZE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				fastboot_fail("Corrupted sparse file");
 				goto exit;
 			}
@@ -437,6 +466,7 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 		   beginning of the buffer. */
 
 		if (dl->data + flash_size < read_ptr + read_size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			already_read = read_ptr + read_size - (void *)ckh;
 			ret = memcpy_s(fb->d.data, MAX_DATA_SIZE, ckh, already_read);
 			if (EFI_ERROR(ret))
@@ -445,10 +475,12 @@ static void installer_split_and_joint_flash(CHAR16 **filename,
 			read_ptr = fb->d.data + already_read;
 
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			read_size = MAX_DATA_SIZE;
 			read_ptr = fb->d.data;
 		}
 		if ((read_size > size[read_flags]) && (read_flags != (num - 1))) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = read_file(file[read_flags], size[read_flags], read_ptr);
 			if (EFI_ERROR(ret))
 				goto exit;
@@ -470,6 +502,7 @@ exit:
 static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 				      UINTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	flash_buffer_t *fb;
 	struct sparse_header sph;
@@ -484,6 +517,7 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 
 	ret = uefi_open_file(file_io_interface, filename, &file);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(ret, "Failed to open %s file", filename);
 		return;
 	}
@@ -494,6 +528,7 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 	remaining_data -= sizeof(sph);
 
 	if (!is_sparse_image((void *) &sph, sizeof(sph))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("sparse file expected");
 		return;
 	}
@@ -515,6 +550,7 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 	blk_count = 0;
 
 	while (nb_chunks > 0 && remaining_data > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fb->sph.total_chunks = 1;
 		fb->sph.total_blks = fb->skip_ckh.chunk_sz = blk_count;
 
@@ -533,7 +569,9 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 		ckh = &fb->d.ckh;
 		while ((void *)ckh + sizeof(*ckh) <= read_ptr + read_size &&
 				(void *)ckh + ckh->total_sz <= read_ptr + read_size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (nb_chunks == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				fastboot_fail("Corrupted sparse file: too many chunks");
 				goto exit;
 			}
@@ -547,8 +585,10 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 
 		/* chunk is too big to fit in the download buffer. */
 		if (flash_size == HEADER_SIZE) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (ckh->chunk_type != CHUNK_TYPE_RAW ||
 					remaining_data < ckh->total_sz - MAX_DATA_SIZE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				fastboot_fail("Corrupted sparse file");
 				goto exit;
 			}
@@ -573,6 +613,7 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 		/* Move the incomplete chunk from the end to the
 		   beginning of the buffer. */
 		if (dl->data + flash_size < read_ptr + read_size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			already_read = read_ptr + read_size - (void *)ckh;
 			ret = memcpy_s(fb->d.data, MAX_DATA_SIZE, ckh, already_read);
 			if (EFI_ERROR(ret))
@@ -580,6 +621,7 @@ static void installer_split_and_flash(CHAR16 *filename, UINTN size,
 			read_size = MAX_DATA_SIZE - already_read;
 			read_ptr = fb->d.data + already_read;
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			read_size = MAX_DATA_SIZE;
 			read_ptr = fb->d.data;
 		}
@@ -591,6 +633,7 @@ exit:
 
 static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *filename;
 	INTN num = argc - 2;
@@ -599,6 +642,7 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 	UINTN size;
 	UINTN numsize[num];
 	if (argc < 3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Flash command requires exactly more then 3 arguments");
 		return;
 	}
@@ -607,20 +651,25 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 		numname[i] = NULL;
 
 	if (argc > 3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		argc = 2;
 		for (int i = 0; i <  num; i++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			numname[i] = stra_to_str(argv[i+2]);
 			if (!numname[i]) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				fastboot_fail("Failed to convert CHAR8 numname to CHAR16");
 				return;
 			}
 			ret = uefi_get_file_size(file_io_interface, numname[i], &numsize[i]);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				inst_perror(ret, "Failed to get %s file size", numname[i]);
 				goto exit;
 			}
 		}
 		if (get_current_state() == LOCKED) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Installer: Flash %a is prohibited in %a state.", argv[1],
 					get_current_state_string());
 			fastboot_fail("Installer: Prohibited command in %a state.",
@@ -633,6 +682,7 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 
 		ret = find_partition(argv[1]);
 		switch (ret) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case EFI_SUCCESS:
 			do_erase(argc, argv);
 			if (!last_cmd_succeeded)
@@ -647,15 +697,18 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 
 		installer_split_and_joint_flash(numname, numsize, num, argc, argv);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* The fastboot flash command does not want the file parameter. */
 		argc--;
 
 		filename = stra_to_str(argv[2]);
 		if (!filename) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_fail("Failed to convert CHAR8 filename to CHAR16");
 			return;
 		}
 		if (get_current_state() == LOCKED) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Installer: Flash %a is prohibited in %a state.", argv[1],
 				get_current_state_string());
 			fastboot_fail("Installer: Prohibited command in %a state.",
@@ -664,6 +717,7 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 		}
 		ret = uefi_get_file_size(file_io_interface, filename, &size);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			inst_perror(ret, "Failed to get %s file size", filename);
 			goto exit;
 		}
@@ -674,6 +728,7 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 
 		ret = find_partition(argv[1]);
 		switch (ret) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case EFI_SUCCESS:
 			do_erase(argc, argv);
 			if (!last_cmd_succeeded)
@@ -687,12 +742,14 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 		}
 
 		if (size > dl->max_size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			installer_split_and_flash(filename, size, argc, argv);
 			goto exit;
 		}
 
 		ret = uefi_read_file(file_io_interface, filename, &data, &size);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			inst_perror(ret, "Unable to read file %s", filename);
 			goto exit;
 		}
@@ -702,8 +759,10 @@ static void installer_flash_cmd(INTN argc, CHAR8 **argv)
 	}
 exit:
 	if (num == 1) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(filename);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (INTN i = 0; i < num; i++)
 			if (numname[i])
 				FreePool(numname[i]);
@@ -714,6 +773,7 @@ exit:
 
 static CHAR16 *get_format_image_filename(CHAR8 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR8 *filename;
 	CHAR16 *filename16;
@@ -725,16 +785,19 @@ static CHAR16 *get_format_image_filename(CHAR8 *label)
 	label_length = strlena(label);
 	filename = AllocateZeroPool(SIZE_OF_FILENAME);
 	if (!filename) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Unable to allocate CHAR8 filename buffer");
 		return NULL;
 	}
 	ret = memcpy_s(filename, SIZE_OF_FILENAME, label, label_length);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		filename16 = NULL;
 		goto out;
 	}
 	ret = memcpy_s(filename + label_length, SIZE_OF_FILENAME - label_length, ".img", 4);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		filename16 = NULL;
 		goto out;
 	}
@@ -753,12 +816,14 @@ out:
    3. flash the filesystem image; */
 static void installer_format(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *data = NULL;
 	UINTN size;
 	CHAR16 *filename;
 
 	if (argc != 2 && argc != 3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Format command requires 2 or 3 arguments");
 		return;
 	}
@@ -769,9 +834,11 @@ static void installer_format(INTN argc, CHAR8 **argv)
 
 	ret = uefi_read_file(file_io_interface, filename, &data, &size);
 	if (ret == EFI_NOT_FOUND && !StrCmp(L"userdata.img", filename)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_info("userdata.img is missing, cannot format %a", argv[1]);
 		fastboot_info("Android fs_mgr will manage this");
 	} else if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(ret, "Unable to read file %s", filename);
 		goto free_filename;
 	}
@@ -796,18 +863,21 @@ free_filename:
 
 static void installer_boot(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VOID *bootimage;
 	UINTN size;
 	CHAR16 *filename;
 
 	if (argc != 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("boot command takes one parameter");
 		return;
 	}
 
 	filename = stra_to_str((CHAR8 *)argv[1]);
 	if (!filename) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Failed to convert filename to CHAR16");
 		return;
 	}
@@ -815,6 +885,7 @@ static void installer_boot(INTN argc, CHAR8 **argv)
 	ret = uefi_read_file(file_io_interface, filename, &bootimage, &size);
 	FreePool(filename);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(ret, "Failed to read %a file", argv[1]);
 		return;
 	}
@@ -829,6 +900,7 @@ static void installer_boot(INTN argc, CHAR8 **argv)
 }
 
 static struct command {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN optional;
 	char *cmd;
 } *commands;
@@ -837,6 +909,7 @@ static UINTN current_command;
 
 static void free_commands(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	if (!commands)
@@ -854,11 +927,13 @@ static void free_commands(void)
 
 static EFI_STATUS create_new_command(struct command *command, char *str)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *cmd = str;
 
 	command->optional = FALSE;
 
 	if (*str == '[') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		str++;
 		cmd = (char *)strchr((CHAR8 *)str, ']');
 		if (!cmd)
@@ -866,7 +941,9 @@ static EFI_STATUS create_new_command(struct command *command, char *str)
 		*cmd++ = '\0';
 
 		while (*str) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			switch (*str++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			case 'o':
 				command->optional = TRUE;
 				break;
@@ -892,22 +969,26 @@ static EFI_STATUS create_new_command(struct command *command, char *str)
 
 static EFI_STATUS store_command(char *command, VOID *context _unused)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct command *new_commands;
 
 	new_commands = AllocatePool(SIZE_OF_NEW_COMMANDS);
 	if (!new_commands) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_commands();
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	ret = memcpy_s(new_commands, SIZE_OF_NEW_COMMANDS, commands, command_nb * sizeof(*commands));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_commands();
 		return ret;
 	}
 	ret = create_new_command(&new_commands[command_nb], command);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_commands();
 		return ret;
 	}
@@ -921,7 +1002,9 @@ static EFI_STATUS store_command(char *command, VOID *context _unused)
 
 static char *next_command()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (command_nb == current_command) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_commands();
 		return NULL;
 	}
@@ -931,24 +1014,28 @@ static char *next_command()
 
 static void batch(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *data;
 	UINTN size;
 	CHAR16 *filename;
 
 	if (argc != 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Batch command takes one parameter");
 		return;
 	}
 
 	filename = stra_to_str(argv[1]);
 	if (!filename) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Failed to convert CHAR8 filename to CHAR16");
 		return;
 	}
 
 	ret = uefi_read_file(file_io_interface, filename, &data, &size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(ret, "Failed to read %s file", filename);
 		FreePool(filename);
 		return;
@@ -965,6 +1052,7 @@ static void batch(INTN argc, CHAR8 **argv)
 
 static CHAR8 *build_default_options()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static CHAR8 options[64];
 	const char cmd_prefix[] = "--batch installer";
@@ -982,6 +1070,7 @@ static CHAR8 *build_default_options()
 #ifdef HAL_AUTODETECT
 	char *device = get_property_device();
 	if (device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*str++ = '_';
 		while (*device)
 			*str++ = *device++;
@@ -998,6 +1087,7 @@ static CHAR8 *build_default_options()
 static void usage(__attribute__((__unused__)) INTN argc,
 		__attribute__((__unused__)) CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	Print(L"Usage: installer [OPTIONS | COMMANDS]\n");
 	Print(L"  installer is an EFI application acting like the fastboot command.\n\n");
 	Print(L" COMMANDS               fastboot commands (cf. the fastboot manual page)\n");
@@ -1014,6 +1104,7 @@ static void usage(__attribute__((__unused__)) INTN argc,
 static void version(__attribute__((__unused__)) INTN argc,
 		__attribute__((__unused__)) CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	Print(L"%s\n", KERNELFLINGER_VERSION);
 
 	fastboot_okay("");
@@ -1022,44 +1113,64 @@ static void version(__attribute__((__unused__)) INTN argc,
 static void unsupported_cmd(__attribute__((__unused__)) INTN argc,
 		CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_fail("installer does not the support the '%a' command", argv[0]);
 }
 
 static struct replacements {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_cmd cmd;
 	fastboot_handle *save_handle;
 	const char *equ_name;
 } REPLACEMENTS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Fastboot replacements. */
 	{ .cmd = { .name = "flash", .handle = installer_flash_cmd },
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	  .save_handle = &fastboot_flash_cmd },
 	{ .cmd = { .name = "erase", .handle = installer_erase },
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	  .save_handle = &fastboot_erase_cmd },
 	{ .cmd = { .name = "format", .handle = installer_format	} },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { .name = "boot", .handle = installer_boot } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Equivalent commands. */
 	{ .cmd = { .name = "--set-active" }, .equ_name = "set_active" },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Unsupported commands. */
 	{ .cmd = { "update",	LOCKED, unsupported_cmd	    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "flashall",	LOCKED, unsupported_cmd	    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "devices",	LOCKED, unsupported_cmd	    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "download",	LOCKED, unsupported_cmd	    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Installer specific commands. */
 	{ .cmd = { "--help",	LOCKED,	usage		    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "-h",	LOCKED,	usage		    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "--version",	LOCKED,	version		    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "-v",	LOCKED,	version		    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "--batch",	LOCKED,	batch		    } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ .cmd = { "-b",	LOCKED,	batch		    } }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static EFI_STATUS installer_replace_functions(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct fastboot_cmd *cmd;
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(REPLACEMENTS); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cmd = fastboot_get_root_cmd(REPLACEMENTS[i].cmd.name);
 
 		if (cmd && REPLACEMENTS[i].save_handle)
@@ -1069,6 +1180,7 @@ static EFI_STATUS installer_replace_functions(void)
 			cmd->handle = REPLACEMENTS[i].cmd.handle;
 
 		if (!cmd && REPLACEMENTS[i].cmd.handle) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = fastboot_register(&REPLACEMENTS[i].cmd);
 			if (EFI_ERROR(ret))
 				return ret;
@@ -1076,6 +1188,7 @@ static EFI_STATUS installer_replace_functions(void)
 		}
 
 		if (REPLACEMENTS[i].equ_name) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			cmd = fastboot_get_root_cmd(REPLACEMENTS[i].equ_name);
 			if (!cmd)
 				return EFI_INVALID_PARAMETER;
@@ -1093,6 +1206,7 @@ static EFI_STATUS installer_replace_functions(void)
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LOADED_IMAGE *loaded_img = NULL;
 	CHAR8 *options, *buf;
@@ -1108,6 +1222,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 	ret = handle_protocol(image, &LoadedImageProtocol, (void **)&loaded_img);
 	if (ret != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"LoadedImageProtocol error");
 		return ret;
 	}
@@ -1116,6 +1231,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, loaded_img->DeviceHandle,
 			&FileSystemProtocol, (void *)&file_io_interface);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get FileSystemProtocol");
 		return ret;
 	}
@@ -1124,6 +1240,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	UINTN size = StrLen(loaded_img->LoadOptions) + 1;
 	buf = options = AllocatePool(size);
 	if (!options) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unable to allocate buffer for parameters");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -1138,7 +1255,9 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 	/* Check options before build and run commands */
 	if (options) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!strncmp(options, "-i", 2)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			include_self = TRUE;
 			options += 2;
 			skip_whitespace((char **)&options);
@@ -1155,8 +1274,10 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 #ifdef USE_TPM
 	if (!is_live_boot()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = tpm2_init();
 		if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to init TPM, exit");
 			goto exit;
 		}
@@ -1165,6 +1286,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 	ret = set_device_security_info(NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to init security info, exit");
 		goto exit;
 	}
@@ -1172,6 +1294,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	/* Initialize slot management. */
 	ret = slot_init();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Slot management initialization failed");
 		goto exit;
 	}
@@ -1204,10 +1327,12 @@ EFI_STATUS installer_transport_start(start_callback_t start_cb,
 				     data_callback_t rx_cb,
 				     data_callback_t tx_cb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	ret = fastboot_set_command_buffer(command_buffer,
 					  sizeof(command_buffer));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to set fastboot command buffer");
 		return ret;
 	}
@@ -1228,11 +1353,13 @@ EFI_STATUS installer_transport_start(start_callback_t start_cb,
 
 EFI_STATUS installer_transport_stop(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_SUCCESS;
 }
 
 EFI_STATUS installer_transport_run(UINT32 *state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static BOOLEAN initialized = FALSE;
 	EFI_STATUS ret;
 	char *cmd;
@@ -1242,10 +1369,12 @@ EFI_STATUS installer_transport_run(UINT32 *state)
 		*state = 1;
 
 	if (!initialized) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = installer_replace_functions();
 		if (EFI_ERROR(ret))
 			return ret;
 		if (!fastboot_flash_cmd) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_fail("Failed to get the flash handle");
 			return ret;
 		}
@@ -1253,10 +1382,12 @@ EFI_STATUS installer_transport_run(UINT32 *state)
 	}
 
 	if (current_command > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		flush_tx_buffer();
 		if (last_cmd_succeeded)
 			Print(L"Command successfully executed\n");
 		else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (!commands[current_command - 1].optional)
 				goto stop;
 			Print(L"Command failed but is optional\n");
@@ -1269,6 +1400,7 @@ EFI_STATUS installer_transport_run(UINT32 *state)
 
 	cmd_len = strlena((CHAR8 *)cmd);
 	if (cmd_len > fastboot_cmd_buf_len) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		inst_perror(EFI_BUFFER_TOO_SMALL,
 			    "command too long for fastboot command buffer");
 		goto stop;
@@ -1290,6 +1422,7 @@ stop:
 
 EFI_STATUS installer_transport_read(void *buf, UINT32 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_cmd_buf = buf;
 	fastboot_cmd_buf_len = size;
 
@@ -1298,20 +1431,24 @@ EFI_STATUS installer_transport_read(void *buf, UINT32 size)
 
 EFI_STATUS installer_transport_write(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define PREFIX_LEN 4
 
 	if (size < PREFIX_LEN)
 		return EFI_SUCCESS;
 
 	if (!memcmp((CHAR8 *)"INFO", buf, PREFIX_LEN)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		Print(L"(bootloader) %a\n", buf + PREFIX_LEN);
 		need_tx_cb = TRUE;
 	} if (!memcmp((CHAR8 *)"OKAY", buf, PREFIX_LEN)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (((char *)buf)[PREFIX_LEN] != '\0')
 			Print(L"%a\n", buf + PREFIX_LEN);
 		last_cmd_succeeded = TRUE;
 		fastboot_tx_cb(NULL, 0);
 	} else if (!memcmp((CHAR8 *)"FAIL", buf, PREFIX_LEN)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"%a", buf + PREFIX_LEN);
 		last_cmd_succeeded = FALSE;
 		fastboot_tx_cb(NULL, 0);
@@ -1321,7 +1458,9 @@ EFI_STATUS installer_transport_write(void *buf, UINT32 size)
 }
 
 static transport_t INSTALLER_TRANSPORT[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.name = "Installer for fastboot",
 		.start = installer_transport_start,
 		.stop = installer_transport_stop,
@@ -1333,26 +1472,31 @@ static transport_t INSTALLER_TRANSPORT[] = {
 
 EFI_STATUS fastboot_transport_register(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return transport_register(INSTALLER_TRANSPORT,
 				  ARRAY_SIZE(INSTALLER_TRANSPORT));
 }
 
 void fastboot_transport_unregister(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	transport_unregister();
 }
 
 /* UI wrapper functions. */
 void fastboot_ui_destroy(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 }
 
 void fastboot_ui_refresh(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 }
 
 EFI_STATUS fastboot_ui_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_SUCCESS;
 }
 
@@ -1365,5 +1509,6 @@ enum boot_target fastboot_ui_event_handler()
    factory or for engineering purpose only.  */
 BOOLEAN fastboot_ui_confirm_for_state(__attribute__((__unused__)) enum device_state target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return TRUE;
 }

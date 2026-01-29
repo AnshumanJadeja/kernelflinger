@@ -24,6 +24,7 @@
 
 
 #include "ff.h"
+#include "log.h"
 
 #if FF_USE_LFN != 0	/* This module will be blanked if in non-LFN configuration */
 
@@ -37,6 +38,7 @@
 
 #if FF_CODE_PAGE == 932 || FF_CODE_PAGE == 0	/* Japanese */
 static const WCHAR uni2oem932[] = {	/* Unicode --> Shift_JIS pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00A7, 0x8198, 0x00A8, 0x814E, 0x00B0, 0x818B, 0x00B1, 0x817D,	0x00B4, 0x814C, 0x00B6, 0x81F7, 0x00D7, 0x817E, 0x00F7, 0x8180,
 	0x0391, 0x839F, 0x0392, 0x83A0, 0x0393, 0x83A1, 0x0394, 0x83A2,	0x0395, 0x83A3, 0x0396, 0x83A4, 0x0397, 0x83A5, 0x0398, 0x83A6,
 	0x0399, 0x83A7, 0x039A, 0x83A8, 0x039B, 0x83A9, 0x039C, 0x83AA,	0x039D, 0x83AB, 0x039E, 0x83AC, 0x039F, 0x83AD, 0x03A0, 0x83AE,
@@ -964,6 +966,7 @@ static const WCHAR uni2oem932[] = {	/* Unicode --> Shift_JIS pairs */
 };
 
 static const WCHAR oem2uni932[] = {	/* Shift_JIS --> Unicode pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00A1, 0xFF61, 0x00A2, 0xFF62, 0x00A3, 0xFF63, 0x00A4, 0xFF64,	0x00A5, 0xFF65, 0x00A6, 0xFF66, 0x00A7, 0xFF67, 0x00A8, 0xFF68,
 	0x00A9, 0xFF69, 0x00AA, 0xFF6A, 0x00AB, 0xFF6B, 0x00AC, 0xFF6C,	0x00AD, 0xFF6D, 0x00AE, 0xFF6E, 0x00AF, 0xFF6F, 0x00B0, 0xFF70,
 	0x00B1, 0xFF71, 0x00B2, 0xFF72, 0x00B3, 0xFF73, 0x00B4, 0xFF74,	0x00B5, 0xFF75, 0x00B6, 0xFF76, 0x00B7, 0xFF77, 0x00B8, 0xFF78,
@@ -1893,6 +1896,7 @@ static const WCHAR oem2uni932[] = {	/* Shift_JIS --> Unicode pairs */
 
 #if FF_CODE_PAGE == 936 || FF_CODE_PAGE == 0	/* Simplified Chinese */
 static const WCHAR uni2oem936[] = {	/* Unicode --> GBK pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00A4, 0xA1E8, 0x00A7, 0xA1EC, 0x00A8, 0xA1A7, 0x00B0, 0xA1E3,	0x00B1, 0xA1C0, 0x00B7, 0xA1A4, 0x00D7, 0xA1C1, 0x00E0, 0xA8A4,
 	0x00E1, 0xA8A2, 0x00E8, 0xA8A8, 0x00E9, 0xA8A6, 0x00EA, 0xA8BA,	0x00EC, 0xA8AC, 0x00ED, 0xA8AA, 0x00F2, 0xA8B0, 0x00F3, 0xA8AE,
 	0x00F7, 0xA1C2, 0x00F9, 0xA8B4, 0x00FA, 0xA8B2, 0x00FC, 0xA8B9,	0x0101, 0xA8A1, 0x0113, 0xA8A5, 0x011B, 0xA8A7, 0x012B, 0xA8A9,
@@ -4621,6 +4625,7 @@ static const WCHAR uni2oem936[] = {	/* Unicode --> GBK pairs */
 };
 
 static const WCHAR oem2uni936[] = {	/* GBK --> Unicode pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0080, 0x20AC, 0x8140, 0x4E02, 0x8141, 0x4E04, 0x8142, 0x4E05,	0x8143, 0x4E06, 0x8144, 0x4E0F, 0x8145, 0x4E12, 0x8146, 0x4E17,
 	0x8147, 0x4E1F, 0x8148, 0x4E20, 0x8149, 0x4E21, 0x814A, 0x4E23,	0x814B, 0x4E26, 0x814C, 0x4E29, 0x814D, 0x4E2E, 0x814E, 0x4E2F,
 	0x814F, 0x4E31, 0x8150, 0x4E33, 0x8151, 0x4E35, 0x8152, 0x4E37,	0x8153, 0x4E3C, 0x8154, 0x4E40, 0x8155, 0x4E41, 0x8156, 0x4E42,
@@ -7351,6 +7356,7 @@ static const WCHAR oem2uni936[] = {	/* GBK --> Unicode pairs */
 
 #if FF_CODE_PAGE == 949 || FF_CODE_PAGE == 0	/* Korean */
 static const WCHAR uni2oem949[] = {	/* Unicode --> Korean pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00A1, 0xA2AE, 0x00A4, 0xA2B4, 0x00A7, 0xA1D7, 0x00A8, 0xA1A7,	0x00AA, 0xA8A3, 0x00AD, 0xA1A9, 0x00AE, 0xA2E7, 0x00B0, 0xA1C6,
 	0x00B1, 0xA1BE, 0x00B2, 0xA9F7, 0x00B3, 0xA9F8, 0x00B4, 0xA2A5,	0x00B6, 0xA2D2, 0x00B7, 0xA1A4, 0x00B8, 0xA2AC, 0x00B9, 0xA9F6,
 	0x00BA, 0xA8AC, 0x00BC, 0xA8F9, 0x00BD, 0xA8F6, 0x00BE, 0xA8FA,	0x00BF, 0xA2AF, 0x00C6, 0xA8A1, 0x00D0, 0xA8A2, 0x00D7, 0xA1BF,
@@ -9486,6 +9492,7 @@ static const WCHAR uni2oem949[] = {	/* Unicode --> Korean pairs */
 };
 
 static const WCHAR oem2uni949[] = {	/* Korean --> Unicode pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x8141, 0xAC02, 0x8142, 0xAC03, 0x8143, 0xAC05, 0x8144, 0xAC06,	0x8145, 0xAC0B, 0x8146, 0xAC0C, 0x8147, 0xAC0D, 0x8148, 0xAC0E,
 	0x8149, 0xAC0F, 0x814A, 0xAC18, 0x814B, 0xAC1E, 0x814C, 0xAC1F,	0x814D, 0xAC21, 0x814E, 0xAC22, 0x814F, 0xAC23, 0x8150, 0xAC25,
 	0x8151, 0xAC26, 0x8152, 0xAC27, 0x8153, 0xAC28, 0x8154, 0xAC29,	0x8155, 0xAC2A, 0x8156, 0xAC2B, 0x8157, 0xAC2E, 0x8158, 0xAC32,
@@ -11623,6 +11630,7 @@ static const WCHAR oem2uni949[] = {	/* Korean --> Unicode pairs */
 
 #if FF_CODE_PAGE == 950 || FF_CODE_PAGE == 0	/* Traditional Chinese */
 static const WCHAR uni2oem950[] = {	/* Unicode --> Big5 pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00A7, 0xA1B1, 0x00AF, 0xA1C2, 0x00B0, 0xA258, 0x00B1, 0xA1D3,	0x00B7, 0xA150, 0x00D7, 0xA1D1, 0x00F7, 0xA1D2, 0x02C7, 0xA3BE,
 	0x02C9, 0xA3BC, 0x02CA, 0xA3BD, 0x02CB, 0xA3BF, 0x02CD, 0xA1C5,	0x02D9, 0xA3BB, 0x0391, 0xA344, 0x0392, 0xA345, 0x0393, 0xA346,
 	0x0394, 0xA347, 0x0395, 0xA348, 0x0396, 0xA349, 0x0397, 0xA34A,	0x0398, 0xA34B, 0x0399, 0xA34C, 0x039A, 0xA34D, 0x039B, 0xA34E,
@@ -13314,6 +13322,7 @@ static const WCHAR uni2oem950[] = {	/* Unicode --> Big5 pairs */
 };
 
 static const WCHAR oem2uni950[] = {	/* Big5 --> Unicode pairs */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0xA140, 0x3000, 0xA141, 0xFF0C, 0xA142, 0x3001, 0xA143, 0x3002,	0xA144, 0xFF0E, 0xA145, 0x2027, 0xA146, 0xFF1B, 0xA147, 0xFF1A,
 	0xA148, 0xFF1F, 0xA149, 0xFF01, 0xA14A, 0xFE30, 0xA14B, 0x2026,	0xA14C, 0x2025, 0xA14D, 0xFE50, 0xA14E, 0xFE51, 0xA14F, 0xFE52,
 	0xA150, 0x00B7, 0xA151, 0xFE54, 0xA152, 0xFE55, 0xA153, 0xFE56,	0xA154, 0xFE57, 0xA155, 0xFF5C, 0xA156, 0x2013, 0xA157, 0xFE31,
@@ -15007,6 +15016,7 @@ static const WCHAR oem2uni950[] = {	/* Big5 --> Unicode pairs */
 
 #if FF_CODE_PAGE == 437 || FF_CODE_PAGE == 0
 static const WCHAR uc437[] = {	/*  CP437(U.S.) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
 	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x00FF, 0x00D6, 0x00DC, 0x00A2, 0x00A3, 0x00A5, 0x20A7, 0x0192,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15019,6 +15029,7 @@ static const WCHAR uc437[] = {	/*  CP437(U.S.) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 720 || FF_CODE_PAGE == 0
 static const WCHAR uc720[] = {	/*  CP720(Arabic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0000, 0x0000, 0x00E9, 0x00E2, 0x0000, 0x00E0, 0x0000, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0651, 0x0652, 0x00F4, 0x00A4, 0x0640, 0x00FB, 0x00F9, 0x0621, 0x0622, 0x0623, 0x0624, 0x00A3, 0x0625, 0x0626, 0x0627,
 	0x0628, 0x0629, 0x062A, 0x062B, 0x062C, 0x062D, 0x062E, 0x062F, 0x0630, 0x0631, 0x0632, 0x0633, 0x0634, 0x0635, 0x00AB, 0x00BB,
@@ -15031,6 +15042,7 @@ static const WCHAR uc720[] = {	/*  CP720(Arabic) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 737 || FF_CODE_PAGE == 0
 static const WCHAR uc737[] = {	/*  CP737(Greek) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0391, 0x0392, 0x0393, 0x0394, 0x0395, 0x0396, 0x0397, 0x0398, 0x0399, 0x039A, 0x039B, 0x039C, 0x039D, 0x039E, 0x039F, 0x03A0,
 	0x03A1, 0x03A3, 0x03A4, 0x03A5, 0x03A6, 0x03A7, 0x03A8, 0x03A9, 0x03B1, 0x03B2, 0x03B3, 0x03B4, 0x03B5, 0x03B6, 0x03B7, 0x03B8,
 	0x03B9, 0x03BA, 0x03BB, 0x03BC, 0x03BD, 0x03BE, 0x03BF, 0x03C0, 0x03C1, 0x03C3, 0x03C2, 0x03C4, 0x03C5, 0x03C6, 0x03C7, 0x03C8,
@@ -15043,6 +15055,7 @@ static const WCHAR uc737[] = {	/*  CP737(Greek) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 771 || FF_CODE_PAGE == 0
 static const WCHAR uc771[] = {	/*  CP771(KBL) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0410, 0x0411, 0x0412, 0x0413, 0x0414, 0x0415, 0x0416, 0x0417, 0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E, 0x041F,
 	0x0420, 0x0421, 0x0422, 0x0423, 0x0424, 0x0425, 0x0426, 0x0427, 0x0428, 0x0429, 0x042A, 0x042B, 0x042C, 0x042D, 0x042E, 0x042F,
 	0x0430, 0x0431, 0x0432, 0x0433, 0x0434, 0x0435, 0x0436, 0x0437, 0x0438, 0x0439, 0x043A, 0x043B, 0x043C, 0x043D, 0x043E, 0x043F,
@@ -15055,6 +15068,7 @@ static const WCHAR uc771[] = {	/*  CP771(KBL) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 775 || FF_CODE_PAGE == 0
 static const WCHAR uc775[] = {	/*  CP775(Baltic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0106, 0x00FC, 0x00E9, 0x0101, 0x00E4, 0x0123, 0x00E5, 0x0107, 0x0142, 0x0113, 0x0156, 0x0157, 0x012B, 0x0179, 0x00C4, 0x00C5,
 	0x00C9, 0x00E6, 0x00C6, 0x014D, 0x00F6, 0x0122, 0x00A2, 0x015A, 0x015B, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x00D7, 0x00A4,
 	0x0100, 0x012A, 0x00F3, 0x017B, 0x017C, 0x017A, 0x201D, 0x00A6, 0x00A9, 0x00AE, 0x00AC, 0x00BD, 0x00BC, 0x0141, 0x00AB, 0x00BB,
@@ -15067,6 +15081,7 @@ static const WCHAR uc775[] = {	/*  CP775(Baltic) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 850 || FF_CODE_PAGE == 0
 static const WCHAR uc850[] = {	/*  CP850(Latin 1) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
 	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x00FF, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x00D7, 0x0192,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x00AE, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15079,6 +15094,7 @@ static const WCHAR uc850[] = {	/*  CP850(Latin 1) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 852 || FF_CODE_PAGE == 0
 static const WCHAR uc852[] = {	/*  CP852(Latin 2) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x016F, 0x0107, 0x00E7, 0x0142, 0x00EB, 0x0150, 0x0151, 0x00EE, 0x0179, 0x00C4, 0x0106,
 	0x00C9, 0x0139, 0x013A, 0x00F4, 0x00F6, 0x013D, 0x013E, 0x015A, 0x015B, 0x00D6, 0x00DC, 0x0164, 0x0165, 0x0141, 0x00D7, 0x010D,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x0104, 0x0105, 0x017D, 0x017E, 0x0118, 0x0119, 0x00AC, 0x017A, 0x010C, 0x015F, 0x00AB, 0x00BB,
@@ -15091,6 +15107,7 @@ static const WCHAR uc852[] = {	/*  CP852(Latin 2) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 855 || FF_CODE_PAGE == 0
 static const WCHAR uc855[] = {	/*  CP855(Cyrillic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0452, 0x0402, 0x0453, 0x0403, 0x0451, 0x0401, 0x0454, 0x0404, 0x0455, 0x0405, 0x0456, 0x0406, 0x0457, 0x0407, 0x0458, 0x0408,
 	0x0459, 0x0409, 0x045A, 0x040A, 0x045B, 0x040B, 0x045C, 0x040C, 0x045E, 0x040E, 0x045F, 0x040F, 0x044E, 0x042E, 0x044A, 0x042A,
 	0x0430, 0x0410, 0x0431, 0x0411, 0x0446, 0x0426, 0x0434, 0x0414, 0x0435, 0x0415, 0x0444, 0x0424, 0x0433, 0x0413, 0x00AB, 0x00BB,
@@ -15103,6 +15120,7 @@ static const WCHAR uc855[] = {	/*  CP855(Cyrillic) to Unicode conversion table *
 #endif
 #if FF_CODE_PAGE == 857 || FF_CODE_PAGE == 0
 static const WCHAR uc857[] = {	/*  CP857(Turkish) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x0131, 0x00C4, 0x00C5,
 	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x0130, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x015E, 0x015F,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x011E, 0x011F, 0x00BF, 0x00AE, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15115,6 +15133,7 @@ static const WCHAR uc857[] = {	/*  CP857(Turkish) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 860 || FF_CODE_PAGE == 0
 static const WCHAR uc860[] = {	/*  CP860(Portuguese) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E3, 0x00E0, 0x00C1, 0x00E7, 0x00EA, 0x00CA, 0x00E8, 0x00CD, 0x00D4, 0x00EC, 0x00C3, 0x00C2,
 	0x00C9, 0x00C0, 0x00C8, 0x00F4, 0x00F5, 0x00F2, 0x00DA, 0x00F9, 0x00CC, 0x00D5, 0x00DC, 0x00A2, 0x00A3, 0x00D9, 0x20A7, 0x00D3,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x00D2, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15127,6 +15146,7 @@ static const WCHAR uc860[] = {	/*  CP860(Portuguese) to Unicode conversion table
 #endif
 #if FF_CODE_PAGE == 861 || FF_CODE_PAGE == 0
 static const WCHAR uc861[] = {	/*  CP861(Icelandic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E6, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00D0, 0x00F0, 0x00DE, 0x00C4, 0x00C5,
 	0x00C9, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00FE, 0x00FB, 0x00DD, 0x00FD, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x20A7, 0x0192,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00C1, 0x00CD, 0x00D3, 0x00DA, 0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15139,6 +15159,7 @@ static const WCHAR uc861[] = {	/*  CP861(Icelandic) to Unicode conversion table 
 #endif
 #if FF_CODE_PAGE == 862 || FF_CODE_PAGE == 0
 static const WCHAR uc862[] = {	/*  CP862(Hebrew) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x05D0, 0x05D1, 0x05D2, 0x05D3, 0x05D4, 0x05D5, 0x05D6, 0x05D7, 0x05D8, 0x05D9, 0x05DA, 0x05DB, 0x05DC, 0x05DD, 0x05DE, 0x05DF,
 	0x05E0, 0x05E1, 0x05E2, 0x05E3, 0x05E4, 0x05E5, 0x05E6, 0x05E7, 0x05E8, 0x05E9, 0x05EA, 0x00A2, 0x00A3, 0x00A5, 0x20A7, 0x0192,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00BB,
@@ -15151,6 +15172,7 @@ static const WCHAR uc862[] = {	/*  CP862(Hebrew) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 863 || FF_CODE_PAGE == 0
 static const WCHAR uc863[] = {	/*  CP863(Canadian French) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00C2, 0x00E0, 0x00B6, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x2017, 0x00C0,
 	0x00C9, 0x00C8, 0x00CA, 0x00F4, 0x00CB, 0x00CF, 0x00FB, 0x00F9, 0x00A4, 0x00D4, 0x00DC, 0x00A2, 0x00A3, 0x00D9, 0x00DB, 0x0192,
 	0x00A6, 0x00B4, 0x00F3, 0x00FA, 0x00A8, 0x00BB, 0x00B3, 0x00AF, 0x00CE, 0x3210, 0x00AC, 0x00BD, 0x00BC, 0x00BE, 0x00AB, 0x00BB,
@@ -15163,6 +15185,7 @@ static const WCHAR uc863[] = {	/*  CP863(Canadian French) to Unicode conversion 
 #endif
 #if FF_CODE_PAGE == 864 || FF_CODE_PAGE == 0
 static const WCHAR uc864[] = {	/*  CP864(Arabic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00B0, 0x00B7, 0x2219, 0x221A, 0x2592, 0x2500, 0x2502, 0x253C, 0x2524, 0x252C, 0x251C, 0x2534, 0x2510, 0x250C, 0x2514, 0x2518,
 	0x03B2, 0x221E, 0x03C6, 0x00B1, 0x00BD, 0x00BC, 0x2248, 0x00AB, 0x00BB, 0xFEF7, 0xFEF8, 0x0000, 0x0000, 0xFEFB, 0xFEFC, 0x0000,
 	0x00A0, 0x00AD, 0xFE82, 0x00A3, 0x00A4, 0xFE84, 0x0000, 0x20AC, 0xFE8E, 0xFE8F, 0xFE95, 0xFE99, 0x060C, 0xFE9D, 0xFEA1, 0xFEA5,
@@ -15175,6 +15198,7 @@ static const WCHAR uc864[] = {	/*  CP864(Arabic) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 865 || FF_CODE_PAGE == 0
 static const WCHAR uc865[] = {	/*  CP865(Nordic) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7, 0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
 	0x00C5, 0x00E6, 0x00C6, 0x00F4, 0x00F6, 0x00F2, 0x00FB, 0x00F9, 0x00FF, 0x00D6, 0x00DC, 0x00F8, 0x00A3, 0x00D8, 0x20A7, 0x0192,
 	0x00E1, 0x00ED, 0x00F3, 0x00FA, 0x00F1, 0x00D1, 0x00AA, 0x00BA, 0x00BF, 0x2310, 0x00AC, 0x00BD, 0x00BC, 0x00A1, 0x00AB, 0x00A4,
@@ -15187,6 +15211,7 @@ static const WCHAR uc865[] = {	/*  CP865(Nordic) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 866 || FF_CODE_PAGE == 0
 static const WCHAR uc866[] = {	/*  CP866(Russian) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x0410, 0x0411, 0x0412, 0x0413, 0x0414, 0x0415, 0x0416, 0x0417, 0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E, 0x041F,
 	0x0420, 0x0421, 0x0422, 0x0423, 0x0424, 0x0425, 0x0426, 0x0427, 0x0428, 0x0429, 0x042A, 0x042B, 0x042C, 0x042D, 0x042E, 0x042F,
 	0x0430, 0x0431, 0x0432, 0x0433, 0x0434, 0x0435, 0x0436, 0x0437, 0x0438, 0x0439, 0x043A, 0x043B, 0x043C, 0x043D, 0x043E, 0x043F,
@@ -15199,6 +15224,7 @@ static const WCHAR uc866[] = {	/*  CP866(Russian) to Unicode conversion table */
 #endif
 #if FF_CODE_PAGE == 869 || FF_CODE_PAGE == 0
 static const WCHAR uc869[] = {	/*  CP869(Greek 2) to Unicode conversion table */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0x00B7, 0x00B7, 0x00B7, 0x00B7, 0x00B7, 0x00B7, 0x0386, 0x00B7, 0x00B7, 0x00AC, 0x00A6, 0x2018, 0x2019, 0x0388, 0x2015, 0x0389,
 	0x038A, 0x03AA, 0x038C, 0x00B7, 0x00B7, 0x038E, 0x03AB, 0x00A9, 0x038F, 0x00B2, 0x00B3, 0x03AC, 0x00A3, 0x03AD, 0x03AE, 0x03AF,
 	0x03CA, 0x0390, 0x03CC, 0x03CD, 0x0391, 0x0392, 0x0393, 0x0394, 0x0395, 0x0396, 0x0397, 0x00BD, 0x0398, 0x0399, 0x00AB, 0x00BB,
@@ -15224,15 +15250,19 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WCHAR c = 0;
 	const WCHAR* p = CVTBL(uc, FF_CODE_PAGE);
 
 
 	if (uni < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = (WCHAR)uni;
 
 	} else {			/* Non-ASCII */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (uni < 0x10000 && cp == FF_CODE_PAGE) {	/* Is it in BMP and valid code page? */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (c = 0; c < 0x80 && uni != p[c]; c++) ;
 			c = (c + 0x80) & 0xFF;
 		}
@@ -15246,15 +15276,19 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WCHAR c = 0;
 	const WCHAR* p = CVTBL(uc, FF_CODE_PAGE);
 
 
 	if (oem < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = oem;
 
 	} else {			/* Extended char */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (cp == FF_CODE_PAGE) {	/* Is it a valid code page? */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (oem < 0x100) c = p[oem - 0x80];
 		}
 	}
@@ -15277,26 +15311,33 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0, uc;
 	UINT i = 0, n, li, hi;
 
 
 	if (uni < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = (WCHAR)uni;
 
 	} else {			/* Non-ASCII */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (uni < 0x10000 && cp == FF_CODE_PAGE) {	/* Is it in BMP and valid code page? */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			uc = (WCHAR)uni;
 			p = CVTBL(uni2oem, FF_CODE_PAGE);
 			hi = sizeof CVTBL(uni2oem, FF_CODE_PAGE) / 4 - 1;
 			li = 0;
 			for (n = 16; n; n--) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				i = li + (hi - li) / 2;
 				if (uc == p[i * 2]) break;
 				if (uc > p[i * 2]) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					li = i;
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					hi = i;
 				}
 			}
@@ -15313,25 +15354,32 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0;
 	UINT i = 0, n, li, hi;
 
 
 	if (oem < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = oem;
 
 	} else {			/* Extended char */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (cp == FF_CODE_PAGE) {	/* Is it valid code page? */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			p = CVTBL(oem2uni, FF_CODE_PAGE);
 			hi = sizeof CVTBL(oem2uni, FF_CODE_PAGE) / 4 - 1;
 			li = 0;
 			for (n = 16; n; n--) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				i = li + (hi - li) / 2;
 				if (oem == p[i * 2]) break;
 				if (oem > p[i * 2]) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					li = i;
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					hi = i;
 				}
 			}
@@ -15352,7 +15400,9 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 #if FF_CODE_PAGE == 0
 
 static const WORD cp_code[]          = {  437,   720,   737,   771,   775,   850,   852,   855,   857,   860,   861,   862,   863,   864,   865,   866,   869, 0};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 static const WCHAR* const cp_table[] = {uc437, uc720, uc737, uc771, uc775, uc850, uc852, uc855, uc857, uc860, uc861, uc862, uc863, uc864, uc865, uc866, uc869, 0};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 
 WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
@@ -15360,40 +15410,52 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0, uc;
 	UINT i, n, li, hi;
 
 
 	if (uni < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = (WCHAR)uni;
 
 	} else {			/* Non-ASCII */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (uni < 0x10000) { /* Is it in BMP? */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			uc = (WCHAR)uni;
 			p = 0;
 			if (cp < 900) {	/* SBCS */
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				for (i = 0; cp_code[i] != 0 && cp_code[i] != cp; i++) ;		/* Get conversion table */
 				p = cp_table[i];
 				if (p) {	/* Is it valid code page ? */
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					for (c = 0; c < 0x80 && uc != p[c]; c++) ;	/* Find OEM code in the table */
 					c = (c + 0x80) & 0xFF;
 				}
 			} else {	/* DBCS */
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				switch (cp) {	/* Get conversion table */
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				case 932 : p = uni2oem932; hi = sizeof uni2oem932 / 4 - 1; break;
 				case 936 : p = uni2oem936; hi = sizeof uni2oem936 / 4 - 1; break;
 				case 949 : p = uni2oem949; hi = sizeof uni2oem949 / 4 - 1; break;
 				case 950 : p = uni2oem950; hi = sizeof uni2oem950 / 4 - 1; break;
 				}
 				if (p) {	/* Is it valid code page? */
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					li = 0;
 					for (n = 16; n; n--) {	/* Find OEM code */
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						i = li + (hi - li) / 2;
 						if (uc == p[i * 2]) break;
 						if (uc > p[i * 2]) {
+         debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 							li = i;
 						} else {
+         debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 							hi = i;
 						}
 					}
@@ -15412,37 +15474,48 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0;
 	UINT i, n, li, hi;
 
 
 	if (oem < 0x80) {	/* ASCII? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = oem;
 
 	} else {			/* Extended char */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		p = 0;
 		if (cp < 900) {	/* SBCS */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (i = 0; cp_code[i] != 0 && cp_code[i] != cp; i++) ;		/* Get table */
 			p = cp_table[i];
 			if (p) {	/* Is it a valid CP ? */
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				if (oem < 0x100) c = p[oem - 0x80];
 			}
 		} else {	/* DBCS */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			switch (cp) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			case 932 : p = oem2uni932; hi = sizeof oem2uni932 / 4 - 1; break;
 			case 936 : p = oem2uni936; hi = sizeof oem2uni936 / 4 - 1; break;
 			case 949 : p = oem2uni949; hi = sizeof oem2uni949 / 4 - 1; break;
 			case 950 : p = oem2uni950; hi = sizeof oem2uni950 / 4 - 1; break;
 			}
 			if (p) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				li = 0;
 				for (n = 16; n; n--) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					i = li + (hi - li) / 2;
 					if (oem == p[i * 2]) break;
 					if (oem > p[i * 2]) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						li = i;
 					} else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						hi = i;
 					}
 				}
@@ -15465,9 +15538,11 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 	DWORD uni		/* Unicode code point to be up-converted */
 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WORD* p;
 	WORD uc, bc, nc, cmd;
 	static const WORD cvt1[] = {	/* Compressed up conversion table for U+0000 - U+0FFF */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Basic Latin */
 		0x0061,0x031A,
 		/* Latin-1 Supplement */
@@ -15515,6 +15590,7 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 		0x0000	/* EOT */
 	};
 	static const WORD cvt2[] = {	/* Compressed up conversion table for U+1000 - U+FFFF */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Phonetic Extensions */
 		0x1D7D,0x0001,0x2C63,
 		/* Latin Extended Additional */
@@ -15561,14 +15637,18 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 
 
 	if (uni < 0x10000) {	/* Is it in BMP? */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		uc = (WORD)uni;
 		p = uc < 0x1000 ? cvt1 : cvt2;
 		for (;;) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			bc = *p++;								/* Get the block base */
 			if (bc == 0 || uc < bc) break;			/* Not matched? */
 			nc = *p++; cmd = nc >> 8; nc &= 0xFF;	/* Get processing command and block size */
 			if (uc < bc + nc) {	/* In the block? */
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				switch (cmd) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				case 0:	uc = p[uc - bc]; break;		/* Table conversion */
 				case 1:	uc -= (uc - bc) & 1; break;	/* Case pairs */
 				case 2: uc -= 16; break;			/* Shift -16 */

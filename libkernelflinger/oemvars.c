@@ -33,6 +33,7 @@
 #include "oemvars.h"
 #include "vars.h"
 #include "text_parser.h"
+#include "log.h"
 
 enum vartype {
 	VAR_TYPE_UNKNOWN,
@@ -70,17 +71,22 @@ static BOOLEAN parse_oemvar_guid_line(char *line, EFI_GUID *g)
 }
 
 /* Implements modify-in-place "URL-like" escaping: "%[0-9a-fA-F]{2}"
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
  * converts to the specified byte; no other modifications are
  * performed (including "+" for space!).  Returns the number of output
  * bytes */
 static UINTN unescape_oemvar_val(char *val)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *p = val, *out = val;
 	unsigned int byte;
 	char value[3] = { '\0', '\0', '\0' };
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *tmp;
 	while (*p) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (p[0] != '%') {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			*out++ = *p++;
 			continue;
 		}
@@ -89,9 +95,11 @@ static UINTN unescape_oemvar_val(char *val)
 		value[1] = p[2];
 		byte = strtoul(value, &tmp, 16);
 		if (tmp == value + 2) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			*out++ = byte;
 			p += 3;
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			*out++ = *p++;
 		}
 	}
@@ -101,6 +109,7 @@ static UINTN unescape_oemvar_val(char *val)
 
 static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum vartype *typep)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *line = *linep;
 	char *pos, *end;
 	/* No point in writing volatile values. Default to both boot and runtime
@@ -121,6 +130,7 @@ static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum var
 	pos = line;
 	end = (char *)strchr((CHAR8 *)line, ']');
 	if (!end) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unclosed attributes specification");
 		return -1;
 	}
@@ -130,10 +140,13 @@ static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum var
 	debug(L"found attributes [%a]", pos);
 
 	while (*pos) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		switch (*pos) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case 'd':
 			debug(L"raw data type selected");
 			if (type != VAR_TYPE_UNKNOWN) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"multiple oem var types specified");
 				return -1;
 			}
@@ -167,6 +180,7 @@ static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum var
 
 static EFI_STATUS parse_line(char *line, VOID *context)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	uint32_t attributes = 0;
 	enum vartype type;
@@ -181,6 +195,7 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 
 	/* GUID line syntax */
 	if (parse_oemvar_guid_line(line, &ctx->guid)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"current guid set to %g", &ctx->guid);
 		return EFI_SUCCESS;
 	}
@@ -190,6 +205,7 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 		return EFI_SUCCESS;
 
 	if (parse_oemvar_attributes(&line, &attributes, &type)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid attribute specification");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -200,6 +216,7 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 	val = NULL;
 	while (*line && !isspace(*line)) line++;
 	if (*line) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*line++ = 0;
 		skip_whitespace(&line);
 		val = line;
@@ -209,7 +226,9 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 		return EFI_SUCCESS;
 
 	if (val) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		switch (type) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case VAR_TYPE_BLOB:
 			vallen = unescape_oemvar_val(val) - 1;
 			break;
@@ -220,16 +239,19 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 			return EFI_INVALID_PARAMETER;
 		}
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		vallen = 0;
 	}
 
 	varname = stra_to_str((CHAR8 *)var);
 	if (!varname) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to convert varname string.");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	if (!memcmp(&ctx->guid, &fastboot_guid, sizeof(ctx->guid))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"fastboot GUID is reserved for Kernelflinger use");
 		FreePool(varname);
 		return EFI_ACCESS_DENIED;
@@ -242,7 +264,9 @@ static EFI_STATUS parse_line(char *line, VOID *context)
 	FreePool(varname);
 	/* Delete a non-existent variable is permitted.  */
 	if (EFI_ERROR(ret) && !(ret == EFI_NOT_FOUND && vallen == 0)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!ctx->silent_write_error) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"EFI variable setting failed");
 			return ret;
 		}
@@ -293,7 +317,9 @@ static EFI_STATUS _flash_oemvars(VOID *data, UINTN size,
 				 const EFI_GUID *restricted_guid,
 				 BOOLEAN silent_error)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	oemvars_ctx_t ctx = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.guid = loader_guid,
 		.restricted_guid = restricted_guid,
 		.silent_write_error = silent_error
@@ -306,10 +332,12 @@ static EFI_STATUS _flash_oemvars(VOID *data, UINTN size,
 EFI_STATUS flash_oemvars_silent_write_error(VOID *data, UINTN size,
 					    const EFI_GUID *restricted_guid)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _flash_oemvars(data, size, restricted_guid, TRUE);
 }
 
 EFI_STATUS flash_oemvars(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _flash_oemvars(data, size, NULL, FALSE);
 }

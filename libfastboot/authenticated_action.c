@@ -36,6 +36,7 @@
 
 #include "authenticated_action.h"
 #include "fastboot_flashing.h"
+#include "log.h"
 
 #define NONCE_RANDOM_BYTE_LENGTH	16
 #define NONCE_EXPIRATION_SEC		5 * 60 * 60;
@@ -53,21 +54,26 @@ static UINT64 expiration_ctime;
 
 static EFI_STATUS force_unlock(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return change_device_state(UNLOCKED, FALSE);
 }
 
 static const action_t ACTIONS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 0, "force-unlock", force_unlock }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static void clear_nonce(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	expiration_ctime = 0;
 	memset_s(current_nonce, sizeof(current_nonce), 0, sizeof(current_nonce));
 }
 
 char *authenticated_action_new_nonce(char *action_name)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 random[NONCE_RANDOM_BYTE_LENGTH];
 	CHAR8 randomstr[NONCE_RANDOM_BYTE_LENGTH * 2 + 1];
 	const struct action *action = NULL;
@@ -79,6 +85,7 @@ char *authenticated_action_new_nonce(char *action_name)
 
 	for (i = 0; i < ARRAY_SIZE(ACTIONS); i++)
 		if (!strcmp((CHAR8 *)ACTIONS[i].name, (CHAR8 *)action_name)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			action = &ACTIONS[i];
 			break;
 		}
@@ -88,23 +95,27 @@ char *authenticated_action_new_nonce(char *action_name)
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the current time");
 		return NULL;
 	}
 
 	if (efi_time_to_ctime(&now) == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get a valid current timestamp");
 		return NULL;
 	}
 
 	ret = generate_random_numbers(random, sizeof(random));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to generate random numbers");
 		return NULL;
 	}
 
 	ret = bytes_to_hex_stra(random, sizeof(random), randomstr, sizeof(randomstr));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to convert bytes to hexadecimal string");
 		return NULL;
 	}
@@ -120,6 +131,7 @@ char *authenticated_action_new_nonce(char *action_name)
 
 static EFI_STATUS verify_payload(char *payload, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *host_random;
 
 	if (payload[size - 1] != '\0' ||
@@ -140,16 +152,19 @@ parse_error:
 
 static BOOLEAN nonce_is_expired()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_TIME now;
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the current time");
 		goto expired;
 	}
 
 	if (efi_time_to_ctime(&now) >= expiration_ctime) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Nonce is expired");
 		goto expired;
 	}
@@ -163,6 +178,7 @@ expired:
 
 static EFI_STATUS verify_token(void *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	unsigned char *oak_data;
 	UINTN oak_size;
@@ -171,6 +187,7 @@ static EFI_STATUS verify_token(void *data, UINTN size)
 
 	ret = get_oak_hash(&oak_data, &oak_size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read OAK EFI variable");
 		return EFI_SECURITY_VIOLATION;
 	}
@@ -179,6 +196,7 @@ static EFI_STATUS verify_token(void *data, UINTN size)
 			   (VOID **)&payload, &payload_size);
 	FreePool(oak_data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"PKCS7 Verification failed");
 		return EFI_SECURITY_VIOLATION;
 	}
@@ -186,6 +204,7 @@ static EFI_STATUS verify_token(void *data, UINTN size)
 	ret = verify_payload(payload, payload_size);
 	FreePool(payload);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Token payload verification failed");
 		return EFI_SECURITY_VIOLATION;
 	}
@@ -195,12 +214,14 @@ static EFI_STATUS verify_token(void *data, UINTN size)
 
 EFI_STATUS authenticated_action(void *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!data)
 		return EFI_INVALID_PARAMETER;
 
 	if (nonce_is_expired()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		memset_s(data, size, 0, size);
 		return EFI_TIMEOUT;
 	}

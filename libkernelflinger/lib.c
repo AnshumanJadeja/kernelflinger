@@ -69,13 +69,16 @@
 #include "lib.h"
 #include "timer.h"
 #include "vars.h"
+#include "log.h"
 
 
 EFI_HANDLE g_parent_image;
 
 CHAR8 *strchr(const CHAR8 *s, int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         do {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (*s == (char)c)
                         return (CHAR8 *)s;
         } while (*s++);
@@ -84,21 +87,25 @@ CHAR8 *strchr(const CHAR8 *s, int c)
 
 int strcmp(const CHAR8 *s1, const CHAR8 *s2)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return strcmpa(s1, s2);
 }
 
 int strncmp(const CHAR8 *s1, const CHAR8 *s2, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return strncmpa(s1, s2, n);
 }
 
 size_t strlen(const CHAR8 *s)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return strlena(s);
 }
 
 size_t strnlen(const CHAR8 *s, size_t maxlen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t i;
 
         for (i = 0; i < maxlen; i++)
@@ -113,6 +120,7 @@ size_t strnlen(const CHAR8 *s, size_t maxlen)
  */
 CHAR8 *itoa(int val, CHAR8 *buf, unsigned radix)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR8 *p;
         CHAR8 *firstdig;
         CHAR8 temp;
@@ -124,12 +132,14 @@ CHAR8 *itoa(int val, CHAR8 *buf, unsigned radix)
         p = buf;
         if (val < 0)
         {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             *p++ = '-';
             val = (unsigned long)(-(long)val);
         }
 
         firstdig = p;
         do {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 digval = (unsigned)(val % radix);
                 val /= radix;
 
@@ -141,6 +151,7 @@ CHAR8 *itoa(int val, CHAR8 *buf, unsigned radix)
 
         *p-- = '\0';
         do {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 temp = *p;
                 *p = *firstdig;
                 *firstdig = temp;
@@ -153,6 +164,7 @@ CHAR8 *itoa(int val, CHAR8 *buf, unsigned radix)
 
 CHAR8 *strcpy(CHAR8 *dest, const CHAR8 *src)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned int i;
 
         for (i = 0; src[i] != '\0'; i++)
@@ -164,19 +176,23 @@ CHAR8 *strcpy(CHAR8 *dest, const CHAR8 *src)
 
 EFI_STATUS strcpy_s(char *restrict dest, size_t destsz, const char *restrict src)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned int i;
 
         if (dest == src) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<strcpy_s dest == src");
                 return EFI_SUCCESS;
         }
 
         if ((dest == NULL) || (src == NULL)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcpy_s NULL 0x%x 0x%x", dest, src);
                 return EFI_INVALID_PARAMETER;
         }
 
         if (destsz == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcpy_s destsz == 0");
                 return EFI_BAD_BUFFER_SIZE;
         }
@@ -190,19 +206,23 @@ EFI_STATUS strcpy_s(char *restrict dest, size_t destsz, const char *restrict src
 
 EFI_STATUS strcpy16_s(CHAR16 *restrict dest, size_t destsz, const CHAR16 *restrict src)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned int i;
 
         if (dest == src) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<strcpy_s dest == src");
                 return EFI_SUCCESS;
         }
 
         if ((dest == NULL) || (src == NULL)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcpy_s NULL 0x%x 0x%x", dest, src);
                 return EFI_INVALID_PARAMETER;
         }
 
         if (destsz == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcpy_s destsz == 0");
                 return EFI_BAD_BUFFER_SIZE;
         }
@@ -218,6 +238,7 @@ CHAR8 *__strcpy_chk(CHAR8 *dest, const CHAR8 *src, size_t destlen)
     __attribute__((weak));
 CHAR8 *__strcpy_chk(CHAR8 *dest, const CHAR8 *src, size_t destlen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         size_t len = strlen(src);
         if (destlen < len)
@@ -229,6 +250,7 @@ CHAR8 *__strcpy_chk(CHAR8 *dest, const CHAR8 *src, size_t destlen)
 
 CHAR8 *strncpy(CHAR8 *dest, const CHAR8 *src, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned int i;
 
         for (i = 0; i < n && src[i] != '\0'; i++)
@@ -241,16 +263,19 @@ CHAR8 *strncpy(CHAR8 *dest, const CHAR8 *src, size_t n)
 
 EFI_STATUS strncpy_s(char *restrict dest, size_t dmax, const char *restrict src, size_t slen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t orig_dmax;
         char *orig_dest;
         const char *overlap_bumper;
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy_s dest == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dmax == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy_s dmax == 0");
                 return EFI_BAD_BUFFER_SIZE;
         }
@@ -260,37 +285,46 @@ EFI_STATUS strncpy_s(char *restrict dest, size_t dmax, const char *restrict src,
         orig_dest = dest;
 
         if (src == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy_s src == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (slen == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy_s slen == 0");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dest < src) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = src;
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (dest == overlap_bumper) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strncpy_s dest == overlap_bumper");
                                 return EFI_INVALID_PARAMETER;
                         }
 
                         if (slen == 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /*
                          * Copying truncated to slen chars.  Note that the TR says to
                          * copy slen chars plus the null char.  We null the slack.
                          */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /* null slack */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
@@ -301,27 +335,34 @@ EFI_STATUS strncpy_s(char *restrict dest, size_t dmax, const char *restrict src,
                 }
 
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = dest;
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (src == overlap_bumper) {
+                                 debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                error(L"<strncpy_s dmax > 0");
                                return EFI_INVALID_PARAMETER;
                         }
 
                         if (slen == 0) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /*
                                  * Copying truncated to slen chars.  Note that the TR says to
                                  * copy slen chars plus the null char.  We null the slack.
                                  */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /* null slack */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
@@ -341,16 +382,19 @@ EFI_STATUS strncpy_s(char *restrict dest, size_t dmax, const char *restrict src,
 
 EFI_STATUS strncpy16_s(CHAR16 *restrict dest, size_t dmax, const CHAR16 *restrict src, size_t slen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t orig_dmax;
         CHAR16 *orig_dest;
         const CHAR16 *overlap_bumper;
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy16_s dest == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dmax == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy16_s dmax == 0");
                 return EFI_BAD_BUFFER_SIZE;
         }
@@ -360,37 +404,46 @@ EFI_STATUS strncpy16_s(CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
         orig_dest = dest;
 
         if (src == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy16_s src == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (slen == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strncpy16_s slen == 0");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dest < src) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = src;
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (dest == overlap_bumper) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strncpy16_s dest == overlap_bumper");
                                 return EFI_INVALID_PARAMETER;
                         }
 
                         if (slen == 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /*
                          * Copying truncated to slen chars.  Note that the TR says to
                          * copy slen chars plus the null char.  We null the slack.
                          */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /* null slack */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
@@ -401,27 +454,34 @@ EFI_STATUS strncpy16_s(CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
                 }
 
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = dest;
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (src == overlap_bumper) {
+                                 debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                error(L"<strncpy16_s src == overlap_bumper");
                                return EFI_INVALID_PARAMETER;
                         }
 
                         if (slen == 0) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /*
                                  * Copying truncated to slen chars.  Note that the TR says to
                                  * copy slen chars plus the null char.  We null the slack.
                                  */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /* null slack */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
@@ -441,21 +501,25 @@ EFI_STATUS strncpy16_s(CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
 
 EFI_STATUS strcat16_s (CHAR16 *restrict dest, size_t dmax, const CHAR16 *restrict src)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t orig_dmax;
         CHAR16 *orig_dest;
         const CHAR16 *overlap_bumper;
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcat16_s dest == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (src == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcat16_s src == NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dmax == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<strcat16_s dmax == 0");
                 return EFI_BAD_BUFFER_SIZE;
         }
@@ -465,11 +529,14 @@ EFI_STATUS strcat16_s (CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
         orig_dest = dest;
 
         if (dest < src) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = src;
 
                 /* Find the end of dest */
                 while (*dest != '\0') {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (dest == overlap_bumper) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strcat16_s dest == overlap_bumper");
                                 return EFI_INVALID_PARAMETER;
                         }
@@ -477,21 +544,26 @@ EFI_STATUS strcat16_s (CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
                         dest++;
                         dmax--;
                         if (dmax == 0) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strcat16_s dmax == 0");
                                 return EFI_BAD_BUFFER_SIZE;
                         }
                 }
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (dest == overlap_bumper) {
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             error(L"<strcat16_s dest == overlap_bumper");
                             return EFI_INVALID_PARAMETER;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             /* null slack to clear any data */
                             while (dmax) { *dest = '\0'; dmax--; dest++; }
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             return EFI_SUCCESS;
                         }
 
@@ -501,10 +573,12 @@ EFI_STATUS strcat16_s (CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
                 }
 
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 overlap_bumper = dest;
 
                 /* Find the end of dest */
                 while (*dest != '\0') {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /*
                          * NOTE: no need to check for overlap here since src comes first
                          * in memory and we're not incrementing src here.
@@ -512,21 +586,26 @@ EFI_STATUS strcat16_s (CHAR16 *restrict dest, size_t dmax, const CHAR16 *restric
                         dest++;
                         dmax--;
                         if (dmax == 0) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strcat16_s dmax == 0");
                                 return EFI_BAD_BUFFER_SIZE;
                         }
                 }
 
                 while (dmax > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (src == overlap_bumper) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"<strcat16_s src == overlap_bumper");
                                 return EFI_INVALID_PARAMETER;
                         }
 
                         *dest = *src;
                         if (*dest == '\0') {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 /* null slack to clear any data */
                                 while (dmax) { *dest = '\0'; dmax--; dest++; }
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 return EFI_SUCCESS;
                         }
 
@@ -547,6 +626,7 @@ CHAR8 *__strncpy_chk(CHAR8 *dest, const CHAR8 *src, size_t n, size_t destlen)
     __attribute__((weak));
 CHAR8 *__strncpy_chk(CHAR8 *dest, const CHAR8 *src, size_t n, size_t destlen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (destlen < n)
                 panic(L"%a Error: destlen(%d) is less than n(%d)", __func__, destlen, n);
 
@@ -560,6 +640,7 @@ CHAR8 *__strncpy_chk2(CHAR8 *dest, const CHAR8 *src, size_t n, size_t destlen, s
     __attribute__((weak));
 CHAR8 *__strncpy_chk2(CHAR8 *dest, const CHAR8 *src, size_t n, size_t destlen, size_t srclen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t len = strlen(src);
         if (srclen < len)
                 panic(L"%a Error: srclen(%d) is less than len(%d)", __func__, srclen, len);
@@ -569,6 +650,7 @@ CHAR8 *__strncpy_chk2(CHAR8 *dest, const CHAR8 *src, size_t n, size_t destlen, s
 
 size_t strlcat(CHAR8 *dst, const CHAR8 *src, size_t siz)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	size_t max, i;
 	size_t sl = strlen(src);
 	size_t dl = strlen(dst);
@@ -585,10 +667,12 @@ size_t strlcat(CHAR8 *dst, const CHAR8 *src, size_t siz)
 
 int strncasecmp(const char *s1, const char *s2, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (!n)
                 return 0;
 
         do {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (tolower(*s1) != tolower(*s2++))
                         return (tolower(*s1) - tolower(*--s2));
                 if (*s1++ == '\0')
@@ -599,6 +683,7 @@ int strncasecmp(const char *s1, const char *s2, size_t n)
 
 int tolower(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (('A' <= c) && (c <= 'Z'))
                 return c - ('A' - 'a');
         return c;
@@ -606,11 +691,13 @@ int tolower(int c)
 
 int isupper(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return ('A' <= c) && (c <= 'Z');
 }
 
 int isxdigit(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return (('0' <= c) && (c <= '9')) ||
                 (('a' <= c) && (c <= 'f')) ||
                 (('A' <= c) && (c <= 'F'));
@@ -618,6 +705,7 @@ int isxdigit(int c)
 
 int isalnum(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return (('0' <= c) && (c <= '9')) ||
                 (('a' <= c) && (c <= 'z')) ||
                 (('A' <= c) && (c <= 'Z'));
@@ -625,16 +713,19 @@ int isalnum(int c)
 
 int isspace(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return c == ' ' || (c >= '\t' && c <= '\r');
 }
 
 int isdigit(int c)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return ('0' <= c) && (c <= '9');
 }
 
 char *strdup(const char *s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size;
 	char *new;
@@ -646,6 +737,7 @@ char *strdup(const char *s)
 
 	ret = memcpy_s(new, size, s, size);
     if (ret == EFI_SUCCESS) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return new;
     }
     FreePool(new);
@@ -654,6 +746,7 @@ char *strdup(const char *s)
 
 char *strcasestr(const char *s, const char *find)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char c, sc;
         size_t len;
 
@@ -661,10 +754,13 @@ char *strcasestr(const char *s, const char *find)
                 return NULL;
 
         if ((c = *find++) != 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 c = tolower((unsigned char)c);
                 len = strlen((CHAR8 *)find);
                 do {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         do {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 if ((sc = *s++) == 0)
                                         return (NULL);
                         } while ((char)tolower((unsigned char)sc) != c);
@@ -676,6 +772,7 @@ char *strcasestr(const char *s, const char *find)
 
 CHAR16 *stra_to_str(const CHAR8 *stra)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN len, i;
         CHAR16 *str;
 
@@ -692,7 +789,9 @@ CHAR16 *stra_to_str(const CHAR8 *stra)
 
 EFI_STATUS stra_to_guid(const char *str, EFI_GUID *g)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char value[3] = { '\0', '\0', '\0' };
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char *end;
         UINTN i;
 
@@ -715,6 +814,7 @@ EFI_STATUS stra_to_guid(const char *str, EFI_GUID *g)
 
         str = end + 1;
         for (i = 0 ; i < 2; i++, str += 2) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 value[0] = str[0];
                 value[1] = str[1];
                 g->Data4[i] = strtoul(value, &end, 16);
@@ -727,6 +827,7 @@ EFI_STATUS stra_to_guid(const char *str, EFI_GUID *g)
 
         str++;
         for (i = 0 ; i < 6; i++, str += 2) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 value[0] = str[0];
                 value[1] = str[1];
                 g->Data4[i + 2] = strtoul(value, &end, 16);
@@ -739,6 +840,7 @@ EFI_STATUS stra_to_guid(const char *str, EFI_GUID *g)
 
 int efi_vsnprintf(CHAR8 *dst, UINTN size, const CHAR8 *format, va_list ap)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         int len = -1;
         CHAR16 *format16;
@@ -770,6 +872,7 @@ free_format16:
 
 int efi_snprintf(CHAR8 *str, UINTN size, const CHAR8 *format, ...)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         va_list args;
         int ret;
 
@@ -783,6 +886,7 @@ int efi_snprintf(CHAR8 *str, UINTN size, const CHAR8 *format, ...)
 EFI_STATUS get_efi_variable(const EFI_GUID *guid, CHAR16 *key,
                 UINTN *size_p, VOID **data_p, UINT32 *flags_p)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         VOID *data;
         UINTN size;
         UINT32 flags;
@@ -796,6 +900,7 @@ EFI_STATUS get_efi_variable(const EFI_GUID *guid, CHAR16 *key,
         ret = uefi_call_wrapper(RT->GetVariable, 5, key, (EFI_GUID *)guid,
                                 &flags, &size, data);
         if (ret == EFI_BUFFER_TOO_SMALL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 data = AllocatePool(size);
                 if (!data)
@@ -805,6 +910,7 @@ EFI_STATUS get_efi_variable(const EFI_GUID *guid, CHAR16 *key,
         }
 
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 return ret;
         }
@@ -821,6 +927,7 @@ EFI_STATUS get_efi_variable(const EFI_GUID *guid, CHAR16 *key,
 
 CHAR16 *get_efi_variable_str(const EFI_GUID *guid, CHAR16 *key)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *data;
         EFI_STATUS ret;
         UINTN size;
@@ -830,6 +937,7 @@ CHAR16 *get_efi_variable_str(const EFI_GUID *guid, CHAR16 *key)
                 return NULL;
 
         if (!size || size % 2 != 0 || data[(size / 2) - 1] != 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 return NULL;
         }
@@ -840,6 +948,7 @@ CHAR16 *get_efi_variable_str(const EFI_GUID *guid, CHAR16 *key)
 
 CHAR16 *get_efi_variable_str8(const EFI_GUID *guid, CHAR16 *key)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR8 *data = NULL;
         CHAR16 *value;
         EFI_STATUS ret;
@@ -849,15 +958,19 @@ CHAR16 *get_efi_variable_str8(const EFI_GUID *guid, CHAR16 *key)
         ret = get_efi_variable(guid, key, &size, (VOID **)&data, NULL);
 
         if (!EFI_ERROR(ret) && data && size) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 dataFreeable = TRUE;
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (data) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(data);
                 }
                 return NULL;
         }
 
         if (data[size - 1] != '\0') {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 return NULL;
         }
@@ -870,6 +983,7 @@ CHAR16 *get_efi_variable_str8(const EFI_GUID *guid, CHAR16 *key)
 
 EFI_STATUS get_efi_variable_byte(const EFI_GUID *guid, CHAR16 *key, UINT8 *byte)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *data;
         EFI_STATUS ret;
         UINTN size;
@@ -879,6 +993,7 @@ EFI_STATUS get_efi_variable_byte(const EFI_GUID *guid, CHAR16 *key, UINT8 *byte)
                 return ret;
 
         if (!size) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 return EFI_NOT_FOUND;
         }
@@ -891,6 +1006,7 @@ EFI_STATUS get_efi_variable_byte(const EFI_GUID *guid, CHAR16 *key, UINT8 *byte)
 EFI_STATUS get_efi_variable_long_from_str8(const EFI_GUID *guid, CHAR16 *key,
                                           unsigned long *i)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char *data, *end;
         EFI_STATUS ret;
         UINTN size;
@@ -900,11 +1016,13 @@ EFI_STATUS get_efi_variable_long_from_str8(const EFI_GUID *guid, CHAR16 *key,
                 return ret;
 
         if (!size) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = EFI_NOT_FOUND;
                 goto out;
         }
 
         if (data[size - 1] != '\0') {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = EFI_INVALID_PARAMETER;
                 goto out;
         }
@@ -921,6 +1039,7 @@ out:
 
 EFI_STATUS del_efi_variable(const EFI_GUID *guid, CHAR16 *key)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 
         ret = uefi_call_wrapper(RT->SetVariable, 5, key, (EFI_GUID *)guid, 0, 0, NULL);
@@ -934,6 +1053,7 @@ EFI_STATUS del_efi_variable(const EFI_GUID *guid, CHAR16 *key)
 EFI_STATUS set_efi_variable(const EFI_GUID *guid, CHAR16 *key,
                 UINTN size, VOID *data, BOOLEAN nonvol, BOOLEAN runtime)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT32 curflags, flags = EFI_VARIABLE_BOOTSERVICE_ACCESS;
         UINTN cursize;
@@ -956,8 +1076,10 @@ EFI_STATUS set_efi_variable(const EFI_GUID *guid, CHAR16 *key,
         if (ret == EFI_SUCCESS)
                 FreePool(curdata);
         if (ret == EFI_SUCCESS && curflags != flags) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = del_efi_variable((EFI_GUID *)guid, key);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Couldn't clear EFI variable");
                         return ret;
                 }
@@ -971,6 +1093,7 @@ EFI_STATUS set_efi_variable(const EFI_GUID *guid, CHAR16 *key,
 EFI_STATUS set_efi_variable_str(const EFI_GUID *guid, CHAR16 *key,
                 BOOLEAN nonvol, BOOLEAN runtime, CHAR16 *val)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return set_efi_variable(guid, key,
                         val ? ((StrLen(val) + 1) * sizeof(CHAR16)) : 0,
                         val, nonvol, runtime);
@@ -979,6 +1102,7 @@ EFI_STATUS set_efi_variable_str(const EFI_GUID *guid, CHAR16 *key,
 
 EFI_STATUS file_delete(IN EFI_HANDLE disk, IN const CHAR16 *name)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EFI_FILE *file;
         EFI_FILE *root_dir;
@@ -990,11 +1114,13 @@ EFI_STATUS file_delete(IN EFI_HANDLE disk, IN const CHAR16 *name)
         ret = uefi_call_wrapper(root_dir->Open, 5, root_dir, &file,
                         (CHAR16 *)name, EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Couldn't open the file in order to delete");
                 goto out;
         }
         ret = uefi_call_wrapper(file->Delete, 1, file);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Couldn't delete source file");
                 goto out;
         }
@@ -1006,6 +1132,7 @@ out:
 
 BOOLEAN file_exists(IN EFI_HANDLE disk, IN const CHAR16 *path)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_FILE *root_dir;
         EFI_FILE *file;
         EFI_STATUS ret;
@@ -1018,8 +1145,10 @@ BOOLEAN file_exists(IN EFI_HANDLE disk, IN const CHAR16 *path)
         ret = uefi_call_wrapper(root_dir->Open, 5, root_dir, &file,
                         (CHAR16 *)path, EFI_FILE_MODE_READ, 0);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 exists = FALSE;
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 uefi_call_wrapper(file->Close, 1, file);
         }
 
@@ -1030,6 +1159,7 @@ BOOLEAN file_exists(IN EFI_HANDLE disk, IN const CHAR16 *path)
 EFI_STATUS file_read(IN EFI_FILE_HANDLE dir, IN const CHAR16 *name,
                      OUT CHAR8 **content, OUT UINTN *len)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_FILE_HANDLE handle;
         EFI_FILE_INFO *info;
         CHAR8 *buf;
@@ -1049,6 +1179,7 @@ EFI_STATUS file_read(IN EFI_FILE_HANDLE dir, IN const CHAR16 *name,
 
         info = LibFileInfo(handle);
         if (!info) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 err = EFI_UNSUPPORTED;
                 goto out;
         }
@@ -1056,12 +1187,14 @@ EFI_STATUS file_read(IN EFI_FILE_HANDLE dir, IN const CHAR16 *name,
         buflen = info->FileSize + 1;
         buf = AllocatePool(buflen);
         if (!buf) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 err = EFI_OUT_OF_RESOURCES;
                 goto out;
         }
 
         err = uefi_call_wrapper(handle->Read, 3, handle, &buflen, buf);
         if (EFI_ERROR(err) == EFI_SUCCESS) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 buf[buflen] = '\0';
                 *content = buf;
                 *len = buflen;
@@ -1078,6 +1211,7 @@ out:
 
 VOID StrNCpy(OUT CHAR16 *dest, IN const CHAR16 *src, UINT32 n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT32 i;
 
         for (i = 0; i < n && src[i] != 0; i++)
@@ -1089,6 +1223,7 @@ VOID StrNCpy(OUT CHAR16 *dest, IN const CHAR16 *src, UINT32 n)
 
 EFI_STATUS getdigit(IN CHAR16 *str, OUT UINT8 *outstr)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         CHAR16 bytestr[3];
         bytestr[2] = 0;
@@ -1105,6 +1240,7 @@ EFI_STATUS string_to_guid(
                 IN CHAR16 *in_guid_str,
                 OUT EFI_GUID *guid)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 gstr[37];
         UINT8 val;
         int i;
@@ -1131,6 +1267,7 @@ EFI_STATUS string_to_guid(
             return ret;
         guid->Data4[1] = val;
         for (i = 0; i < 6; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = getdigit(&gstr[24 + (i * 2)], &val);
                 if (EFI_ERROR(ret))
                         return ret;
@@ -1143,6 +1280,7 @@ EFI_STATUS string_to_guid(
 
 EFI_STATUS str_to_stra(CHAR8 *dst, const CHAR16 *src, UINTN max_len)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i;
 
         /* This is NOT how to do UTF16 to UTF8 conversion. For now we're just
@@ -1150,6 +1288,7 @@ EFI_STATUS str_to_stra(CHAR8 *dst, const CHAR16 *src, UINTN max_len)
          * the source string! We'll at least abort with an error
          * if we see any funny stuff */
         for (i = 0; i < max_len; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (src[i] > 0x7F)
                         return EFI_INVALID_PARAMETER;
 
@@ -1172,6 +1311,7 @@ EFI_STATUS str_to_stra(CHAR8 *dst, const CHAR16 *src, UINTN max_len)
  */
 static INTN to_digit(CHAR16 character, UINTN base)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN value = -1;
 
         if (character >= '0' && character <= '9')
@@ -1187,6 +1327,7 @@ static INTN to_digit(CHAR16 character, UINTN base)
 /* Convert strings to an unsigned long long-integer value */
 unsigned long long strtoull(const char *nptr, char **endptr, int base)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned long long value = 0;
 
         if (!nptr)
@@ -1194,6 +1335,7 @@ unsigned long long strtoull(const char *nptr, char **endptr, int base)
 
         if ((base == 0 || base == 16) &&
             (strlena((CHAR8 *)nptr) > 2 && nptr[0] == '0' && nptr[1] == 'x')) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 nptr += 2;
                 base = 16;
         }
@@ -1202,10 +1344,12 @@ unsigned long long strtoull(const char *nptr, char **endptr, int base)
                 base = 10;
 
         for (; *nptr != '\0' ; nptr++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 int t = to_digit(*nptr, base);
                 if (t == -1)
                         goto out;
                 if (value * base < value) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         value = ULLONG_MAX;
                         goto out;
                 }
@@ -1221,10 +1365,12 @@ out:
 /* Convert strings to an unsigned long-integer value */
 unsigned long strtoul(const char *nptr, char **endptr, int base)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         unsigned long long value;
 
         value = strtoull(nptr, endptr, base);
         if (value > ULONG_MAX) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (value != ULLONG_MAX)
                         *endptr = (char *)nptr;
                 return ULONG_MAX;
@@ -1236,6 +1382,7 @@ unsigned long strtoul(const char *nptr, char **endptr, int base)
 
 EFI_STATUS bytes_to_hex_stra(CHAR8 *bytes, UINTN length, CHAR8 *str, UINTN strsize)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR8 hex;
         UINTN i;
 
@@ -1243,6 +1390,7 @@ EFI_STATUS bytes_to_hex_stra(CHAR8 *bytes, UINTN length, CHAR8 *str, UINTN strsi
                 return EFI_INVALID_PARAMETER;
 
         for (i = 0; i < length * 2; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 hex = ((i & 1) ? bytes[i / 2] & 0xf : bytes[i / 2] >> 4);
                 *str++ = (hex > 9 ? (hex + 'a' - 10) : (hex + '0'));
         }
@@ -1254,6 +1402,7 @@ EFI_STATUS bytes_to_hex_stra(CHAR8 *bytes, UINTN length, CHAR8 *str, UINTN strsi
 
 static inline BOOLEAN is_in_char_set(char c, const char *set)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i, len;
 
         for (i = 0, len = strlen((CHAR8 *)set); i < len; i++)
@@ -1265,6 +1414,7 @@ static inline BOOLEAN is_in_char_set(char c, const char *set)
 
 char *strtok_r(char *str, const char *delim, char **saveptr)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char *p, *res;
 
         if (!delim || !saveptr || (!str && !*saveptr))
@@ -1290,13 +1440,17 @@ char *strtok_r(char *str, const char *delim, char **saveptr)
 
 CHAR16 *StrStr(const CHAR16 *s, const CHAR16 *find)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 c, sc;
         int len;
 
         if ((c = *find++) != 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 len = StrLen(find);
                 do {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         do {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 if ((sc = *s++) == 0)
                                         return NULL;
                         } while (sc != c);
@@ -1308,38 +1462,46 @@ CHAR16 *StrStr(const CHAR16 *s, const CHAR16 *find)
 
 VOID pause(UINTN seconds)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         uefi_call_wrapper(BS->Stall, 1, seconds * 1000000);
 }
 
 VOID pause_us(UINTN microseconds)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT64 total_tick;
         if (microseconds > 10 * 1000000)
                 microseconds = 10 * 1000000;
 
         total_tick = rdtsc() + (UINT64)get_cpu_freq() * microseconds;
         while (rdtsc() < total_tick) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 asm volatile ("pause");
         }
 }
 
 VOID halt_system(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         uefi_call_wrapper(RT->ResetSystem, 4, EfiResetShutdown, EFI_SUCCESS,
                           0, NULL);
         error(L"Failed to halt the device ... looping forever");
         while (1) { }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 }
 
 
 VOID reboot(CHAR16 *target, EFI_RESET_TYPE type)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 
         if (target) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = set_efi_variable_str(&loader_guid, LOADER_ENTRY_ONESHOT,
                                            TRUE, TRUE, target);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         error(L"Unable to set LoaderEntryOneShot");
                         pause(30);
                         halt_system();
@@ -1350,16 +1512,19 @@ VOID reboot(CHAR16 *target, EFI_RESET_TYPE type)
                           0, target);
         error(L"Failed to reboot the device ... looping forever");
         while (1) { }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 }
 
 static BOOLEAN is_power_of_two(UINTN x)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return x && !(x & (x - 1));
 }
 
 EFI_STATUS alloc_aligned(VOID **free_addr, VOID **aligned_addr,
                          UINTN size, UINTN align)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (align && !is_power_of_two(align))
                 return EFI_INVALID_PARAMETER;
 
@@ -1368,6 +1533,7 @@ EFI_STATUS alloc_aligned(VOID **free_addr, VOID **aligned_addr,
                 return EFI_OUT_OF_RESOURCES;
 
         if (!align) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 *aligned_addr = *free_addr;
                 return EFI_SUCCESS;
         }
@@ -1379,33 +1545,40 @@ EFI_STATUS alloc_aligned(VOID **free_addr, VOID **aligned_addr,
 
 int memcmp(const void *s1, const void *s2, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return CompareMem(s1, s2, n);
 }
 
 void *memset(void *s, int c, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         SetMem(s, n, (UINT8)c);
         return s;
 }
 
 void *memset_s(void *dest, size_t dest_size, int c, size_t count)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (count == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<memset_s count is zero");
                 return dest;
         }
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memset_s dest is NULL");
                 return NULL;
         }
 
         if (dest_size > RSIZE_MAX_MEM) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memset_s dest_size exceeds max");
                 return NULL;
         }
 
         if (dest_size < count) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memset_s count exceeds dest_size");
                 return NULL;
         }
@@ -1417,6 +1590,7 @@ void *memset_s(void *dest, size_t dest_size, int c, size_t count)
 
 void *memcpy(void *dest, const void *source, size_t count)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CopyMem(dest, source, (UINTN)count);
         return dest;
 }
@@ -1424,23 +1598,28 @@ void *memcpy(void *dest, const void *source, size_t count)
 #ifdef CRASHMODE_USE_ADB
 EFI_STATUS memdump(void *dest, size_t dest_size, const void *source, size_t count)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (count == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<memcpy_s count NULL");
                 return EFI_SUCCESS;
         }
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memcpy_s dest NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (dest_size < count) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 CopyMem(dest, 0, (UINTN)dest_size);
                 error(L"<memcpy_s BAD_BUFFER_SIZE 0x%x %d %d", source, dest_size, count);
                 return EFI_BAD_BUFFER_SIZE;
         }
 
         if (source == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<memcpy_s source NULL");
                 return EFI_INVALID_PARAMETER;
         }
@@ -1452,17 +1631,21 @@ EFI_STATUS memdump(void *dest, size_t dest_size, const void *source, size_t coun
 
 EFI_STATUS memcpy_s(void *dest, size_t dest_size, const void *source, size_t count)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (count == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"<memcpy_s count NULL");
                 return EFI_SUCCESS;
         }
 
         if (dest == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memcpy_s dest NULL");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (source == NULL || dest_size < count) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 CopyMem(dest, 0, (UINTN)dest_size);
                 error(L"<memcpy_s BAD_BUFFER_SIZE 0x%x %d %d", source, dest_size, count);
                 return EFI_BAD_BUFFER_SIZE;
@@ -1474,10 +1657,12 @@ EFI_STATUS memcpy_s(void *dest, size_t dest_size, const void *source, size_t cou
 
 void *memmove(void *dst, const void *src, size_t n)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t offs;
         ssize_t i;
 
         if (src > dst) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_STATUS ret;
                 ret = memcpy_s(dst, n, src, n);
                 return (ret == EFI_SUCCESS) ? (dst) : (NULL);
@@ -1496,25 +1681,30 @@ void *memmove(void *dst, const void *src, size_t n)
 
 void * memmove_s(void * dst, size_t destlen, const void * src, size_t len)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t offs;
         ssize_t i;
 
         if (dst == NULL || src == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memmove_s dst or src is NULL");
                 return NULL;
         }
 
         if (destlen > RSIZE_MAX_MEM) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memmove_s destlen exceeds max");
                 return NULL;
         }
 
         if (destlen < len) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"<memset_s src length exceeds dest length");
                 return NULL;
         }
 
         if (src > dst) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_STATUS ret;
                 ret = memcpy_s(dst, len, src, len);
                 return (ret == EFI_SUCCESS) ? (dst) : (NULL);
@@ -1535,6 +1725,7 @@ void * __memmove_chk(void * dst, const void * src, size_t len, size_t destlen)
     __attribute__((weak));
 void * __memmove_chk(void * dst, const void * src, size_t len, size_t destlen)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (destlen < len)
                 panic(L"%a Error: destlen(%d) is less than len(%d)", __func__, destlen, len);
 
@@ -1543,6 +1734,7 @@ void * __memmove_chk(void * dst, const void * src, size_t len, size_t destlen)
 
 static int compare_memory_descriptor(const void *a, const void *b)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const EFI_MEMORY_DESCRIPTOR *m1 = a, *m2 = b;
 
         if (m1->PhysicalStart < m2->PhysicalStart)
@@ -1554,17 +1746,21 @@ static int compare_memory_descriptor(const void *a, const void *b)
 
 void sort_memory_map(void *descr, UINTN nr_descr, UINTN descr_sz)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         qsort(descr, nr_descr, descr_sz, compare_memory_descriptor);
 }
 
 static BOOLEAN is_a_leap_year(INTN year)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return (year % 4 == 0 && year % 100 != 0) || year % 400 == 0;
 }
 
 UINT64 efi_time_to_ctime(EFI_TIME *time)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT8 DAY_OF_MONTH[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i;
         UINTN days;
 
@@ -1590,10 +1786,13 @@ UINT64 efi_time_to_ctime(EFI_TIME *time)
 
 VOID cpuid(UINT32 op, UINT32 reg[4])
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if __LP64__
         asm volatile("xchg{q}\t{%%}rbx, %q1\n\t"
+                       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                      "cpuid\n\t"
                      "xchg{q}\t{%%}rbx, %q1\n\t"
+                       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                      : "=a" (reg[0]), "=&r" (reg[1]), "=c" (reg[2]), "=d" (reg[3])
                      : "a" (op));
 #else
@@ -1609,6 +1808,7 @@ VOID cpuid(UINT32 op, UINT32 reg[4])
 
 EFI_STATUS generate_random_numbers(CHAR8 *data, UINTN size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define RDRAND_SUPPORT (1 << 30)
         uint32_t reg[4];
         int ret;
@@ -1620,6 +1820,7 @@ EFI_STATUS generate_random_numbers(CHAR8 *data, UINTN size)
                 return EFI_UNSUPPORTED;
 
         for (i = 0; i < size; ) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = __builtin_ia32_rdrand32_step(&random);
                 if (ret != 1)
                         return EFI_UNSUPPORTED;
@@ -1633,6 +1834,7 @@ EFI_STATUS generate_random_numbers(CHAR8 *data, UINTN size)
 
 BOOLEAN no_device_unlock()
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef NO_DEVICE_UNLOCK
 	return TRUE;
 #else
@@ -1642,6 +1844,7 @@ BOOLEAN no_device_unlock()
 
 UINT8 min_boot_state()
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef NO_DEVICE_UNLOCK
 	return BOOT_STATE_GREEN;
 #else
@@ -1657,11 +1860,13 @@ VOID __stack_chk_fail()
     __attribute__((weak));
 VOID __stack_chk_fail()
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         panic(L"stack-protector: kernelflinger stack is corrupted");
 }
 
 INTN StrcaseCmp(CHAR16 *s1, CHAR16 *s2)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *p1 = s1;
         CHAR16 *p2 = s2;
         CHAR16 c1, c2;
@@ -1672,6 +1877,7 @@ INTN StrcaseCmp(CHAR16 *s1, CHAR16 *s2)
                 return 1;
 
         while (*p1 != 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 c1 = *p1;
                 if (c1 >= L'A' && c1 <= L'Z')
                         c1 += L'a' - L'A';
@@ -1691,9 +1897,11 @@ INTN StrcaseCmp(CHAR16 *s1, CHAR16 *s2)
 
 void StrToLower(CHAR16 *s)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (s == NULL)
                 return;
         while (*s != 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (*s >= L'A' && *s <= L'Z')
                         *s += L'a' - L'A';
                 s++;
@@ -1704,6 +1912,7 @@ void StrToLower(CHAR16 *s)
 EFI_STATUS string_to_argv(char *str, INTN *argc, CHAR8 *argv[], UINTN max_argc,
                           const char *first_delim, const char *delim)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         char *saveptr, *token = NULL;
 
         if (max_argc == 0)
@@ -1714,6 +1923,7 @@ EFI_STATUS string_to_argv(char *str, INTN *argc, CHAR8 *argv[], UINTN max_argc,
                 return EFI_INVALID_PARAMETER;
 
         for (*argc = 1; (UINTN)*argc < max_argc; (*argc)++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 token = strtok_r(NULL, delim, &saveptr);
                 if (!token)
                         break;
@@ -1728,6 +1938,7 @@ EFI_STATUS string_to_argv(char *str, INTN *argc, CHAR8 *argv[], UINTN max_argc,
 
 UINT8 inb(int port)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT8 val;
         __asm__ __volatile__("inb %w1, %b0" : "=a"(val) : "Nd"(port));
         return val;
@@ -1735,11 +1946,13 @@ UINT8 inb(int port)
 
 void outb(UINT8 val, int port)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	__asm__ __volatile__("outb %b0, %w1" : : "a"(val), "Nd"(port));
 }
 
 int is_running_on_kvm(void)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UINT32 reg[4];
 
     cpuid(0x40000000, reg);
@@ -1752,6 +1965,7 @@ int is_running_on_kvm(void)
 
 int is_running_on_qnx(void)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UINT32 reg[4];
 
     cpuid(0x40000000, reg);
@@ -1763,6 +1977,7 @@ int is_running_on_qnx(void)
 
 int is_running_on_acrn(void)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UINT32 reg[4];
 
     cpuid(0x40000000, reg);

@@ -39,11 +39,13 @@
 #include "tpm2_security.h"
 #include "Tpm2Help.h"
 #include "security.h"
+#include "log.h"
 
 EFI_STATUS tpm2_fuse_vbmeta_key_hash(
 		__attribute__((__unused__)) void *data,
 		__attribute__((__unused__)) uint32_t size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
@@ -51,6 +53,7 @@ EFI_STATUS tpm2_fuse_bootloader_policy(
 		__attribute__((__unused__)) void *data,
 		__attribute__((__unused__)) uint32_t size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
@@ -97,7 +100,9 @@ static const attribute_matrix_t config_table[] =
 		}
 	},
 	{NV_INDEX_OPTEEOS_SEED,
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* The Index data can be written if Owner Authorization is provided. */
 		.TPMA_NV_OWNERWRITE = 1,
 		/* Authorizations to change the Index contents that require
@@ -122,7 +127,9 @@ static const attribute_matrix_t config_table[] =
 		}
 	},
     {NV_INDEX_BOOTLOADER,
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.TPMA_NV_OWNERWRITE = 1,
 		.TPMA_NV_AUTHWRITE = 1,
 		.TPMA_NV_AUTHREAD = 1,
@@ -151,12 +158,14 @@ static EFI_STATUS tpm2_get_capability(
 		OUT	TPMS_CAPABILITY_DATA	  * CapabilityData
 		)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 i;
 	TPML_TAGGED_TPM_PROPERTY *prop;
 
 	ret = Tpm2GetCapability(Capability, Property, PropertyCount, MoreData, CapabilityData);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Call Tpm2GetCapability failed");
 		return ret;
 	}
@@ -173,6 +182,7 @@ static EFI_STATUS tpm2_get_capability(
 
 static EFI_STATUS tpm2_get_cap_permanent(TPMA_PERMANENT *per)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPMI_YES_NO more_data;
 	TPMS_CAPABILITY_DATA cap_data;
@@ -181,11 +191,13 @@ static EFI_STATUS tpm2_get_cap_permanent(TPMA_PERMANENT *per)
 
 	ret = tpm2_get_capability(TPM_CAP_TPM_PROPERTIES, TPM_PT_PERMANENT, 1, &more_data, &cap_data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Get TPM cap permanent failed");
 		return ret;
 	}
 	prop = &cap_data.data.tpmProperties;
 	if (bswap_32(prop->count) <= 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Get empty TPM capability data of TPM_PT_PERMANENT");
 		ret = EFI_NOT_FOUND;
 		return ret;
@@ -201,9 +213,12 @@ static EFI_STATUS tpm2_create_nvindex(TPMI_RH_NV_INDEX nv_index,
 				TPMA_NV attributes,
 				UINT32 data_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPMI_RH_PROVISION auth_handle = TPM_RH_OWNER;
 	TPM2B_NV_PUBLIC public_info = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPM2B_AUTH nv_auth = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	nv_auth.size = 0;
 	public_info.size = sizeof(TPMI_RH_NV_INDEX)
@@ -225,9 +240,12 @@ static EFI_STATUS tpm2_write_nvindex(TPMI_RH_NV_INDEX nv_index,
 				BYTE *data,
 				UINT16 offset)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	TPMS_AUTH_COMMAND session_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPM2B_MAX_BUFFER nv_write_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	INT8 retry_times = 5;
 
 	session_data.sessionHandle = TPM_RS_PW;
@@ -236,11 +254,13 @@ static EFI_STATUS tpm2_write_nvindex(TPMI_RH_NV_INDEX nv_index,
 	memcpy(nv_write_data.buffer, data, nv_write_data.size);
 
 	do {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = Tpm2NvWrite(nv_index, nv_index, &session_data, &nv_write_data, offset);
 		retry_times --;
 	} while (ret == EFI_DEVICE_ERROR && retry_times > 0);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write TPM NV index failed, index: 0x%x, size: %d\n",
 						nv_index, nv_write_data.size);
 	}
@@ -250,7 +270,9 @@ static EFI_STATUS tpm2_write_nvindex(TPMI_RH_NV_INDEX nv_index,
 
 static EFI_STATUS tpm2_write_lock_nvindex(TPMI_RH_NV_INDEX nv_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPMS_AUTH_COMMAND session_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	session_data.sessionHandle = TPM_RS_PW;
 
@@ -262,9 +284,12 @@ static EFI_STATUS tpm2_read_nvindex(TPMI_RH_NV_INDEX nv_index,
 				BYTE *data,
 				UINT16 offset)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPMS_AUTH_COMMAND session_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPM2B_MAX_BUFFER nv_read_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	INT8 retry_times = 5;
 
 	session_data.sessionHandle  = TPM_RS_PW;
@@ -275,11 +300,13 @@ static EFI_STATUS tpm2_read_nvindex(TPMI_RH_NV_INDEX nv_index,
 	nv_read_data.size = data_size;
 
 	do {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = Tpm2NvRead(nv_index, nv_index, &session_data, nv_read_data.size, offset, &nv_read_data);
 		retry_times --;
 	} while (ret == EFI_DEVICE_ERROR && retry_times > 0);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read NVIndex failed\n");
 		return ret;
 	}
@@ -290,7 +317,9 @@ static EFI_STATUS tpm2_read_nvindex(TPMI_RH_NV_INDEX nv_index,
 
 static EFI_STATUS tpm2_read_lock_nvindex(TPMI_RH_NV_INDEX nv_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPMS_AUTH_COMMAND session_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	session_data.sessionHandle  = TPM_RS_PW;
 	session_data.nonce.size	    = 0;
@@ -302,6 +331,7 @@ static EFI_STATUS tpm2_read_lock_nvindex(TPMI_RH_NV_INDEX nv_index)
 
 static EFI_STATUS check_provision_status(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	TPM2B_NV_PUBLIC NvPublic;
 	TPM2B_NAME NvName;
@@ -313,8 +343,10 @@ static EFI_STATUS check_provision_status(void)
 		return ret;
 
 	for (i = 0; i < MAX_NV_NUMBER; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = Tpm2NvReadPublic(config_table[i].nv_index, &NvPublic, &NvName);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Tpm2NvReadPublic TPM NV index %x", config_table[i].nv_index);
 			return ret;
 		}
@@ -327,6 +359,7 @@ static EFI_STATUS check_provision_status(void)
 		NvPublic.nvPublic.attributes.TPMA_NV_WRITELOCKED = 0;
 		matrix.attribute = NvPublic.nvPublic.attributes;
 		if (memcmp(&matrix, &expected_table[i], sizeof(matrix))) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"NV index 0x%08x, attribute: 0x%lx, expected: 0x%lx",
 					matrix.nv_index,
 					*(UINT32 *)&matrix.attribute,
@@ -340,6 +373,7 @@ static EFI_STATUS check_provision_status(void)
 
 EFI_STATUS tpm2_delete_index(UINT32 index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = Tpm2NvUndefineSpace(TPM_RH_OWNER, index, NULL);
 
 	if (EFI_ERROR(ret))
@@ -350,16 +384,19 @@ EFI_STATUS tpm2_delete_index(UINT32 index)
 
 EFI_STATUS tpm2_fuse_provision_seed(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	// Check secure boot is enabled
 	if (!is_platform_secure_boot_enabled()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Secure boot is disabled, does not fuse trusty seed to TPM");
 		return EFI_SECURITY_VIOLATION;
 	}
 
 	ret = tpm2_delete_index(NV_INDEX_TRUSTYOS_SEED);
 	if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"failed to delete NV_INDEX_TRUSTYOS_SEED");
 		return ret;
 	}
@@ -368,7 +405,9 @@ EFI_STATUS tpm2_fuse_provision_seed(void)
 
 EFI_STATUS tpm2_fuse_lock_owner(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPMS_AUTH_COMMAND session_data = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	TPM2B_AUTH owner_auth;
 	EFI_STATUS ret;
 	TPMA_PERMANENT per;
@@ -376,17 +415,20 @@ EFI_STATUS tpm2_fuse_lock_owner(void)
 
 	ret = tpm2_get_cap_permanent(&per);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Check TPM cap permanent for lock owner failed");
 		return ret;
 	}
 
 	if (per.ownerAuthSet) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"TPM owner is already locked");
 		return EFI_SUCCESS;
 	}
 
 	/* Check the provison and secure boot status */
 	if (!is_platform_secure_boot_enabled() || EFI_ERROR(check_provision_status())) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Provision is not completed or secure boot is not enabled, DO NOT LOCK OWNER");
 		return EFI_DEVICE_ERROR;
 	}
@@ -394,6 +436,7 @@ EFI_STATUS tpm2_fuse_lock_owner(void)
 	/* Check can read the bootloader NV index */
 	ret = read_device_state_tpm2(&state);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read device state failed, should not lock the owner!");
 		return ret;
 	}
@@ -405,23 +448,27 @@ EFI_STATUS tpm2_fuse_lock_owner(void)
 
 	ret = Tpm2GetRandom(DIGEST_SIZE, &owner_auth);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"failed to get random");
 		goto out;
 	}
 
 	ret = Tpm2HierarchyChangeAuth(TPM_RH_OWNER, &session_data, &owner_auth);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"failed to Tpm2HierarchyChangeAuth");
 		goto out;
 	}
 
 	ret = tpm2_get_cap_permanent(&per);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Check TPM cap permanent after take owner failed");
 		goto out;
 	}
 
 	if (!per.ownerAuthSet) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Try to lock TPM owner, success call Tpm2HierarchyChangeAuth, but ownerAuthSet is not set!");
 		ret = EFI_SECURITY_VIOLATION;
 		goto out;
@@ -437,16 +484,19 @@ out:
 static EFI_STATUS create_index_and_write_lock(TPM_NV_INDEX nv_index, TPMA_NV attributes,
 					      UINT16 data_size, BYTE *data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = tpm2_create_nvindex(nv_index, attributes, data_size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"NV Index failed to create, index: 0x%x, size: %d", nv_index, data_size);
 		return ret;
 	}
 
 	ret = tpm2_write_nvindex(nv_index, data_size, data, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write to NV Index failed, index: 0x%x, size: %d", nv_index, data_size);
 		return ret;
 	}
@@ -461,12 +511,14 @@ static EFI_STATUS create_index_and_write_lock(TPM_NV_INDEX nv_index, TPMA_NV att
 #ifndef USER
 EFI_STATUS tpm2_show_index(UINT32 index, uint8_t *out_buffer, UINTN out_buffer_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPM2B_NV_PUBLIC NvPublic;
 	TPM2B_NAME NvName;
 
 	ret = Tpm2NvReadPublic(index, &NvPublic, &NvName);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read TPM NV index %x", index);
 		return ret;
 	}
@@ -482,11 +534,13 @@ EFI_STATUS tpm2_show_index(UINT32 index, uint8_t *out_buffer, UINTN out_buffer_s
 
 static EFI_STATUS tpm2_check_cap_permanent(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPMA_PERMANENT per;
 
 	ret = tpm2_get_cap_permanent(&per);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Check TPM cap permanent for lockoutAuthSet failed");
 		return ret;
 	}
@@ -503,6 +557,7 @@ static EFI_STATUS tpm2_check_cap_permanent(void)
 
 EFI_STATUS tpm2_fuse_trusty_seed(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPM2B_DIGEST trusty_seed;
 	UINT8 read_seed[TRUSTY_SEED_SIZE];
@@ -511,6 +566,7 @@ EFI_STATUS tpm2_fuse_trusty_seed(void)
 
 	ret = Tpm2GetRandom(TRUSTY_SEED_SIZE, &trusty_seed);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Tpm2GetRandom failed");
 		goto out;
 	}
@@ -519,6 +575,7 @@ EFI_STATUS tpm2_fuse_trusty_seed(void)
 	ret = create_index_and_write_lock(NV_INDEX_TRUSTYOS_SEED, config_table[config_index].attribute,
 					TRUSTY_SEED_SIZE, trusty_seed.buffer);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create and write trusty seed");
 		goto out;
 	}
@@ -527,10 +584,12 @@ EFI_STATUS tpm2_fuse_trusty_seed(void)
 	// Read the data again to verify it
 	ret = tpm2_read_nvindex(NV_INDEX_TRUSTYOS_SEED, read_seed_size, read_seed, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read trusty seed back failed just after write it");
 		goto out;
 	}
 	if (memcmp(trusty_seed.buffer, read_seed, sizeof(read_seed))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Security error! Read trusty seed back but verify failed!");
 		ret = EFI_SECURITY_VIOLATION;
 		goto out;
@@ -547,6 +606,7 @@ out:
 
 EFI_STATUS tpm2_read_trusty_seed(UINT8 seed[TRUSTY_SEED_SIZE])
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_STATUS ret2;
 	UINT16 seed_size = TRUSTY_SEED_SIZE;
@@ -554,16 +614,19 @@ EFI_STATUS tpm2_read_trusty_seed(UINT8 seed[TRUSTY_SEED_SIZE])
 	ret = tpm2_read_nvindex(NV_INDEX_TRUSTYOS_SEED, seed_size, seed, 0);
 	ret2 = tpm2_read_lock_nvindex(NV_INDEX_TRUSTYOS_SEED);	// Lock anyway
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read trusty seed failed");
 		goto out;
 	}
 	if (EFI_ERROR(ret2)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret2, L"Security error! Set trusty seed read lock failed!");
 		// die?
 		ret = ret2;
 		goto out;
 	}
 	if (seed_size != TRUSTY_SEED_SIZE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read trusty seed failed, read %d bytes data, but expect %d",
 				TRUSTY_SEED_SIZE, seed_size);
 		ret = EFI_COMPROMISED_DATA;
@@ -580,6 +643,7 @@ out:
 
 static EFI_STATUS tpm2_check_trusty_seed_index(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPM2B_NV_PUBLIC NvPublic;
 	TPM2B_NAME NvName;
@@ -588,7 +652,9 @@ static EFI_STATUS tpm2_check_trusty_seed_index(void)
 
 	ret = Tpm2NvReadPublic(NV_INDEX_TRUSTYOS_SEED, &NvPublic, &NvName);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Read trusty seed NV index failed");
 			return ret;
 		}
@@ -606,6 +672,7 @@ static EFI_STATUS tpm2_check_trusty_seed_index(void)
 	attr = (UINT32 *)&NvPublic.nvPublic.attributes;
 	config_attr = (UINT32 *)&config_table[NV_INDEX_TRUSTYOS_SEED - config_table[0].nv_index].attribute;
 	if (NvPublic.nvPublic.dataSize != TRUSTY_SEED_SIZE || *attr != *config_attr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Find trusty seed NV index, but the data is wrong, data size: %d, attributes: 0x%lx, need: 0x%lx",
 				NvPublic.nvPublic.dataSize, *attr, *config_attr);
 		return EFI_COMPROMISED_DATA;
@@ -617,9 +684,11 @@ static EFI_STATUS tpm2_check_trusty_seed_index(void)
 
 static EFI_STATUS tpm2_fuse_bootloader(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT16 config_index;
 	BYTE data[NV_INDEX_BOOTLOADER_SIZE] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE data_read[sizeof(data)];
 	UINT16 data_read_size = sizeof(data);
 	tpm2_bootloader_t *bootloader = (tpm2_bootloader_t *)data;
@@ -627,6 +696,7 @@ static EFI_STATUS tpm2_fuse_bootloader(void)
 	config_index = NV_INDEX_BOOTLOADER - config_table[0].nv_index;
 	ret = tpm2_create_nvindex(NV_INDEX_BOOTLOADER, config_table[config_index].attribute, sizeof(data));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create bootloader NV index");
 		return ret;
 	}
@@ -637,6 +707,7 @@ static EFI_STATUS tpm2_fuse_bootloader(void)
 
 	ret = tpm2_write_nvindex(NV_INDEX_BOOTLOADER, sizeof(data), data, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write bootloader NV index failed");
 		return ret;
 	}
@@ -644,11 +715,13 @@ static EFI_STATUS tpm2_fuse_bootloader(void)
 	/* Read the data again to verify it */
 	ret = tpm2_read_nvindex(NV_INDEX_BOOTLOADER, data_read_size, data_read, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read bootloader NV index back failed just after write it");
 		return ret;
 	}
 
 	if (memcmp(data, data_read, sizeof(data))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Security error! Read bootloader NV index back but verify failed!");
 		return EFI_SECURITY_VIOLATION;
 	}
@@ -659,6 +732,7 @@ static EFI_STATUS tpm2_fuse_bootloader(void)
 
 static EFI_STATUS tpm2_check_bootloader_index(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPM2B_NV_PUBLIC NvPublic;
 	TPM2B_NAME NvName;
@@ -669,7 +743,9 @@ static EFI_STATUS tpm2_check_bootloader_index(void)
 
 	ret = Tpm2NvReadPublic(NV_INDEX_BOOTLOADER, &NvPublic, &NvName);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Read bootloader NV index failed");
 			return ret;
 		}
@@ -687,6 +763,7 @@ static EFI_STATUS tpm2_check_bootloader_index(void)
 	attr = (UINT32 *)&NvPublic.nvPublic.attributes;
 	config_attr = (UINT32 *)&config_table[NV_INDEX_BOOTLOADER - config_table[0].nv_index].attribute;
 	if (NvPublic.nvPublic.dataSize < sizeof(tpm2_bootloader_t) || *attr != *config_attr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Find bootloader NV index, but the data is wrong, data size: %d, attributes: 0x%lx, need: 0x%lx",
 				NvPublic.nvPublic.dataSize, *attr, *config_attr);
 		return EFI_COMPROMISED_DATA;
@@ -696,6 +773,7 @@ static EFI_STATUS tpm2_check_bootloader_index(void)
 			(BYTE *)&struct_ver,
 			offsetof(tpm2_bootloader_t, struct_ver));
 	if (EFI_ERROR(ret) || data_size != sizeof(struct_ver)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read bootloader NV index for struct version failed, read size: %d", data_size);
 		return ret;
 	}
@@ -705,7 +783,9 @@ static EFI_STATUS tpm2_check_bootloader_index(void)
 	else if (struct_ver < NV_INDEX_BOOTLOADER_STRUCT_VER)
 		warning(L"Bootloader NV index is fused with old struct version %d, are you running in old device?", struct_ver);
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (NvPublic.nvPublic.dataSize != NV_INDEX_BOOTLOADER_SIZE) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Find bootloader NV index, but the NV index size is %d", NvPublic.nvPublic.dataSize);
 			return EFI_COMPROMISED_DATA;
 		}
@@ -716,17 +796,20 @@ static EFI_STATUS tpm2_check_bootloader_index(void)
 
 EFI_STATUS read_device_state_tpm2(UINT8 *state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT16 data_size = sizeof(UINT8);
 
 	ret = tpm2_read_nvindex(NV_INDEX_BOOTLOADER, data_size, (BYTE *)state,
 			offsetof(tpm2_bootloader_t, lock_state));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read device state from TPM failed");
 		return ret;
 	}
 
 	if (data_size != sizeof(UINT8)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Read device state from TPM, but data size is wrong: %d", data_size);
 		return EFI_COMPROMISED_DATA;
 	}
@@ -737,11 +820,13 @@ EFI_STATUS read_device_state_tpm2(UINT8 *state)
 
 EFI_STATUS write_device_state_tpm2(UINT8 state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = tpm2_write_nvindex(NV_INDEX_BOOTLOADER, sizeof(UINT8), (BYTE *)&state,
 			offsetof(tpm2_bootloader_t, lock_state));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write device state %d to TPM failed", state);
 		return ret;
 	}
@@ -752,10 +837,12 @@ EFI_STATUS write_device_state_tpm2(UINT8 state)
 
 EFI_STATUS read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *out_rollback_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT16 data_size = sizeof(uint64_t);
 
 	if (rollback_index_slot >= ARRAY_SIZE(((tpm2_bootloader_t *)0)->rollback_index)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"The rollback index slot is too large to write into TPM: %d", rollback_index_slot);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -763,11 +850,13 @@ EFI_STATUS read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *out_ro
 	ret = tpm2_read_nvindex(NV_INDEX_BOOTLOADER, data_size, (BYTE *)out_rollback_index,
 			rollback_index_slot * sizeof(uint64_t) + offsetof(tpm2_bootloader_t, rollback_index));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read rollback index from TPM failed, slot: %d", rollback_index_slot);
 		return ret;
 	}
 
 	if (data_size != sizeof(uint64_t)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Read rollback index from TPM, but data size is wrong: %d", data_size);
 		return EFI_COMPROMISED_DATA;
 	}
@@ -778,9 +867,11 @@ EFI_STATUS read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *out_ro
 
 EFI_STATUS write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t rollback_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (rollback_index_slot >= ARRAY_SIZE(((tpm2_bootloader_t *)0)->rollback_index)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"The rollback index slot is too large to write into TPM: %d", rollback_index_slot);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -788,6 +879,7 @@ EFI_STATUS write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t rollba
 	ret = tpm2_write_nvindex(NV_INDEX_BOOTLOADER, sizeof(uint64_t), (BYTE *)&rollback_index,
 			rollback_index_slot * sizeof(uint64_t) + offsetof(tpm2_bootloader_t, rollback_index));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write rollback index to TPM failed, slot: %d, index: 0x%llx",
 				rollback_index_slot, rollback_index);
 		return ret;
@@ -799,12 +891,14 @@ EFI_STATUS write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t rollba
 
 BOOLEAN tpm2_bootloader_need_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	TPM2B_NV_PUBLIC NvPublic;
 	TPM2B_NAME NvName;
 
 	ret = Tpm2NvReadPublic(NV_INDEX_BOOTLOADER, &NvPublic, &NvName);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret == EFI_NOT_FOUND)
 			return TRUE;
 		efi_perror(ret, L"Failed to read NV_INDEX_BOOTLOADER");
@@ -815,6 +909,7 @@ BOOLEAN tpm2_bootloader_need_init(void)
 
 EFI_STATUS tpm2_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = tpm2_check_cap_permanent();
@@ -839,6 +934,7 @@ EFI_STATUS tpm2_init(void)
 
 EFI_STATUS tpm2_end(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Maybe set read/write lock again */
 	tpm2_read_lock_nvindex(NV_INDEX_TRUSTYOS_SEED);
 	tpm2_read_lock_nvindex(NV_INDEX_BOOTLOADER);
@@ -851,11 +947,13 @@ EFI_STATUS tpm2_end(void)
 
 EFI_STATUS tee_tpm2_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req req = {0};
 	req.cmd = TEE_TPM2_INIT;
 	ivshmem_rollback_index_interrupt(&req);
 
 	if (EFI_ERROR(req.ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(req.ret, L"TPM init failed.");
 		return req.ret;
 	}
@@ -870,6 +968,7 @@ EFI_STATUS tee_tpm2_init(void)
 
 EFI_STATUS tee_tpm2_end(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req req = {0};
 	req.cmd = TEE_TPM2_END;
 	ivshmem_rollback_index_interrupt(&req);
@@ -879,6 +978,7 @@ EFI_STATUS tee_tpm2_end(void)
 
 EFI_STATUS tee_read_device_state_tpm2(UINT8 *state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req *req = (struct tpm2_int_req *)AllocateZeroPool(sizeof(struct tpm2_int_req) + sizeof(state));
 	if (!req)
 		return EFI_OUT_OF_RESOURCES;
@@ -893,6 +993,7 @@ EFI_STATUS tee_read_device_state_tpm2(UINT8 *state)
 
 	FreePool(req);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read device state from TPM failed");
 		return ret;
 	}
@@ -903,6 +1004,7 @@ EFI_STATUS tee_read_device_state_tpm2(UINT8 *state)
 
 EFI_STATUS tee_write_device_state_tpm2(UINT8 state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req *req = (struct tpm2_int_req *)AllocateZeroPool(sizeof(struct tpm2_int_req) + sizeof(state));
 	if (!req)
 		return EFI_OUT_OF_RESOURCES;
@@ -916,6 +1018,7 @@ EFI_STATUS tee_write_device_state_tpm2(UINT8 state)
 
 	FreePool(req);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write device state[%u] to TPM failed", state);
 		return ret;
 	}
@@ -926,6 +1029,7 @@ EFI_STATUS tee_write_device_state_tpm2(UINT8 state)
 
 EFI_STATUS tee_read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *out_rollback_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t payload_len = sizeof(rollback_index_slot) + sizeof(*out_rollback_index);
 	struct tpm2_int_req *req = (struct tpm2_int_req *)AllocateZeroPool(sizeof(struct tpm2_int_req) + payload_len);
 	if (!req)
@@ -942,6 +1046,7 @@ EFI_STATUS tee_read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *ou
 	FreePool(req);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Read rollback index from TPM failed, slot: %d", rollback_index_slot);
 		return ret;
 	}
@@ -952,6 +1057,7 @@ EFI_STATUS tee_read_rollback_index_tpm2(size_t rollback_index_slot, uint64_t *ou
 
 EFI_STATUS tee_write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t rollback_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t payload_len = sizeof(rollback_index_slot) + sizeof(rollback_index);
 	struct tpm2_int_req *req = (struct tpm2_int_req *)AllocateZeroPool(sizeof(struct tpm2_int_req) + payload_len);
 	if (!req)
@@ -966,6 +1072,7 @@ EFI_STATUS tee_write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t ro
 	FreePool(req);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Write rollback index to TPM failed, slot: %d, index: 0x%llx",
 				rollback_index_slot, rollback_index);
 		return ret;
@@ -977,6 +1084,7 @@ EFI_STATUS tee_write_rollback_index_tpm2(size_t rollback_index_slot, uint64_t ro
 
 BOOLEAN tee_tpm2_bootloader_need_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req req = {0};
 	req.cmd = TEE_TPM2_BOOTLOADER_NEED_INIT;
 	ivshmem_rollback_index_interrupt(&req);
@@ -987,11 +1095,13 @@ BOOLEAN tee_tpm2_bootloader_need_init(void)
 #ifndef USER
 EFI_STATUS tee_tpm2_show_index(__attribute__((unused)) UINT32 index, __attribute__((unused)) uint8_t *out_buffer, __attribute__((unused)) UINTN out_buffer_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
 EFI_STATUS tee_tpm2_delete_index(__attribute__((unused)) UINT32 index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
@@ -999,6 +1109,7 @@ EFI_STATUS tee_tpm2_delete_index(__attribute__((unused)) UINT32 index)
 
 EFI_STATUS tee_tpm2_fuse_lock_owner(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct tpm2_int_req req = {0};
 	req.cmd = TEE_TPM2_FUSE_LOCK_OWNER;
 	ivshmem_rollback_index_interrupt(&req);
@@ -1008,5 +1119,6 @@ EFI_STATUS tee_tpm2_fuse_lock_owner(void)
 
 EFI_STATUS tee_tpm2_fuse_provision_seed(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }

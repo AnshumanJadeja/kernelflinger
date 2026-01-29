@@ -35,9 +35,11 @@
 #include <efilib.h>
 
 #include "lib.h"
+#include "log.h"
 
 static CHAR16 *tokenize(CHAR16 *str, BOOLEAN set_zero)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         static CHAR16 *saveptr;
         CHAR16 *ret;
 
@@ -61,6 +63,7 @@ static CHAR16 *tokenize(CHAR16 *str, BOOLEAN set_zero)
                 saveptr++;
 
         if (*saveptr != L'\0') {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (set_zero)
                         *saveptr = L'\0';
                 saveptr++;
@@ -73,6 +76,7 @@ static CHAR16 *tokenize(CHAR16 *str, BOOLEAN set_zero)
 EFI_STATUS
 get_argv(EFI_LOADED_IMAGE *loaded_image, UINTN *argc_p, CHAR16 ***argv_p, CHAR16 **options)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16* token, *str, *cur, *cmdline;
         UINTN argc, i;
         CHAR16 **argv;
@@ -87,6 +91,7 @@ get_argv(EFI_LOADED_IMAGE *loaded_image, UINTN *argc_p, CHAR16 ***argv_p, CHAR16
                 return EFI_OUT_OF_RESOURCES;
 
         for (argc = 0, cur = str; ; cur = NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 token = tokenize(cur, FALSE);
                 if (token == NULL)
                         break;
@@ -98,8 +103,10 @@ get_argv(EFI_LOADED_IMAGE *loaded_image, UINTN *argc_p, CHAR16 ***argv_p, CHAR16
                 return EFI_OUT_OF_RESOURCES;
 
         for (i = 0, cur = str; ; cur = NULL, i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 token = tokenize(cur, TRUE);
                 if (token == NULL) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         argv[i] = NULL;
                         break;
                 }

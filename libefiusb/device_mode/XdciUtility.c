@@ -16,12 +16,14 @@
 #include <vars.h>
 
 #include "XdciUtility.h"
+#include "log.h"
 
 VOID
 PrintDeviceDescriptor (
   IN __attribute((unused)) USB_DEVICE_DESCRIPTOR    *DevDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Device Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length            : 0x%x\n", DevDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType    : 0x%x\n", DevDesc->DescriptorType));
@@ -45,6 +47,7 @@ PrintConfigDescriptor (
   IN __attribute((unused)) EFI_USB_CONFIG_DESCRIPTOR    *ConfigDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Configuration Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length             : 0x%x\n", ConfigDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType     : 0x%x\n", ConfigDesc->DescriptorType));
@@ -62,6 +65,7 @@ PrintInterfaceDescriptor (
   IN __attribute((unused)) EFI_USB_INTERFACE_DESCRIPTOR    *IfDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Interface Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length            : 0x%x\n", IfDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType    : 0x%x\n", IfDesc->DescriptorType));
@@ -80,6 +84,7 @@ PrintEpDescriptor (
   IN __attribute((unused)) EFI_USB_ENDPOINT_DESCRIPTOR    *EpDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Endpoint Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length          : 0x%x\n", EpDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType  : 0x%x\n", EpDesc->DescriptorType));
@@ -95,6 +100,7 @@ PrintEpCompDescriptor (
   IN __attribute((unused)) EFI_USB_ENDPOINT_COMPANION_DESCRIPTOR    *EpDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Endpoint Companion Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length           : 0x%x\n", EpDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType   : 0x%x\n", EpDesc->DescriptorType));
@@ -109,7 +115,9 @@ PrintStringDescriptor (
   IN USB_STRING_DESCRIPTOR    *StrDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if (StrDesc->Length > 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "--- String Descriptor ---\n"));
     DEBUG ((DEBUG_INFO, "Length         : 0x%x\n", StrDesc->Length));
     DEBUG ((DEBUG_INFO, "DescriptorType : 0x%x\n", StrDesc->DescriptorType));
@@ -123,6 +131,7 @@ PrintDeviceRequest (
   IN __attribute__((unused)) EFI_USB_DEVICE_REQUEST    *DevReq
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- Device Request ---\n"));
   DEBUG ((DEBUG_INFO, "RequestType : 0x%x\n", DevReq->RequestType));
   DEBUG ((DEBUG_INFO, "Request     : 0x%x\n", DevReq->Request));
@@ -137,6 +146,7 @@ PrintBOSDescriptor (
   IN __attribute__((unused)) EFI_USB_BOS_DESCRIPTOR    *BosDesc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "--- BOS Descriptor ---\n"));
   DEBUG ((DEBUG_INFO, "Length           : 0x%x\n", BosDesc->Length));
   DEBUG ((DEBUG_INFO, "DescriptorType   : 0x%x\n", BosDesc->DescriptorType));

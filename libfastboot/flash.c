@@ -59,6 +59,7 @@
 #endif
 #include "fatfs.h"
 #include "embedded_controller.h"
+#include "log.h"
 extern uint64_t vm_offset;
 static struct gpt_partition_interface gparti;
 static struct gpt_partition_interface vm_gparti;
@@ -76,7 +77,9 @@ BOOLEAN new_install_device = FALSE;
 
 EFI_STATUS flash_skip(UINT64 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!is_inside_partition(cur_offset, size)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Attempt to skip outside of partition [%ld %ld] [%ld %ld]",
 				part_start, part_end, cur_offset, cur_offset + size);
 		return EFI_INVALID_PARAMETER;
@@ -87,18 +90,21 @@ EFI_STATUS flash_skip(UINT64 size)
 
 EFI_STATUS flash_write(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!p_gparti->bio)
 		return EFI_INVALID_PARAMETER;
 
 	if (!is_inside_partition(cur_offset, size)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Attempt to write outside of partition [%ld %ld] [%ld %ld]",
 				part_start, part_end, cur_offset, cur_offset + size);
 		return EFI_INVALID_PARAMETER;
 	}
 	ret = uefi_call_wrapper(p_gparti->dio->WriteDisk, 5, p_gparti->dio, p_gparti->bio->Media->MediaId, vm_offset + cur_offset, size, data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to write bytes");
 		return ret;
 	}
@@ -111,6 +117,7 @@ EFI_STATUS flash_write(VOID *data, UINTN size)
 
 EFI_STATUS flash_fill(UINT32 pattern, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 *aligned_buf;
 	VOID *buf;
@@ -122,6 +129,7 @@ EFI_STATUS flash_fill(UINT32 pattern, UINTN size)
 	buf_size = min(p_gparti->bio->Media->BlockSize * N_BLOCK, size);
 	ret = alloc_aligned(&buf, (VOID **)&aligned_buf, buf_size, p_gparti->bio->Media->IoAlign);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Unable to allocate the pattern buf");
 		return ret;
 	}
@@ -130,6 +138,7 @@ EFI_STATUS flash_fill(UINT32 pattern, UINTN size)
 		aligned_buf[i] = pattern;
 
 	for (; size; size -= write_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		write_size = min(size, buf_size);
 		ret = flash_write(aligned_buf, write_size);
 		if (EFI_ERROR(ret))
@@ -144,11 +153,13 @@ out:
 
 static EFI_STATUS flash_into_esp(VOID *data, UINTN size, CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io;
 
 	ret = get_esp_fs(&io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition ESP");
 		return ret;
 	}
@@ -159,6 +170,7 @@ static EFI_STATUS flash_into_esp(VOID *data, UINTN size, CHAR16 *label)
 
 static EFI_STATUS get_full_gpt_header(VOID **data_p, UINTN *size_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	VOID *data = *data_p;
 	UINTN size = *size_p;
 	struct gpt_header *gh;
@@ -184,6 +196,7 @@ static EFI_STATUS get_full_gpt_header(VOID **data_p, UINTN *size_p)
  */
 static EFI_STATUS _flash_gpt(VOID *data, UINTN size, logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_bin_header *gb_hdr;
 	struct gpt_bin_part *gb_part;
@@ -208,6 +221,7 @@ static EFI_STATUS _flash_gpt(VOID *data, UINTN size, logical_unit_t log_unit)
 
 static EFI_STATUS flash_gpt(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = _flash_gpt(data, size, LOGICAL_UNIT_USER);
@@ -216,22 +230,26 @@ static EFI_STATUS flash_gpt(VOID *data, UINTN size)
 
 static EFI_STATUS flash_gpt_gpp1(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _flash_gpt(data, size, LOGICAL_UNIT_FACTORY);
 }
 
 static EFI_STATUS flash_ec(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return update_ec(data, size);
 }
 
 #ifndef USER
 static EFI_STATUS flash_efirun(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return fastboot_stop(NULL, data, size, UNKNOWN_TARGET);
 }
 
 static EFI_STATUS flash_mbr(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 
@@ -240,6 +258,7 @@ static EFI_STATUS flash_mbr(VOID *data, UINTN size)
 
 	ret = gpt_get_root_disk(&gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get disk information");
 		return ret;
 	}
@@ -255,30 +274,36 @@ static EFI_STATUS flash_mbr(VOID *data, UINTN size)
 
 static EFI_STATUS flash_sfu(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_into_esp(data, size, L"BIOSUPDATE.fv");
 }
 
 static EFI_STATUS flash_ifwi(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_into_esp(data, size, L"ifwi.bin");
 }
 
 #if defined(IOC_USE_SLCAN) || defined(IOC_USE_CBC)
 static EFI_STATUS flash_ioc(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;
 	IOC_UART_PROTOCOL *iocprotocal;
 
 	ret = LibLocateProtocol(&guid, (void **)&iocprotocal);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"IOC UART Protocol is not supported");
 		return EFI_UNSUPPORTED;
 	}
 
 	if (!EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(iocprotocal->flash_ioc_firmware, 3, iocprotocal, data, size);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to flash ioc firmware");
 			return ret;
 		}
@@ -291,6 +316,7 @@ static EFI_STATUS flash_ioc(VOID *data, UINTN size)
 static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 				      VOID *ramdisk, UINTN ramdisk_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct boot_img_hdr *bootimage, *new_bootimage;
 	VOID *new_cur, *cur;
 	UINTN new_size, partlen, page_size;
@@ -298,6 +324,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 
 	ret = gpt_get_partition_by_label(slot_label(BOOT_LABEL), &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unable to get information on the boot partition");
 		return ret;
 	}
@@ -306,6 +333,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 
 	bootimage = AllocatePool(sizeof(*bootimage));
 	if (!bootimage) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unable to allocate bootimage buffer");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -315,17 +343,20 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 				vm_offset + p_gparti->part.starting_lba * p_gparti->bio->Media->BlockSize,
 				sizeof(*bootimage), bootimage);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to load the current bootimage");
 		goto out;
 	}
 
 	if (memcmp(bootimage->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"boot partition does not contain a valid bootimage");
 		ret = EFI_UNSUPPORTED;
 		goto out;
 	}
 
 	if (bootimage_size(bootimage) > partlen) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid boot image size");
 		ret = EFI_INVALID_PARAMETER;
 		goto out;
@@ -334,6 +365,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 	bootimage = ReallocatePool(bootimage, sizeof(*bootimage),
 				   bootimage_size(bootimage));
 	if (!bootimage) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unable to increase the bootimage buffer size");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -343,16 +375,19 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 				vm_offset + p_gparti->part.starting_lba * p_gparti->bio->Media->BlockSize,
 				bootimage_size(bootimage), bootimage);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to load the current bootimage");
 		goto out;
 	}
 
 	page_size = bootimage->page_size;
 	if (!kernel) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		kernel = (VOID *)bootimage + page_size;
 		kernel_size = bootimage->kernel_size;
 	}
 	if (!ramdisk) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ramdisk = (VOID *)bootimage + page_size +
 			pagealign(bootimage, bootimage->kernel_size);
 		ramdisk_size = bootimage->ramdisk_size;
@@ -364,6 +399,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 		- pagealign(bootimage, bootimage->ramdisk_size)
 		+ pagealign(bootimage, ramdisk_size);
 	if (new_size > partlen) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Kernel image is too large to fit in the boot partition");
 		ret = EFI_INVALID_PARAMETER;
 		goto out;
@@ -371,6 +407,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 
 	new_bootimage = AllocateZeroPool(new_size);
 	if (!new_bootimage) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
 	}
@@ -408,6 +445,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 
 
 	if (bootimage->header_version >= 1) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = memcpy_s(new_bootimage + new_bootimage->recovery_acpio_offset,
 					   new_bootimage->recovery_acpio_size,
 					   bootimage + bootimage->recovery_acpio_offset,
@@ -417,6 +455,7 @@ static EFI_STATUS flash_new_bootimage(VOID *kernel, UINTN kernel_size,
 	}
 
 	if (bootimage->header_version == 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = memcpy_s(new_bootimage + new_bootimage->acpi_addr,
 					   new_bootimage->acpi_size,
 					   bootimage + bootimage->acpi_addr,
@@ -439,25 +478,30 @@ out:
 
 static EFI_STATUS flash_kernel(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_new_bootimage(data, size, NULL, 0);
 }
 
 static EFI_STATUS flash_ramdisk(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_new_bootimage(NULL, 0, data, size);
 }
 
 static CHAR16 *DM_VERITY_PARTITIONS[] =
 	{ SYSTEM_LABEL, VENDOR_LABEL, OEM_LABEL };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 EFI_STATUS flash_partition(VOID *data, UINTN size, CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
 	debug(L"flash partition label = %s\n", label);
 	ret = gpt_get_partition_by_label(label, p_gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
@@ -473,6 +517,7 @@ EFI_STATUS flash_partition(VOID *data, UINTN size, CHAR16 *label)
 		return ret;
 
 	if (!CompareGuid(&p_gparti->part.type, &EfiPartTypeSystemPartitionGuid)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = gpt_refresh();
 		if (EFI_ERROR(ret))
 			return ret;
@@ -486,33 +531,50 @@ EFI_STATUS flash_partition(VOID *data, UINTN size, CHAR16 *label)
 }
 
 static struct label_exception {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *name;
 	EFI_STATUS (*flash_func)(VOID *data, UINTN size);
 } LABEL_EXCEPTIONS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"gpt", flash_gpt },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"gpt-gpp1", flash_gpt_gpp1 },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"ec", flash_ec },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USER
 	{ L"efirun", flash_efirun },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"mbr", flash_mbr },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 	{ L"sfu", flash_sfu },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"ifwi", flash_ifwi },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"oemvars", flash_oemvars },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"kernel", flash_kernel },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"fwupdate", flash_fwupdate},
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ L"ramdisk", flash_ramdisk },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ ESP_LABEL, flash_esp },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if defined(IOC_USE_SLCAN) || defined(IOC_USE_CBC)
 	{ L"ioc", flash_ioc },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 #ifdef FASTBOOT_KEYBOX_PROVISION
 	{ L"keybox", flash_keybox }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 };
 
 EFI_STATUS flash(VOID *data, UINTN size, CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 	CHAR16 *full_label;
 
@@ -531,6 +593,7 @@ EFI_STATUS flash(VOID *data, UINTN size, CHAR16 *label)
 	full_label = (CHAR16 *)slot_label(label);
 
 	if (!full_label) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"invalid bootloader label");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -540,6 +603,7 @@ EFI_STATUS flash(VOID *data, UINTN size, CHAR16 *label)
 
 EFI_STATUS flash_file(EFI_HANDLE image, CHAR16 *filename, CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io = NULL;
 	VOID *buffer = NULL;
@@ -547,18 +611,21 @@ EFI_STATUS flash_file(EFI_HANDLE image, CHAR16 *filename, CHAR16 *label)
 
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, image, &FileSystemProtocol, (void *)&io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get FileSystemProtocol");
 		goto out;
 	}
 
 	ret = uefi_read_file(io, filename, &buffer, &size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read file %s", filename);
 		goto out;
 	}
 
 	ret = flash(buffer, size, label);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to flash file %s on partition %s", filename, label);
 		goto free_buffer;
 	}
@@ -573,11 +640,13 @@ out:
 #define FS_MGR_SIZE 4096
 static EFI_STATUS erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LBA min_end;
 
 	ret = storage_erase_blocks(handle, bio, start, end);
 	if (ret == EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* If the Android fs_mgr fails mounting a partition,
 		   it tries to detect if the partition has been wiped
 		   out to determine if it has to format it.  fs_mgr
@@ -597,11 +666,13 @@ static EFI_STATUS erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA sta
 
 static EFI_STATUS fast_erase_part(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LBA start, end, min_end;
 
 	ret = gpt_get_partition_by_label(label, p_gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
@@ -612,6 +683,7 @@ static EFI_STATUS fast_erase_part(const CHAR16 *label)
 
 	ret = fill_zero(p_gparti->bio, start, min(min_end, end));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to erase partition %s", label);
 		return ret;
 	}
@@ -624,21 +696,26 @@ static EFI_STATUS fast_erase_part(const CHAR16 *label)
 
 EFI_STATUS erase_by_label(CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	BOOLEAN is_data = (!StrCmp(label, L"userdata") || !StrCmp(label, L"data"));
 	BOOLEAN is_share_data = !StrCmp(label, L"share_data");
 
 	/* userdata/data partition only need to be erased once during each boot */
 	if (is_data || is_share_data) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if ((is_data && userdata_erased) || (is_share_data && share_data_erased)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"userdata/share_data partition had already been erased. skip.");
 			return EFI_SUCCESS;
 		}
 
 		if (new_install_device) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"New install devcie, fast erase userdata/share_data partition");
 			return fast_erase_part(label);
 		} else {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USER
 			debug(L"fast erase userdata/share_data partition for userdebug build");
 			return fast_erase_part(label);
@@ -648,11 +725,13 @@ EFI_STATUS erase_by_label(CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, p_gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
 	ret = erase_blocks(p_gparti->handle, p_gparti->bio, p_gparti->part.starting_lba, p_gparti->part.ending_lba);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to erase partition %s", label);
 		return ret;
 	}
@@ -671,6 +750,7 @@ EFI_STATUS erase_by_label(CHAR16 *label)
 
 EFI_STATUS garbage_disk(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 	VOID *chunk;
@@ -679,6 +759,7 @@ EFI_STATUS garbage_disk(void)
 
 	ret = gpt_get_root_disk(&gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get disk information");
 		return ret;
 	}
@@ -686,12 +767,14 @@ EFI_STATUS garbage_disk(void)
 	size = (UINTN)(p_gparti->bio->Media->BlockSize) * N_BLOCK;
 	ret = alloc_aligned(&chunk, &aligned_chunk, size, p_gparti->bio->Media->IoAlign);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Unable to allocate the garbage chunk");
 		return ret;
 	}
 
 	ret = generate_random_numbers(aligned_chunk, size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to generate random numbers");
 		FreePool(chunk);
 		return ret;
@@ -706,6 +789,7 @@ EFI_STATUS garbage_disk(void)
 
 void part_select(int num)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (num == 0)
 		p_gparti = &gparti;
 

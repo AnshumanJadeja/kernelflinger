@@ -25,8 +25,10 @@
 #include "avb_util.h"
 
 #include <stdarg.h>
+#include "log.h"
 
 uint32_t avb_be32toh(uint32_t in) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t* d = (uint8_t*)&in;
   uint32_t ret;
   ret = ((uint32_t)d[0]) << 24;
@@ -37,6 +39,7 @@ uint32_t avb_be32toh(uint32_t in) {
 }
 
 uint64_t avb_be64toh(uint64_t in) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t* d = (uint8_t*)&in;
   uint64_t ret;
   ret = ((uint64_t)d[0]) << 56;
@@ -52,6 +55,7 @@ uint64_t avb_be64toh(uint64_t in) {
 
 /* Converts a 32-bit unsigned integer from host to big-endian byte order. */
 uint32_t avb_htobe32(uint32_t in) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   union {
     uint32_t word;
     uint8_t bytes[4];
@@ -65,6 +69,7 @@ uint32_t avb_htobe32(uint32_t in) {
 
 /* Converts a 64-bit unsigned integer from host to big-endian byte order. */
 uint64_t avb_htobe64(uint64_t in) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   union {
     uint64_t word;
     uint8_t bytes[8];
@@ -81,11 +86,13 @@ uint64_t avb_htobe64(uint64_t in) {
 }
 
 int avb_safe_memcmp(const void* s1, const void* s2, size_t n) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const unsigned char* us1 = s1;
   const unsigned char* us2 = s2;
   int result = 0;
 
   if (0 == n) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return 0;
   }
 
@@ -94,6 +101,7 @@ int avb_safe_memcmp(const void* s1, const void* s2, size_t n) {
    * (nate@root.org) of Root Labs.
    */
   while (n--) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     result |= *us1++ ^ *us2++;
   }
 
@@ -101,6 +109,7 @@ int avb_safe_memcmp(const void* s1, const void* s2, size_t n) {
 }
 
 bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t original_value;
 
   avb_assert(value != NULL);
@@ -109,6 +118,7 @@ bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
 
   *value += value_to_add;
   if (*value < original_value) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow when adding values.\n");
     return false;
   }
@@ -117,8 +127,10 @@ bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
 }
 
 bool avb_safe_add(uint64_t* out_result, uint64_t a, uint64_t b) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t dummy;
   if (out_result == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     out_result = &dummy;
   }
   *out_result = a;
@@ -126,39 +138,51 @@ bool avb_safe_add(uint64_t* out_result, uint64_t a, uint64_t b) {
 }
 
 bool avb_validate_utf8(const uint8_t* data, size_t num_bytes) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t n;
   unsigned int num_cc;
 
   for (n = 0, num_cc = 0; n < num_bytes; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint8_t c = data[n];
 
     if (num_cc > 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       if ((c & (0x80 | 0x40)) == 0x80) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* 10xx xxxx */
       } else {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         goto fail;
       }
       num_cc--;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       if (c < 0x80) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         num_cc = 0;
       } else if ((c & (0x80 | 0x40 | 0x20)) == (0x80 | 0x40)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* 110x xxxx */
         num_cc = 1;
       } else if ((c & (0x80 | 0x40 | 0x20 | 0x10)) == (0x80 | 0x40 | 0x20)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* 1110 xxxx */
         num_cc = 2;
       } else if ((c & (0x80 | 0x40 | 0x20 | 0x10 | 0x08)) ==
                  (0x80 | 0x40 | 0x20 | 0x10)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* 1111 0xxx */
         num_cc = 3;
       } else {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         goto fail;
       }
     }
   }
 
   if (num_cc != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto fail;
   }
 
@@ -174,14 +198,17 @@ bool avb_str_concat(char* buf,
                     size_t str1_len,
                     const char* str2,
                     size_t str2_len) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t combined_len;
 
   if (!avb_safe_add(&combined_len, str1_len, str2_len)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow when adding string sizes.\n");
     return false;
   }
 
   if (combined_len > buf_size - 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Insufficient buffer space.\n");
     return false;
   }
@@ -194,8 +221,10 @@ bool avb_str_concat(char* buf,
 }
 
 void* avb_malloc(size_t size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   void* ret = avb_malloc_(size);
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to allocate memory.\n");
     return NULL;
   }
@@ -203,8 +232,10 @@ void* avb_malloc(size_t size) {
 }
 
 void* avb_calloc(size_t size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   void* ret = avb_malloc(size);
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
 
@@ -213,9 +244,11 @@ void* avb_calloc(size_t size) {
 }
 
 char* avb_strdup(const char* str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t len = avb_strlen(str);
   char* ret = avb_malloc(len + 1);
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
 
@@ -226,22 +259,28 @@ char* avb_strdup(const char* str) {
 }
 
 const char* avb_strstr(const char* haystack, const char* needle) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t n, m;
 
   /* Look through |haystack| and check if the first character of
    * |needle| matches. If so, check the rest of |needle|.
    */
   for (n = 0; haystack[n] != '\0'; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (haystack[n] != needle[0]) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       continue;
     }
 
     for (m = 1;; m++) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       if (needle[m] == '\0') {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return haystack + n;
       }
 
       if (haystack[n + m] != needle[m]) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         break;
       }
     }
@@ -253,10 +292,13 @@ const char* avb_strstr(const char* haystack, const char* needle) {
 const char* avb_strv_find_str(const char* const* strings,
                               const char* str,
                               size_t str_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t n;
   for (n = 0; strings[n] != NULL; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (avb_strlen(strings[n]) == str_size &&
         avb_memcmp(strings[n], str, str_size) == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return strings[n];
     }
   }
@@ -264,6 +306,7 @@ const char* avb_strv_find_str(const char* const* strings,
 }
 
 char* avb_replace(const char* str, const char* search, const char* replace) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char* ret = NULL;
   size_t ret_len = 0;
   size_t search_len, replace_len;
@@ -274,21 +317,25 @@ char* avb_replace(const char* str, const char* search, const char* replace) {
 
   str_after_last_replace = str;
   while (*str != '\0') {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     const char* s;
     size_t num_before;
     size_t num_new;
 
     s = avb_strstr(str, search);
     if (s == NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     }
 
     num_before = s - str;
 
     if (ret == NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       num_new = num_before + replace_len + 1;
       ret = avb_malloc(num_new);
       if (ret == NULL) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         goto out;
       }
       avb_memcpy(ret, str, num_before);
@@ -296,10 +343,12 @@ char* avb_replace(const char* str, const char* search, const char* replace) {
       ret[num_new - 1] = '\0';
       ret_len = num_new - 1;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       char* new_str;
       num_new = ret_len + num_before + replace_len + 1;
       new_str = avb_malloc(num_new);
       if (new_str == NULL) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         goto out;
       }
       avb_memcpy(new_str, ret, ret_len);
@@ -316,15 +365,19 @@ char* avb_replace(const char* str, const char* search, const char* replace) {
   }
 
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ret = avb_strdup(str_after_last_replace);
     if (ret == NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       goto out;
     }
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     size_t num_remaining = avb_strlen(str_after_last_replace);
     size_t num_new = ret_len + num_remaining + 1;
     char* new_str = avb_malloc(num_new);
     if (new_str == NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       goto out;
     }
     avb_memcpy(new_str, ret, ret_len);
@@ -343,6 +396,7 @@ out:
 #define AVB_STRDUPV_MAX_NUM_STRINGS 32
 
 char* avb_strdupv(const char* str, ...) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   va_list ap;
   const char* strings[AVB_STRDUPV_MAX_NUM_STRINGS];
   size_t lengths[AVB_STRDUPV_MAX_NUM_STRINGS];
@@ -354,15 +408,18 @@ char* avb_strdupv(const char* str, ...) {
   total_length = 0;
   va_start(ap, str);
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     size_t str_len = avb_strlen(str);
     strings[num_strings] = str;
     lengths[num_strings] = str_len;
     if (!avb_safe_add_to(&total_length, str_len)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_fatal("Overflow while determining total length.\n");
       break;
     }
     num_strings++;
     if (num_strings == AVB_STRDUPV_MAX_NUM_STRINGS) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_fatal("Too many strings passed.\n");
       break;
     }
@@ -372,11 +429,13 @@ char* avb_strdupv(const char* str, ...) {
 
   ret = avb_malloc(total_length + 1);
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto out;
   }
 
   dest = ret;
   for (n = 0; n < num_strings; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_memcpy(dest, strings[n], lengths[n]);
     dest += lengths[n];
   }
@@ -388,13 +447,17 @@ out:
 }
 
 const char* avb_basename(const char* str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   int64_t n;
   size_t len;
 
   len = avb_strlen(str);
   if (len >= 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     for (n = len - 2; n >= 0; n--) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       if (str[n] == '/') {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return str + n + 1;
       }
     }
@@ -403,25 +466,31 @@ const char* avb_basename(const char* str) {
 }
 
 void avb_uppercase(char* str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t i;
   for (i = 0; str[i] != '\0'; ++i) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (str[i] <= 0x7A && str[i] >= 0x61) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       str[i] -= 0x20;
     }
   }
 }
 
 char* avb_bin2hex(const uint8_t* data, size_t data_len) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char hex_digits[17] = "0123456789abcdef";
   char* hex_data;
   size_t n;
 
   hex_data = avb_malloc(data_len * 2 + 1);
   if (hex_data == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
 
   for (n = 0; n < data_len; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     hex_data[n * 2] = hex_digits[data[n] >> 4];
     hex_data[n * 2 + 1] = hex_digits[data[n] & 0x0f];
   }

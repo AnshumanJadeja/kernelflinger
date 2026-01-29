@@ -33,14 +33,18 @@
 #include <ui.h>
 
 #include "lib.h"
+#include "log.h"
 
 #ifdef USE_POWER_BUTTON
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(*x))
 
 static const ui_textline_t yes_no_menu[][2] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ { &COLOR_WHITE, "Yes", TRUE }, { NULL, NULL, FALSE } },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ { &COLOR_WHITE, "No", TRUE }, { NULL, NULL, FALSE } }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static UINTN current = 1; /* dafault answer is No */
@@ -48,11 +52,13 @@ static UINTN current = 1; /* dafault answer is No */
 static EFI_STATUS ui_confirm_draw_menu(ui_font_t *font, UINTN x, UINTN y,
 				       UINTN width, UINTN height)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color;
 	UINTN i, y1 = y;
 
 	for (i = 0; i < ARRAY_SIZE(yes_no_menu); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		color = current == i ? &COLOR_HIGHLIGHT : &COLOR_BLACK;
 		ui_fill_area(x, y1, width, height, color);
 		ret = ui_textarea_display_text(yes_no_menu[i], font, x, &y1,
@@ -65,12 +71,19 @@ static EFI_STATUS ui_confirm_draw_menu(ui_font_t *font, UINTN x, UINTN y,
 }
 #else
 static const ui_textline_t yes_no_text[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_YELLOW,	"YES",				TRUE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"Press Volume UP key",		FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"",				FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_YELLOW,	"NO",				TRUE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ &COLOR_WHITE,		"Press Volume DOWN key",	FALSE },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ NULL, NULL, FALSE }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 #endif
 
@@ -78,6 +91,7 @@ static const ui_textline_t yes_no_text[] = {
 BOOLEAN ui_confirm(const ui_textline_t *text, UINTN width, UINTN height,
 		   UINTN x, UINTN y)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_events_t event;
 
 #ifdef USE_POWER_BUTTON
@@ -88,16 +102,19 @@ BOOLEAN ui_confirm(const ui_textline_t *text, UINTN width, UINTN height,
 
 	font = ui_font_get_default();
 	if (!font) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Default font not available");
 		return FALSE;
 	}
 
 	for (line_nb = 0; text[line_nb].str; line_nb++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		len = strlen((CHAR8 *)text[line_nb].str);
 		row_nb = row_nb < len ? len : row_nb;
 	}
 
 	if (!line_nb || !row_nb) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid text for ui_confirm");
 		return FALSE;
 	}
@@ -115,8 +132,10 @@ BOOLEAN ui_confirm(const ui_textline_t *text, UINTN width, UINTN height,
 	if (EFI_ERROR(ret))
 		return FALSE;
 	for (;;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		event = ui_wait_for_input(TIMEOUT_SECS);
 		switch (event) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case EV_UP:
 		case EV_DOWN:
 			current = (current + 1) % ARRAY_SIZE(yes_no_menu);
@@ -133,6 +152,7 @@ BOOLEAN ui_confirm(const ui_textline_t *text, UINTN width, UINTN height,
 	}
 #else
 	const ui_textline_t *texts[] = {text, yes_no_text, NULL};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_display_texts(texts, x, y, width, height);
 	event = ui_wait_for_input(TIMEOUT_SECS);
 	return event == EV_UP ? TRUE : FALSE;

@@ -18,6 +18,7 @@
 
 static void dump(UINT8 *p, int size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int i;
 
 	(VOID)p;
@@ -45,6 +46,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 			const void *plain, size_t plain_size,
 			void *out, size_t *out_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rc = AES_GCM_ERR_GENERIC;
 	EVP_CIPHER_CTX *ctx;
 	int out_len, fin_len;
@@ -52,6 +54,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 
 	if ((key == NULL) || (iv == NULL) || (iv_size == 0) ||
 		(plain == NULL) || (out == NULL) || (out_size == NULL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"invalid args!\n");
 		return AES_GCM_ERR_GENERIC;
 	}
@@ -59,6 +62,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 	/*creat cipher ctx*/
 	ctx = EVP_CIPHER_CTX_new();
 	if (ctx == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"fail to create CTX....\n");
 		goto exit;
 	}
@@ -66,19 +70,23 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 	/* Set cipher, key and iv */
 	if (!EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), NULL,
 					(unsigned char *)key, (unsigned char *)iv)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"CipherInit fail\n");
 		goto exit;
 	}
 
 	/* set iv length.*/
 	if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, iv_size, NULL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"set iv length fail\n");
 		goto exit;
 	}
 
 	/* set to aad info.*/
 	if (NULL != aad) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!EVP_EncryptUpdate(ctx, NULL, &out_len, (UINT8 *)aad, aad_size)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"set aad info fail\n");
 			goto exit;
 		}
@@ -86,6 +94,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 
 	/* Encrypt plaintext */
 	if (!EVP_EncryptUpdate(ctx, out, &out_len, plain, plain_size)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Encrypt plain text fail.\n");
 		goto exit;
 	}
@@ -93,6 +102,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 	debug(L"cipher len partial is %08x\n", out_len);
 
 	if (!EVP_EncryptFinal_ex(ctx, out + out_len, &fin_len)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"EncryptFinal fail.\n");
 		goto exit;
 	}
@@ -103,6 +113,7 @@ int aes_256_gcm_encrypt(const struct gcm_key *key,
 	tag = out + out_len;
 	/*get TAG*/
 	if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, sizeof(struct gcm_tag), tag)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"get TAG fail.\n");
 		rc = AES_GCM_ERR_AUTH_FAILED;
 		goto exit;
@@ -142,6 +153,7 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 			const void *cipher, size_t cipher_size,
 			void *out, size_t *out_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rc = AES_GCM_ERR_GENERIC;
 	EVP_CIPHER_CTX *ctx;
 	int out_len, data_len;
@@ -149,6 +161,7 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 
 	if ((key == NULL) || (iv == NULL) || (iv_size == 0) ||
 		(cipher == NULL) || (out == NULL) || (out_size == NULL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"invalid args!\n");
 		return AES_GCM_ERR_GENERIC;
 	}
@@ -156,6 +169,7 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 	/*creat cipher ctx*/
 	ctx = EVP_CIPHER_CTX_new();
 	if (ctx == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"fail to create CTX....\n");
 		goto exit;
 	}
@@ -163,19 +177,23 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 	/* Set cipher, key and iv */
 	if (!EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), NULL,
 					(unsigned char *)key, (unsigned char *)iv)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"CipherInit fail\n");
 		goto exit;
 	}
 
 	/* set iv length.*/
 	if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, iv_size, NULL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"set iv length fail\n");
 		goto exit;
 	}
 
 	/* set to aad info.*/
 	if (NULL != aad) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!EVP_DecryptUpdate(ctx, NULL, &out_len, (uint8_t *)aad, aad_size)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"set aad info fail\n");
 			goto exit;
 		}
@@ -184,6 +202,7 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 	/* Decrypt plaintext */
 	data_len = cipher_size - sizeof(struct gcm_tag);
 	if (!EVP_DecryptUpdate(ctx, out, &out_len, cipher, data_len)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Decrypt cipher text fail.\n");
 		goto exit;
 	}
@@ -193,12 +212,14 @@ int aes_256_gcm_decrypt(const struct gcm_key *key,
 	tag = (UINT8 *)cipher + data_len;
 	/*set TAG*/
 	if (!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, sizeof(struct gcm_tag), tag)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"set TAG fail.\n");
 		goto exit;
 	}
 
 	/* Check TAG */
 	if (!EVP_DecryptFinal_ex(ctx, out+out_len, &data_len)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"fail to check TAG.\n");
 		rc = AES_GCM_ERR_AUTH_FAILED;
 		goto exit;

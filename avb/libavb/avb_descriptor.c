@@ -25,13 +25,16 @@
 #include "avb_descriptor.h"
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
+#include "log.h"
 
 bool avb_descriptor_validate_and_byteswap(const AvbDescriptor* src,
                                           AvbDescriptor* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   dest->tag = avb_be64toh(src->tag);
   dest->num_bytes_following = avb_be64toh(src->num_bytes_following);
 
   if ((dest->num_bytes_following & 0x07) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptor size is not divisible by 8.\n");
     return false;
   }
@@ -42,6 +45,7 @@ bool avb_descriptor_foreach(const uint8_t* image_data,
                             size_t image_size,
                             AvbDescriptorForeachFunc foreach_func,
                             void* user_data) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const AvbVBMetaImageHeader* header = NULL;
   bool ret = false;
   const uint8_t* image_end;
@@ -50,22 +54,26 @@ bool avb_descriptor_foreach(const uint8_t* image_data,
   const uint8_t* p;
 
   if (image_data == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("image_data is NULL\n.");
     goto out;
   }
 
   if (foreach_func == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("foreach_func is NULL\n.");
     goto out;
   }
 
   if (image_size < sizeof(AvbVBMetaImageHeader)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Length is smaller than header.\n");
     goto out;
   }
 
   /* Ensure magic is correct. */
   if (avb_memcmp(image_data, AVB_MAGIC, AVB_MAGIC_LEN) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Magic is incorrect.\n");
     goto out;
   }
@@ -83,27 +91,32 @@ bool avb_descriptor_foreach(const uint8_t* image_data,
 
   if (desc_start < image_data || desc_start > image_end ||
       desc_end < image_data || desc_end > image_end || desc_end < desc_start) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptors not inside passed-in data.\n");
     goto out;
   }
 
   for (p = desc_start; p < desc_end;) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     const AvbDescriptor* dh = (const AvbDescriptor*)p;
     avb_assert_aligned(dh);
     uint64_t nb_following = avb_be64toh(dh->num_bytes_following);
     uint64_t nb_total = sizeof(AvbDescriptor) + nb_following;
 
     if ((nb_total & 7) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_error("Invalid descriptor length.\n");
       goto out;
     }
 
     if (nb_total + p < desc_start || nb_total + p > desc_end) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_error("Invalid data in descriptors array.\n");
       goto out;
     }
 
     if (foreach_func(dh, user_data) == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       goto out;
     }
 
@@ -118,6 +131,7 @@ out:
 
 static bool count_descriptors(const AvbDescriptor* descriptor,
                               void* user_data) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t* num_descriptors = user_data;
   *num_descriptors += 1;
   return true;
@@ -137,6 +151,7 @@ static bool set_descriptors(const AvbDescriptor* descriptor, void* user_data) {
 const AvbDescriptor** avb_descriptor_get_all(const uint8_t* image_data,
                                              size_t image_size,
                                              size_t* out_num_descriptors) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t num_descriptors = 0;
   SetDescriptorData data;
 
@@ -147,12 +162,14 @@ const AvbDescriptor** avb_descriptor_get_all(const uint8_t* image_data,
   data.descriptors =
       avb_calloc(sizeof(const AvbDescriptor*) * (num_descriptors + 1));
   if (data.descriptors == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
   avb_descriptor_foreach(image_data, image_size, set_descriptors, &data);
   avb_assert(data.descriptor_number == num_descriptors);
 
   if (out_num_descriptors != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_num_descriptors = num_descriptors;
   }
 

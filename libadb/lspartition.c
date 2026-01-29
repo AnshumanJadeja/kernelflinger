@@ -34,10 +34,12 @@
 #include <gpt.h>
 
 #include "lspartition.h"
+#include "log.h"
 
 static EFI_STATUS lspartition_main(INTN argc,
 				   __attribute__((__unused__)) const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_partition_interface *gparti = NULL;
 	UINTN part_count, i, max_len = 0;
@@ -49,6 +51,7 @@ static EFI_STATUS lspartition_main(INTN argc,
 
 	ret = gpt_list_partition(&gparti, &part_count, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret) || part_count == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (gparti) 
 			FreePool(gparti);
 		return EFI_SUCCESS;
@@ -64,6 +67,7 @@ static EFI_STATUS lspartition_main(INTN argc,
 	SPrint(part_fmt, sizeof(part_fmt),
 	       L"%%.-2d  %%.-%ds  0x%%010llx  %%8lld\n", max_len);
 	for (i = 0; i < part_count; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		UINT64 size, offset;
 		size = gparti[i].bio->Media->BlockSize
 			* (gparti[i].part.ending_lba + 1 - gparti[i].part.starting_lba);
@@ -79,6 +83,7 @@ static EFI_STATUS lspartition_main(INTN argc,
 }
 
 shcmd_t lspartition_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "lspartition",
 	.summary = "List the GPT partitions",
 	.help = "Usage: lspartition",

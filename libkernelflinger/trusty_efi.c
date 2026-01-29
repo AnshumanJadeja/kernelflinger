@@ -48,6 +48,7 @@
 #include "efilinux.h"
 #include "libtipc.h"
 #include "security_efi.h"
+#include "log.h"
 
 #ifndef SIZE_2MB
 #define SIZE_2MB                 0x200000U
@@ -141,6 +142,7 @@ struct tos_image_header {
  */
 static struct tos_image_header *get_tosimage_header(IN VOID *bootimage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct boot_img_hdr *aosp_header;
         struct tos_image_header *tos_header;
 
@@ -155,6 +157,7 @@ static struct tos_image_header *get_tosimage_header(IN VOID *bootimage)
 /* Get the VMM  base address and size */
 static EFI_STATUS get_address_size_vmm(OUT UINT64 *vmm_mem_base, OUT UINT32 *vmm_size )
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         /* Need to rework the code for these values should be read from B-UINT regsiter */
         if (!vmm_mem_base || !vmm_size)
@@ -168,6 +171,7 @@ static EFI_STATUS get_address_size_vmm(OUT UINT64 *vmm_mem_base, OUT UINT32 *vmm
                              EFI_SIZE_TO_PAGES(VMM_MEM_SIZE + SIZE_2MB), //allocate additional 2MB for alignment
                              vmm_mem_base);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Alloc memory for VMM base addess failed");
                 return EFI_OUT_OF_RESOURCES;
         }
@@ -180,6 +184,7 @@ static EFI_STATUS get_address_size_vmm(OUT UINT64 *vmm_mem_base, OUT UINT32 *vmm
 /* Get the TRUSTY  base address and size */
 static EFI_STATUS get_address_size_trusty(OUT UINT64 *trusty_mem_base, OUT UINT32 *trusty_size )
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 
         /* Need to rework the code for these values should be read from B-UINT regsiter */
@@ -194,6 +199,7 @@ static EFI_STATUS get_address_size_trusty(OUT UINT64 *trusty_mem_base, OUT UINT3
                              EFI_SIZE_TO_PAGES(TRUSTY_MEM_SIZE + SIZE_2MB), //allocate additional 2MB for alignment
                              trusty_mem_base);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Alloc memory for Trusty base addess failed");
                 return EFI_OUT_OF_RESOURCES;
         }
@@ -212,6 +218,7 @@ static EFI_STATUS get_address_size_trusty(OUT UINT64 *trusty_mem_base, OUT UINT3
  */
 static EFI_STATUS start_tos_image(IN VOID *bootimage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINTN map_key, desc_size;
         UINT32 desc_ver, load_size, tos_ret;
@@ -235,6 +242,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
 
         tos_header = get_tosimage_header(bootimage);
         if (!tos_header) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"This partition does not contain a TOS image");
                 return EFI_INVALID_PARAMETER;
         }
@@ -242,6 +250,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
         boot_image_header = (struct boot_img_hdr *)bootimage;
 
         if (tos_header->size != sizeof(struct tos_image_header)){
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"TOS header size mismatches in tos header");
                 return EFI_INVALID_PARAMETER;
         }
@@ -255,6 +264,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
                              EFI_SIZE_TO_PAGES(SIPI_AP_MEMORY_LENGTH),
                              &sipi_ap_addr);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Alloc memory for TOS startup structure failed");
                 goto cleanup;
         }
@@ -265,6 +275,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
                              EFI_SIZE_TO_PAGES(load_size),
                              &load_base);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Alloc memory for loadtime memory failed");
                 goto cleanup;
         }
@@ -278,6 +289,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
                              EFI_SIZE_TO_PAGES(sizeof(struct tos_startup_info_v2)),
                              &startup_info_phy_addr);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Alloc memory for TOS startup structure failed");
                 goto cleanup;
         }
@@ -290,21 +302,25 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
         ret = memcpy_s((VOID *)(UINTN)load_base, load_size, (VOID *)tos_header,
                        boot_image_header->kernel_size);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 goto cleanup;
         }
 
         /* Get EFI memory map */
         memory_map = (CHAR8 *)LibMemoryMap(&nr_entries, &map_key, &desc_size, &desc_ver);
         if (!memory_map) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Get EFI memory map failed");
                 goto cleanup;
         }
 
         /* Initialize startup struct */
         if (tos_header->startup_struct_version == TOS_STARTUP_VERSION_V3) {
+                 debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                startup_info_v2->version = TOS_STARTUP_VERSION_V3;
                startup_info_v2->size = sizeof(struct tos_startup_info_v3);
         } else {
+                 debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                startup_info_v2->version = TOS_STARTUP_VERSION_V2;
                startup_info_v2->size = sizeof(struct tos_startup_info_v2);
         }
@@ -315,12 +331,14 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
 
         ret = get_seed((VOID*)startup_info_v2->seed);
         if (EFI_ERROR(ret)){
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Get trusty seed failed");
                 goto cleanup;
         }
 
         ret = get_address_size_vmm(&temp_vmm_base_address, &temp_vmm_address_size);
         if (EFI_ERROR(ret)){
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Get VMM address failed");
                 goto cleanup;
         }
@@ -328,6 +346,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
         startup_info_v2->vmm_mem_size = temp_vmm_address_size;
         ret = get_address_size_trusty(&temp_trusty_base_address, &temp_trusty_address_size);
         if (EFI_ERROR(ret)){
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Get Trusty address failed");
                 goto cleanup;
         }
@@ -335,6 +354,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
         startup_info_v2->trusty_mem_size = temp_trusty_address_size;
 
         if (tos_header->startup_struct_version  == TOS_STARTUP_VERSION_V3) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 startup_info_v3 = (struct tos_startup_info_v3 *)(UINTN)startup_info_phy_addr;
                 startup_info_v3->efi_system_table = (UINT64)ST;
         }
@@ -344,6 +364,7 @@ static EFI_STATUS start_tos_image(IN VOID *bootimage)
         debug(L"Call TOS loader entry_addr = 0x%x", call_entry);
         tos_ret = call_entry(startup_info_v2);
         if (tos_ret) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(tos_ret, L"Load and start Trusty OS failed");
                 ret = EFI_INVALID_PARAMETER;
                 goto cleanup;
@@ -354,6 +375,7 @@ cleanup:
         OPENSSL_cleanse(startup_info_v2->seed, SECURITY_EFI_TRUSTY_SEED_LEN);
         stop_bls_proto();
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Error has occurred!");
         }
         /* Free all the memory we allocated in this function */
@@ -371,11 +393,13 @@ cleanup:
 
 EFI_STATUS set_trusty_param(__attribute__((unused))  IN VOID *param_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return EFI_UNSUPPORTED;
 }
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         if (!tosimage)
                 return EFI_INVALID_PARAMETER;
@@ -383,6 +407,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
         ret = start_tos_image(tosimage);
         stop_bls_proto();
         if (EFI_ERROR(ret)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             efi_perror(ret, L"Failed to launch tos image");
             return ret;
         }

@@ -35,13 +35,23 @@
 #include <efi.h>
 #include <efilib.h>
 #include <ui.h>
+#include "log.h"
 
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_BLACK	= { 0, 0, 0, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_WHITE	= { 255, 255, 255, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_LIGHTGRAY = { 127, 127, 127, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_LIGHTRED  = { 0, 0, 127, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_YELLOW	= { 0, 255, 255, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_RED	= { 0, 0, 255, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_GREEN	= { 0, 255, 0, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_HIGHLIGHT	= { 157, 106, 0, 0 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_ORANGE	= { 0, 157, 255, 0 };
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);

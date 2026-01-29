@@ -32,37 +32,44 @@
 
 void trusty_lock(struct trusty_dev *dev)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(dev);
 }
 void trusty_unlock(struct trusty_dev *dev)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(dev);
 }
 
 void trusty_local_irq_disable(unsigned long *state)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(state);
 }
 
 void trusty_local_irq_restore(unsigned long *state)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(state);
 }
 
 void trusty_idle(struct trusty_dev *dev, bool event_poll)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* ToDo */
     UNUSED(dev);
 }
 
 void trusty_abort(void)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* ToDo */
     __builtin_unreachable();
 }
 
 void trusty_printf(const char *format, ...)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     va_list ap;
     CHAR16 *format16;
     format16 = stra_to_str((CHAR8 *)format);
@@ -75,6 +82,7 @@ void trusty_printf(const char *format, ...)
 
 void *trusty_memcpy(void *dest, const void *src, size_t n)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EFI_STATUS ret;
     ret = memcpy_s(dest, n, src, n);
     return (ret == EFI_SUCCESS) ? (dest) : (NULL);
@@ -82,11 +90,13 @@ void *trusty_memcpy(void *dest, const void *src, size_t n)
 
 void *trusty_memset(void *dest, const int c, size_t n)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return memset_s(dest, n, c, n);
 }
 
 char *trusty_strcpy(char *dest, const char *src)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EFI_STATUS ret;
     ret = strcpy_s(dest, strlen(src), src);
     return (ret == EFI_SUCCESS) ? (dest) : (NULL);
@@ -94,22 +104,26 @@ char *trusty_strcpy(char *dest, const char *src)
 
 size_t trusty_strlen(const char *str)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return strlen((CHAR8 *)str);
 }
 
 void *trusty_calloc(size_t n, size_t size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AllocatePool(n*size);
 }
 
 void trusty_free(void *addr)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (addr)
         FreePool(addr);
 }
 
 void *trusty_alloc_pages(unsigned count)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     void *pa = NULL;
     EFI_STATUS ret;
     EFI_PHYSICAL_ADDRESS Memory = 0XFFFFFFFF;
@@ -121,6 +135,7 @@ void *trusty_alloc_pages(unsigned count)
                             EFI_SIZE_TO_PAGES(count * PAGE_SIZE),
                             &Memory);
     if (EFI_ERROR(ret)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_printf("alloc page failed\n");
         return NULL;
     }
@@ -133,6 +148,7 @@ void *trusty_alloc_pages(unsigned count)
 
 void trusty_free_pages(void *va, unsigned count)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (va)
         uefi_call_wrapper(BS->FreePages,
                           2,

@@ -32,6 +32,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include <upng.h>
+#include "log.h"
 
 #define INT_MAX 0x7fffffff
 
@@ -148,6 +149,7 @@ static const unsigned LENGTH_BASE[29] = {
 
 /* The extra bits used by codes 257-285 (added to base length) */
 static const unsigned LENGTH_EXTRA[29] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5,
 	5, 5, 5, 0
 };
@@ -155,12 +157,14 @@ static const unsigned LENGTH_EXTRA[29] = {
 /* The base backwards distances (the bits of distance codes appear
    after length codes and use their own huffman tree) */
 static const unsigned DISTANCE_BASE[30] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193, 257, 385, 513,
 	769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577
 };
 
 /* The extra bits of backwards distances (added to base) */
 static const unsigned DISTANCE_EXTRA[30] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
 	11, 11, 12, 12, 13, 13
 };
@@ -169,10 +173,12 @@ static const unsigned DISTANCE_EXTRA[30] = {
    out of this the huffman tree of the dynamic huffman tree lengths is
    generated */
 static const unsigned CLCL[NUM_CODE_LENGTH_CODES] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
 };
 
 static const unsigned FIXED_DEFLATE_CODE_TREE[NUM_DEFLATE_CODE_SYMBOLS * 2] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	289, 370, 290, 307, 546, 291, 561, 292, 293, 300, 294, 297, 295, 296, 0, 1,
 	2, 3, 298, 299, 4, 5, 6, 7, 301, 304, 302, 303, 8, 9, 10, 11, 305, 306, 12,
 	13, 14, 15, 308, 339, 309, 324, 310, 317, 311, 314, 312, 313, 16, 17, 18,
@@ -213,6 +219,7 @@ static const unsigned FIXED_DEFLATE_CODE_TREE[NUM_DEFLATE_CODE_SYMBOLS * 2] = {
 };
 
 static const unsigned FIXED_DISTANCE_TREE[NUM_DISTANCE_SYMBOLS * 2] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	33, 48, 34, 41, 35, 38, 36, 37, 0, 1, 2, 3, 39, 40, 4, 5, 6, 7, 42, 45, 43,
 	44, 8, 9, 10, 11, 46, 47, 12, 13, 14, 15, 49, 56, 50, 53, 51, 52, 16, 17,
 	18, 19, 54, 55, 20, 21, 22, 23, 57, 60, 58, 59, 24, 25, 26, 27, 61, 62, 28,
@@ -221,6 +228,7 @@ static const unsigned FIXED_DISTANCE_TREE[NUM_DISTANCE_SYMBOLS * 2] = {
 
 static unsigned char read_bit(unsigned long *bitpointer, const unsigned char *bitstream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned char result = ((bitstream[(*bitpointer) >> 3] >>
 				 ((*bitpointer) & 0x7)) & 1);
 	(*bitpointer)++;
@@ -230,6 +238,7 @@ static unsigned char read_bit(unsigned long *bitpointer, const unsigned char *bi
 static unsigned read_bits(unsigned long *bitpointer, const unsigned char *bitstream,
 			  unsigned long nbits)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned result = 0, i;
 	for (i = 0; i < nbits; i++)
 		result |= ((unsigned)read_bit(bitpointer, bitstream)) << i;
@@ -240,6 +249,7 @@ static unsigned read_bits(unsigned long *bitpointer, const unsigned char *bitstr
 static void huffman_tree_init(huffman_tree* tree, unsigned* buffer,
 			      unsigned numcodes, unsigned maxbitlen)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	tree->tree2d = buffer;
 	tree->numcodes = numcodes;
 	tree->maxbitlen = maxbitlen;
@@ -251,6 +261,7 @@ static void huffman_tree_init(huffman_tree* tree, unsigned* buffer,
 static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					const unsigned *bitlen)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned tree1d[MAX_SYMBOLS];
 	unsigned blcount[MAX_BIT_LENGTH];
 	unsigned nextcode[MAX_BIT_LENGTH+1];
@@ -266,17 +277,21 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 
 	/* Step 1: count number of instances of each code length */
 	for (bits = 0; bits < tree->numcodes; bits++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		blcount[bitlen[bits]]++;
 	}
 
 	/* Step 2: generate the nextcode values */
 	for (bits = 1; bits <= tree->maxbitlen; bits++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		nextcode[bits] = (nextcode[bits - 1] + blcount[bits - 1]) << 1;
 	}
 
 	/* Step 3: generate all the codes */
 	for (n = 0; n < tree->numcodes; n++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (bitlen[n] != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			tree1d[n] = nextcode[bitlen[n]]++;
 		}
 	}
@@ -292,24 +307,30 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 	   there are more nodes (due to too long length codes), error
 	   55 will happen */
 	for (n = 0; n < tree->numcodes * 2; n++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		tree->tree2d[n] = 32767; /* 32767 here means the
 					    tree2d isn't filled there
 					    yet */
 	}
 
 	for (n = 0; n < tree->numcodes; n++) { /* The codes */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (i = 0; i < bitlen[n]; i++) { /* The bits for this code */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			unsigned char bit =
 				(unsigned char)((tree1d[n] >> (bitlen[n] - i - 1)) & 1);
 			/* Check if oversubscribed */
 			if (treepos > tree->numcodes - 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
 
 			/* Not yet filled in */
 			if (tree->tree2d[2 * treepos + bit] == 32767) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				if (i + 1 == bitlen[n]) { /* Last bit */
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					/* Put the current code in
 					   it */
 					tree->tree2d[2 * treepos + bit] = n;
@@ -320,6 +341,7 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					   course (it's just
 					   nodefilled + 1)... */
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					nodefilled++;
 					/* Addresses encoded with
 					   numcodes added to it */
@@ -328,6 +350,7 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 					treepos = nodefilled;
 				}
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				treepos = tree->tree2d[2 * treepos + bit] -
 					tree->numcodes;
 			}
@@ -335,7 +358,9 @@ static void huffman_tree_create_lengths(upng_t* upng, huffman_tree* tree,
 	}
 
 	for (n = 0; n < tree->numcodes * 2; n++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (tree->tree2d[n] == 32767) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			tree->tree2d[n] = 0;	/* Remove possible
 						   remaining 32767's */
 		}
@@ -346,12 +371,15 @@ static unsigned huffman_decode_symbol(upng_t *upng, const unsigned char *in,
 				      unsigned long *bp, const huffman_tree* codetree,
 				      unsigned long inlength)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned treepos = 0, ct;
 	unsigned char bit;
 
 	for (;;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* error: End of input memory reached without endcode */
 		if (((*bp) & 0x07) == 0 && ((*bp) >> 3) > inlength) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return 0;
 		}
@@ -359,16 +387,19 @@ static unsigned huffman_decode_symbol(upng_t *upng, const unsigned char *in,
 		bit = read_bit(bp, in);
 
 		if (codetree->tree2d == NULL){
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
                         return 0;
 		}
 		ct = codetree->tree2d[(treepos << 1) | bit];
 		if (ct < codetree->numcodes) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			return ct;
 		}
 
 		treepos = ct - codetree->numcodes;
 		if (treepos >= codetree->numcodes) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return 0;
 		}
@@ -383,6 +414,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 				     const unsigned char *in, unsigned long *bp,
 				     unsigned long inlength)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned codelengthcode[NUM_CODE_LENGTH_CODES];
 	unsigned bitlen[NUM_DEFLATE_CODE_SYMBOLS];
 	unsigned bitlenD[NUM_DISTANCE_SYMBOLS];
@@ -393,6 +425,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 	/* C-code note: use no "return" between ctor and dtor of an
 	   uivector! */
 	if ((*bp) >> 3 >= inlength - 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
@@ -413,9 +446,12 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 	hclen = read_bits(bp, in, 4) + 4;
 
 	for (i = 0; i < NUM_CODE_LENGTH_CODES; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (i < hclen) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			codelengthcode[CLCL[i]] = read_bits(bp, in, 3);
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			codelengthcode[CLCL[i]] = 0; /* if not, it
 							must stay 0 */
 		}
@@ -425,6 +461,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 
 	/* Bail now if we encountered an error earlier */
 	if (upng->error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return;
 	}
 
@@ -435,20 +472,26 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 	 * contains the code lengths of lit/len codes and dist
 	 * codes */
 	while (i < hlit + hdist) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned code = huffman_decode_symbol(upng, in, bp,
 						      codelengthcodetree, inlength);
 		if (upng->error != EFI_SUCCESS) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			break;
 		}
 
 		if (code <= 15) { /* a length code */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (i < hlit) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				bitlen[i] = code;
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				bitlenD[i - hlit] = code;
 			}
 			i++;
 		} else if (code == 16) { /* Repeat previous */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Read in the 2 bits that indicate repeat
 			 * length (3-6) */
 			unsigned replength = 3;
@@ -456,6 +499,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 			unsigned value;
 
 			if ((*bp) >> 3 >= inlength) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				break;
 			}
@@ -463,31 +507,39 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 			replength += read_bits(bp, in, 2);
 
 			if ((i - 1) < hlit) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				value = bitlen[i - 1];
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				value = bitlenD[i - hlit - 1];
 			}
 
 			/* Repeat this value in the next lengths */
 			for (n = 0; n < replength; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				/* i is larger than the amount of codes */
 				if (i >= hlit + hdist) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					SET_ERROR(upng, EFI_INVALID_PARAMETER);
 					break;
 				}
 
 				if (i < hlit) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					bitlen[i] = value;
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					bitlenD[i - hlit] = value;
 				}
 				i++;
 			}
 		} else if (code == 17) { /* Repeat "0" 3-10 times */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Read in the bits that indicate repeat
 			 * length */
 			unsigned replength = 3;
 			if ((*bp) >> 3 >= inlength) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				break;
 			}
@@ -497,25 +549,31 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 
 			/* Repeat this value in the next lengths */
 			for (n = 0; n < replength; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				/* Error: i is larger than the amount of codes */
 				if (i >= hlit + hdist) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					SET_ERROR(upng, EFI_INVALID_PARAMETER);
 					break;
 				}
 
 				if (i < hlit) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					bitlen[i] = 0;
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					bitlenD[i - hlit] = 0;
 				}
 				i++;
 			}
 		} else if (code == 18) { /* Repeat "0" 11-138 times */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Read in the bits that indicate repeat
 			 * length */
 			unsigned replength = 11;
 			/* Error, bit pointer jumps past memory */
 			if ((*bp) >> 3 >= inlength) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				break;
 			}
@@ -524,8 +582,10 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 
 			/* Repeat this value in the next lengths */
 			for (n = 0; n < replength; n++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				/* i is larger than the amount of codes */
 				if (i >= hlit + hdist) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					SET_ERROR(upng, EFI_INVALID_PARAMETER);
 					break;
 				}
@@ -536,6 +596,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 				i++;
 			}
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Somehow an unexisting code appeared. This
 			 * can never happen. */
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
@@ -544,6 +605,7 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 	}
 
 	if (upng->error == EFI_SUCCESS && bitlen[256] == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 	}
 
@@ -551,9 +613,11 @@ static void get_tree_inflate_dynamic(upng_t* upng, huffman_tree* codetree,
 	/* now we've finally got hlit and hdist, so generate the code
 	 * trees, and the function is done */
 	if (upng->error == EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		huffman_tree_create_lengths(upng, codetree, bitlen);
 	}
 	if (upng->error == EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		huffman_tree_create_lengths(upng, codetreeD, bitlenD);
 	}
 }
@@ -564,20 +628,25 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 			    unsigned long *pos, unsigned long inlength,
 			    unsigned btype)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned codetree_buffer[DEFLATE_CODE_BUFFER_SIZE];
 	unsigned codetreeD_buffer[DISTANCE_BUFFER_SIZE];
 	unsigned done = 0;
 
 	huffman_tree codetree = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	huffman_tree codetreeD = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (btype == 1) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* fixed trees */
 		huffman_tree_init(&codetree, (unsigned*)FIXED_DEFLATE_CODE_TREE,
 				  NUM_DEFLATE_CODE_SYMBOLS, DEFLATE_CODE_BITLEN);
 		huffman_tree_init(&codetreeD, (unsigned*)FIXED_DISTANCE_TREE,
 				  NUM_DISTANCE_SYMBOLS, DISTANCE_BITLEN);
 	} else if (btype == 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* dynamic trees */
 		unsigned codelengthcodetree_buffer[CODE_LENGTH_BUFFER_SIZE];
 		huffman_tree codelengthcodetree;
@@ -593,17 +662,22 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 	}
 
 	while (done == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned code = huffman_decode_symbol(upng, in, bp, &codetree, inlength);
 		if (upng->error != EFI_SUCCESS) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			return;
 		}
 
 		if (code == 256) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* end code */
 			done = 1;
 		} else if (code <= 255) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* literal symbol */
 			if ((*pos) >= outsize) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
@@ -612,6 +686,7 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 			out[(*pos)++] = (unsigned char)(code);
 		} else if (code >= FIRST_LENGTH_CODE_INDEX &&
 			   code <= LAST_LENGTH_CODE_INDEX) { /* Length code */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Part 1: get length base */
 			unsigned long length = LENGTH_BASE[code - FIRST_LENGTH_CODE_INDEX];
 			unsigned codeD, distance, numextrabitsD;
@@ -623,6 +698,7 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 
 			/* Error, bit pointer will jump past memory */
 			if (((*bp) >> 3) >= inlength) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
@@ -631,12 +707,14 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 			/* Part 3: get distance code */
 			codeD = huffman_decode_symbol(upng, in, bp, &codetreeD, inlength);
 			if (upng->error != EFI_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				return;
 			}
 
 			/* Invalid distance code (30-31 are never
 			 * used) */
 			if (codeD > 29) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
@@ -648,6 +726,7 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 
 			/* Error, bit pointer will jump past memory */
 			if (((*bp) >> 3) >= inlength) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
@@ -660,15 +739,18 @@ static void inflate_huffman(upng_t* upng, unsigned char* out, unsigned long outs
 			backward = start - distance;
 
 			if ((*pos) + length >= outsize) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				SET_ERROR(upng, EFI_INVALID_PARAMETER);
 				return;
 			}
 
 			for (forward = 0; forward < length; forward++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				out[(*pos)++] = out[backward];
 				backward++;
 
 				if (backward >= start) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					backward = start - distance;
 				}
 			}
@@ -681,17 +763,20 @@ static void inflate_uncompressed(upng_t* upng, unsigned char* out,
 				 unsigned long *bp, unsigned long *pos,
 				 unsigned long inlength)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned long p;
 	unsigned len, nlen, n;
 
 	/* Go to first boundary of byte */
 	while (((*bp) & 0x7) != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		(*bp)++;
 	}
 	p = (*bp) / 8;		/* Byte position */
 
 	/* Read len (2 bytes) and nlen (2 bytes) */
 	if (p >= inlength - 4) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
@@ -703,11 +788,13 @@ static void inflate_uncompressed(upng_t* upng, unsigned char* out,
 
 	/* Check if 16-bit nlen is really the one's complement of len */
 	if (len + nlen != 65535) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
 
 	if ((*pos) + len >= outsize) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
@@ -715,11 +802,13 @@ static void inflate_uncompressed(upng_t* upng, unsigned char* out,
 	/* Read the literal data: len bytes are now stored in the out
 	 * buffer */
 	if (p + len > inlength) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
 
 	for (n = 0; n < len; n++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		out[(*pos)++] = in[p++];
 	}
 
@@ -732,6 +821,7 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 				  unsigned long outsize, const unsigned char *in,
 				  unsigned long insize, unsigned long inpos)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Bit pointer in the "in" data, current byte is bp >> 3,
 	 * current bit is bp & 0x7 (from lsb to msb of the byte) */
 	unsigned long bp = 0;
@@ -741,11 +831,13 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 	unsigned done = 0;
 
 	while (done == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned btype;
 
 		/* Ensure next bit doesn't point past the end of the
 		 * buffer */
 		if ((bp >> 3) >= insize) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return upng->error;
 		}
@@ -756,18 +848,22 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 
 		/* Process control type appropriateyly */
 		if (btype == 3) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return upng->error;
 		} else if (btype == 0) { /* No compression */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			inflate_uncompressed(upng, out, outsize, &in[inpos],
 					     &bp, &pos, insize);
 		} else { /* Compression, btype 01 or 10 */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			inflate_huffman(upng, out, outsize, &in[inpos],
 					&bp, &pos, insize, btype);
 		}
 
 		/* Stop if an error has occured */
 		if (upng->error != EFI_SUCCESS) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			return upng->error;
 		}
 	}
@@ -778,8 +874,10 @@ static EFI_STATUS uz_inflate_data(upng_t* upng, unsigned char* out,
 static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long outsize,
 			     const unsigned char *in, unsigned long insize)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* We require two bytes for the zlib data header */
 	if (insize < 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -787,6 +885,7 @@ static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long out
 	/* 256 * in[0] + in[1] must be a multiple of 31, the FCHECK
 	   value is supposed to be made that way */
 	if ((in[0] * 256 + in[1]) % 31 != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -794,6 +893,7 @@ static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long out
 	/* Error: only compression method 8: inflate with sliding
 	   window of 32k is supported by the PNG spec */
 	if ((in[0] & 15) != 8 || ((in[0] >> 4) & 15) > 7) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -801,6 +901,7 @@ static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long out
 	/* The specification of PNG says about the zlib stream: "The
 	   additional flags shall not specify a preset dictionary." */
 	if (((in[1] >> 5) & 1) != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -814,6 +915,7 @@ static EFI_STATUS uz_inflate(upng_t* upng, unsigned char *out, unsigned long out
 /* Paeth predictor, used by PNG filter type 4 */
 static int paeth_predictor(int a, int b, int c)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int p = a + b - c;
 	int pa = p > a ? p - a : a - p;
 	int pb = p > b ? p - b : b - p;
@@ -832,6 +934,7 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 			      const unsigned char *precon, unsigned long bytewidth,
 			      unsigned char filterType, unsigned long length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* For PNG filter method 0
 
 	   unfilter a PNG image scanline by scanline. when the pixels
@@ -848,6 +951,7 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 	   must be disjoint. */
 	unsigned long i;
 	switch (filterType) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case 0:
 		for (i = 0; i < length; i++)
 			recon[i] = scanline[i];
@@ -868,11 +972,13 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 		break;
 	case 3:
 		if (precon) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (i = 0; i < bytewidth; i++)
 				recon[i] = scanline[i] + precon[i] / 2;
 			for (i = bytewidth; i < length; i++)
 				recon[i] = scanline[i] + ((recon[i - bytewidth] + precon[i]) / 2);
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (i = 0; i < bytewidth; i++)
 				recon[i] = scanline[i];
 			for (i = bytewidth; i < length; i++)
@@ -881,11 +987,13 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 		break;
 	case 4:
 		if (precon) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (i = 0; i < bytewidth; i++)
 				recon[i] = (unsigned char)(scanline[i] + paeth_predictor(0, precon[i], 0));
 			for (i = bytewidth; i < length; i++)
 				recon[i] = (unsigned char)(scanline[i] + paeth_predictor(recon[i - bytewidth], precon[i], precon[i - bytewidth]));
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (i = 0; i < bytewidth; i++)
 				recon[i] = scanline[i];
 			for (i = bytewidth; i < length; i++)
@@ -901,6 +1009,7 @@ static void unfilter_scanline(upng_t* upng, unsigned char *recon,
 static void unfilter(upng_t* upng, unsigned char *out, const unsigned char *in,
 		     unsigned w, unsigned h, unsigned bpp)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* For PNG filter method 0
 
 	   this function unfilters a single image (e.g. without
@@ -924,6 +1033,7 @@ static void unfilter(upng_t* upng, unsigned char *out, const unsigned char *in,
 	unsigned long linebytes = (w * bpp + 7) / 8;
 
 	for (y = 0; y < h; y++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned long outindex = linebytes * y;
 		/* The extra filterbyte added to each row */
 		unsigned long inindex = (1 + linebytes) * y;
@@ -932,6 +1042,7 @@ static void unfilter(upng_t* upng, unsigned char *out, const unsigned char *in,
 		unfilter_scanline(upng, &out[outindex], &in[inindex + 1],
 				  prevline, bytewidth, filterType, linebytes);
 		if (upng->error != EFI_SUCCESS) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			return;
 		}
 
@@ -943,6 +1054,7 @@ static void remove_padding_bits(unsigned char *out, const unsigned char *in,
 				unsigned long olinebits, unsigned long ilinebits,
 				unsigned h)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* After filtering there are still padding bpp if scanlines
 	   have non multiple of 8 bit amounts. They need to be removed
 	   (except at last scanline of (Adam7-reduced) image) before
@@ -963,8 +1075,10 @@ static void remove_padding_bits(unsigned char *out, const unsigned char *in,
 	unsigned long diff = ilinebits - olinebits;
 	unsigned long obp = 0, ibp = 0;	/*bit pointers */
 	for (y = 0; y < h; y++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned long x;
 		for (x = 0; x < olinebits; x++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			unsigned char bit = (unsigned char)((in[(ibp) >> 3] >>
 							     (7 - ((ibp) & 0x7))) & 1);
 			ibp++;
@@ -981,7 +1095,9 @@ static void remove_padding_bits(unsigned char *out, const unsigned char *in,
 
 static unsigned upng_get_components(const upng_t* upng)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (upng->color_type) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case UPNG_LUM:
 		return 1;
 	case UPNG_RGB:
@@ -997,11 +1113,13 @@ static unsigned upng_get_components(const upng_t* upng)
 
 static unsigned upng_get_bitdepth(const upng_t* upng)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return upng->color_depth;
 }
 
 static unsigned upng_get_bpp(const upng_t* upng)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return upng_get_bitdepth(upng) * upng_get_components(upng);
 }
 
@@ -1009,22 +1127,27 @@ static unsigned upng_get_bpp(const upng_t* upng)
    contain the full decompressed data from the IDAT chunks. */
 static void post_process_scanlines(upng_t* upng, unsigned char *out, unsigned char *in, const upng_t* info_png)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned bpp = upng_get_bpp(info_png);
 	unsigned w = info_png->width;
 	unsigned h = info_png->height;
 
 	if (bpp == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return;
 	}
 
 	if (bpp < 8 && w * bpp != ((w * bpp + 7) / 8) * 8) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unfilter(upng, in, in, w, h, bpp);
 		if (upng->error != EFI_SUCCESS) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			return;
 		}
 		remove_padding_bits(out, in, w * bpp, ((w * bpp + 7) / 8) * 8, h);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* We can immediatly filter into the out buffer, no
 		   other steps needed */
 		unfilter(upng, out, in, w, h, bpp);
@@ -1032,9 +1155,12 @@ static void post_process_scanlines(upng_t* upng, unsigned char *out, unsigned ch
 }
 
 static upng_format determine_format(upng_t* upng) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (upng->color_type) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case UPNG_RGBA:
 		switch (upng->color_depth) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case 8:
 			return UPNG_RGBA8;
 		case 16:
@@ -1051,14 +1177,17 @@ static upng_format determine_format(upng_t* upng) {
    upng_Info. return value is error */
 static EFI_STATUS upng_header(upng_t* upng)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* if we have an error state, bail now */
 	if (upng->error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return upng->error;
 	}
 
 	/* If the state is not NEW (meaning we are ready to parse the
 	   header), stop now */
 	if (upng->state != UPNG_NEW) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return upng->error;
 	}
 
@@ -1066,6 +1195,7 @@ static EFI_STATUS upng_header(upng_t* upng)
 	 * FIXME: verify this against the specification, or
 	 * better against the actual code below */
 	if (upng->source.size < 29) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -1075,12 +1205,14 @@ static EFI_STATUS upng_header(upng_t* upng)
 	    upng->source.buffer[2] != 78 || upng->source.buffer[3] != 71 ||
 	    upng->source.buffer[4] != 13 || upng->source.buffer[5] != 10 ||
 	    upng->source.buffer[6] != 26 || upng->source.buffer[7] != 10) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
 
 	/* check that the first chunk is the IHDR chunk */
 	if (MAKE_DWORD_PTR(upng->source.buffer + 12) != CHUNK_IHDR) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -1094,6 +1226,7 @@ static EFI_STATUS upng_header(upng_t* upng)
 	/* determine our color format */
 	upng->format = determine_format(upng);
 	if (upng->format == UPNG_BADFORMAT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_UNSUPPORTED);
 		return upng->error;
 	}
@@ -1101,6 +1234,7 @@ static EFI_STATUS upng_header(upng_t* upng)
 	/* Check that the compression method (byte 27) is 0 (only
 	 * allowed value in spec) */
 	if (upng->source.buffer[26] != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -1108,6 +1242,7 @@ static EFI_STATUS upng_header(upng_t* upng)
 	/* Check that the compression method (byte 27) is 0 (only
 	 * allowed value in spec) */
 	if (upng->source.buffer[27] != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_INVALID_PARAMETER);
 		return upng->error;
 	}
@@ -1115,6 +1250,7 @@ static EFI_STATUS upng_header(upng_t* upng)
 	/* Check that the compression method (byte 27) is 0 (spec
 	 * allows 1, but uPNG does not support it) */
 	if (upng->source.buffer[28] != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_UNSUPPORTED);
 		return upng->error;
 	}
@@ -1127,6 +1263,7 @@ static EFI_STATUS upng_header(upng_t* upng)
  * (hence "generic") */
 static EFI_STATUS upng_decode(upng_t* upng)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const unsigned char *chunk;
 	unsigned char* compressed;
 	unsigned char* inflated;
@@ -1136,23 +1273,27 @@ static EFI_STATUS upng_decode(upng_t* upng)
 
 	/* If we have an error state, bail now */
 	if (upng->error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return upng->error;
 	}
 
 	/* Parse the main header, if necessary */
 	upng_header(upng);
 	if (upng->error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return upng->error;
 	}
 
 	/* If the state is not HEADER (meaning we are ready to decode
 	 * the image), stop now */
 	if (upng->state != UPNG_HEADER) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return upng->error;
 	}
 
 	/* Release old result, if any */
 	if (upng->buffer != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(upng->buffer);
 		upng->buffer = 0;
 		upng->size = 0;
@@ -1164,6 +1305,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	/* Scan through the chunks, finding the size of all IDAT
 	 * chunks, and also verify general well-formed-sens */
 	while (chunk < upng->source.buffer + upng->source.size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned long length;
 		const unsigned char *data; /* The data in the chunk */
 
@@ -1171,6 +1313,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 		 * compressed */
 		if ((unsigned long)(chunk - (unsigned long)upng->source.buffer + 12) >
 		    upng->source.size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return upng->error;
 		}
@@ -1178,6 +1321,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 		/* Get length; sanity check it */
 		length = upng_chunk_length(chunk);
 		if (length > INT_MAX) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return upng->error;
 		}
@@ -1186,6 +1330,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 		 * the total compressed */
 		if ((unsigned long)(chunk - upng->source.buffer + length + 12) >
 		    upng->source.size) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_INVALID_PARAMETER);
 			return upng->error;
 		}
@@ -1195,10 +1340,13 @@ static EFI_STATUS upng_decode(upng_t* upng)
 
 		/* Parse chunks */
 		if (upng_chunk_type(chunk) == CHUNK_IDAT) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			compressed_size += length;
 		} else if (upng_chunk_type(chunk) == CHUNK_IEND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			break;
 		} else if (upng_chunk_critical(chunk)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			SET_ERROR(upng, EFI_UNSUPPORTED);
 			return upng->error;
 		}
@@ -1210,6 +1358,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	 * image data */
 	compressed = (unsigned char*)AllocatePool(compressed_size);
 	if (compressed == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		SET_ERROR(upng, EFI_OUT_OF_RESOURCES);
 		return upng->error;
 	}
@@ -1219,6 +1368,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	 * anything a second time. */
 	chunk = upng->source.buffer + 33;
 	while (chunk < upng->source.buffer + upng->source.size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned long length;
 		const unsigned char *data; /* The data in the chunk */
 
@@ -1227,13 +1377,16 @@ static EFI_STATUS upng_decode(upng_t* upng)
 
 		/* Parse chunks */
 		if (upng_chunk_type(chunk) == CHUNK_IDAT) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error = memcpy_s(compressed + compressed_index, compressed_size, data, length);
 			if (EFI_ERROR(error)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				FreePool(compressed);
 			    return error;
 			}
 			compressed_index += length;
 		} else if (upng_chunk_type(chunk) == CHUNK_IEND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			break;
 		}
 
@@ -1246,6 +1399,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 		upng->height;
 	inflated = (unsigned char*)AllocatePool(inflated_size);
 	if (inflated == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(compressed);
 		SET_ERROR(upng, EFI_OUT_OF_RESOURCES);
 		return upng->error;
@@ -1254,6 +1408,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	/* Decompress image data */
 	error = uz_inflate(upng, inflated, inflated_size, compressed, compressed_size);
 	if (error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(compressed);
 		FreePool(inflated);
 		return upng->error;
@@ -1266,6 +1421,7 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	upng->size = (upng->height * upng->width * upng_get_bpp(upng) + 7) / 8;
 	upng->buffer = (unsigned char*)AllocatePool(upng->size);
 	if (upng->buffer == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(inflated);
 		upng->size = 0;
 		SET_ERROR(upng, EFI_OUT_OF_RESOURCES);
@@ -1277,10 +1433,12 @@ static EFI_STATUS upng_decode(upng_t* upng)
 	FreePool(inflated);
 
 	if (upng->error != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(upng->buffer);
 		upng->buffer = NULL;
 		upng->size = 0;
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		upng->state = UPNG_DECODED;
 	}
 
@@ -1290,7 +1448,9 @@ static EFI_STATUS upng_decode(upng_t* upng)
 static inline EFI_GRAPHICS_OUTPUT_BLT_PIXEL
 swap_color(EFI_GRAPHICS_OUTPUT_BLT_PIXEL color)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL swapped = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.Blue = color.Red,
 		.Red = color.Blue,
 		.Green = color.Green
@@ -1302,7 +1462,9 @@ EFI_STATUS upng_load(const char *data, UINTN size,
 		     EFI_GRAPHICS_OUTPUT_BLT_PIXEL **blt,
 		     UINTN *width, UINTN *height)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	upng_t upng = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.color_type = UPNG_RGBA,
 		.color_depth = 8,
 		.format = UPNG_RGBA8,

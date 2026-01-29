@@ -39,6 +39,7 @@
 #include "adb.h"
 #include "adb_socket.h"
 #include "service.h"
+#include "log.h"
 
 /* USB configuration */
 #define ADB_IF_SUBCLASS		0x42
@@ -77,6 +78,7 @@ UINT32 adb_version;
 
 static UINT32 adb_pkt_sum(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN count, sum;
 	unsigned char *cur = pkt->data;
 
@@ -89,6 +91,7 @@ static UINT32 adb_pkt_sum(adb_pkt_t *pkt)
 static adb_pkt_t *delayed_pkt_data;
 EFI_STATUS adb_send_pkt(adb_pkt_t *pkt, UINT32 command, UINT32 arg0, UINT32 arg1)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	pkt->msg.command = command;
@@ -119,6 +122,7 @@ EFI_STATUS adb_send_pkt(adb_pkt_t *pkt, UINT32 command, UINT32 arg0, UINT32 arg1
 
 static void adb_read_msg(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	adb_state = ADB_READ_MSG;
@@ -129,6 +133,7 @@ static void adb_read_msg(void)
 
 static void adb_read_msg_payload()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	adb_state = ADB_READ_MSG_PAYLOAD;
@@ -141,6 +146,7 @@ static void adb_read_msg_payload()
 /* ADB commands */
 static void cmd_unsupported(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char cmd[5];
 
 	*(UINT32 *)cmd = pkt->msg.command;
@@ -151,15 +157,18 @@ static void cmd_unsupported(adb_pkt_t *pkt)
 
 static BOOLEAN is_supported_adb_version(UINT32 ver)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return ((ver >= ADB_VERSION_MIN) && (ver <= ADB_VERSION_MAX)) ? TRUE : FALSE;
 }
 
 static void cmd_connect(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static adb_pkt_t out_pkt;
 
 	if (!is_supported_adb_version(pkt->msg.arg0)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unsupported adb version 0x%08x", pkt->msg.arg0);
 		return;
 	}
@@ -179,12 +188,14 @@ static void cmd_connect(adb_pkt_t *pkt)
 
 static void cmd_open(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *name = (char *)pkt->data;
 	char *arg = name;
 	service_t *srv = NULL;
 	UINTN i;
 
 	if (!pkt->msg.data_length) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Received OPEN packet without any data");
 		return;
 	}
@@ -196,6 +207,7 @@ static void cmd_open(adb_pkt_t *pkt)
 
 	for (i = 0; i < ARRAY_SIZE(SERVICES); i++)
 		if (!strcmp((CHAR8 *)name, (CHAR8 *)SERVICES[i]->name)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			srv = SERVICES[i];
 			break;
 		}
@@ -205,16 +217,19 @@ static void cmd_open(adb_pkt_t *pkt)
 
 static void cmd_okay(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	asock_okay(asock_find(pkt->msg.arg1, pkt->msg.arg0));
 }
 
 static void cmd_close(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	asock_close(asock_find(pkt->msg.arg1, pkt->msg.arg0));
 }
 
 static void cmd_write(adb_pkt_t *pkt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	asock_read(asock_find(pkt->msg.arg1, pkt->msg.arg0),
 		   pkt->data, pkt->msg.data_length);
 }
@@ -231,11 +246,14 @@ static adb_handler_t HANDLERS[] = {
 	{ A_OKAY, cmd_okay },
 	{ A_CLSE, cmd_close },
 	{ A_WRTE, cmd_write },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ A_AUTH, cmd_unsupported }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static adb_handler_t *get_handler(adb_msg_t *msg)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(HANDLERS); i++)
@@ -247,6 +265,7 @@ static adb_handler_t *get_handler(adb_msg_t *msg)
 
 static void process_msg(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	adb_handler_t *handler;
 
 	if (adb_state != ADB_PROCESS_MSG)
@@ -263,33 +282,40 @@ static void process_msg(void)
 
 static void adb_process_rx(void *buf, unsigned len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	adb_msg_t *msg;
 
 	switch (adb_state) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case ADB_READ_MSG:
 		if (buf != &adb_pkt_in || len != sizeof(adb_pkt_in.msg)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Invalid adb packet buffer reference");
 			return;
 		}
 
 		msg = (adb_msg_t *)buf;
 		if (msg->magic != (msg->command ^ 0xFFFFFFFF)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Bad magic");
 			return;
 		}
 
 		if (msg->data_length > sizeof(in_buf)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"internal read buffer is too small");
 			return;
 		}
 
 		if (msg->data_length) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			adb_read_msg_payload();
 			return;
 		}
 
 		/* Fastpath for OKAY message for performance purposes.  */
 		if (msg->command == A_OKAY) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			cmd_okay(&adb_pkt_in);
 			adb_read_msg();
 			return;
@@ -300,11 +326,13 @@ static void adb_process_rx(void *buf, unsigned len)
 
 	case ADB_READ_MSG_PAYLOAD:
 		if (buf != adb_pkt_in.data) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Invalid adb payload buffer reference");
 			return;
 		}
 
 		if (len != adb_pkt_in.msg.data_length) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Received 0x%x bytes payload instead of 0x%x bytes",
 			      len, adb_pkt_in.msg.data_length);
 			return;
@@ -312,6 +340,7 @@ static void adb_process_rx(void *buf, unsigned len)
 
 		if ((adb_version < ADB_VERSION_SKIP_CHECKSUM) &&
 		    (adb_pkt_in.msg.data_check != adb_pkt_sum(&adb_pkt_in))) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Corrupted data detected");
 			return;
 		}
@@ -327,6 +356,7 @@ static void adb_process_rx(void *buf, unsigned len)
 static void adb_process_tx(__attribute__((__unused__)) void *buf,
 			   __attribute__((__unused__)) unsigned len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!delayed_pkt_data)
@@ -347,6 +377,7 @@ enum boot_target adb_get_boot_target(void)
 
 void adb_set_boot_target(enum boot_target bt)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	exit_bt = bt;
 }
 
@@ -354,6 +385,7 @@ static EFI_STATUS adb_usb_start(start_callback_t start_cb,
 				data_callback_t rx_cb,
 				data_callback_t tx_cb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return usb_start(ADB_IF_SUBCLASS, ADB_IF_PROTOCOL,
 			 STR_CONFIGURATION, STR_INTERFACE,
 			 start_cb, rx_cb, tx_cb);
@@ -361,6 +393,7 @@ static EFI_STATUS adb_usb_start(start_callback_t start_cb,
 
 static void print_tcpip_information(EFI_IPv4_ADDRESS *address)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define TCPIP_INFO_FMT L"ADB is listening on TCP %d.%d.%d.%d:%d"
 
 	ui_print(TCPIP_INFO_FMT, address->Addr[0], address->Addr[1],
@@ -373,6 +406,7 @@ static EFI_STATUS adb_tcp_start(start_callback_t start_cb,
 				data_callback_t rx_cb,
 				data_callback_t tx_cb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_IPv4_ADDRESS station_address;
 
@@ -387,7 +421,9 @@ static EFI_STATUS adb_tcp_start(start_callback_t start_cb,
 }
 
 static transport_t ADB_TRANSPORT[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.name = "USB for adb",
 		.start = adb_usb_start,
 		.stop = usb_stop,
@@ -396,6 +432,7 @@ static transport_t ADB_TRANSPORT[] = {
 		.write = usb_write
 	},
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.name = "TCP for adb",
 		.start = adb_tcp_start,
 		.stop = tcp_stop,
@@ -407,6 +444,7 @@ static transport_t ADB_TRANSPORT[] = {
 
 EFI_STATUS adb_init()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	adb_pkt_in.data = in_buf;
@@ -414,6 +452,7 @@ EFI_STATUS adb_init()
 
 	ret = transport_register(ADB_TRANSPORT, ARRAY_SIZE(ADB_TRANSPORT));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"adb failed to register support transport");
 		return ret;
 	}
@@ -423,12 +462,14 @@ EFI_STATUS adb_init()
 
 EFI_STATUS adb_run(UINT32 *state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if(state)
 		*state = 1;
 	ret = transport_run(NULL);
 	if (EFI_ERROR(ret) && ret != EFI_TIMEOUT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Error occurred during USB run");
 		return ret;
 	}
@@ -440,6 +481,7 @@ EFI_STATUS adb_run(UINT32 *state)
 
 EFI_STATUS adb_exit()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	asock_close_all();
 	transport_stop();
 	return EFI_SUCCESS;

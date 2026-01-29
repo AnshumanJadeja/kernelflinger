@@ -30,6 +30,7 @@
 #include <life_cycle.h>
 #include <libtipc.h>
 #include "storage.h"
+#include "log.h"
 
 #define LOCAL_LOG 0
 #define UNUSED(x) (void)(x)
@@ -48,12 +49,16 @@ static const size_t max_send_size = 4000;
 #endif
 static int km_send_request(uint32_t cmd, const void *req, size_t req_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct keymaster_message header = { .cmd = cmd };
     int num_iovecs = req ? 2 : 1;
 
     struct trusty_ipc_iovec req_iovs[2] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = &header, .len = sizeof(header) },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = (void*)req, .len = req_len },
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     };
 
     return trusty_ipc_send(&km_chan, req_iovs, num_iovecs, true);
@@ -71,11 +76,13 @@ static int check_response_error(uint32_t expected_cmd,
         return tipc_result;
     }
     if ((size_t) tipc_result < sizeof(struct keymaster_message)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("invalid response size (%d)\n", tipc_result);
         return TRUSTY_ERR_GENERIC;
     }
     if ((header.cmd & ~(KEYMASTER_STOP_BIT)) !=
         (expected_cmd | KEYMASTER_RESP_BIT)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("malformed response\n");
         return TRUSTY_ERR_GENERIC;
     }
@@ -94,19 +101,25 @@ static int check_response_error(uint32_t expected_cmd,
  */
 static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct keymaster_message header = { .cmd = cmd };
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = resp_len;
     struct trusty_ipc_iovec resp_iovs[2] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = &header, .len = sizeof(header) },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = resp, .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len) }
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     };
 
     if (!resp) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_GENERIC;
     }
     resp_len = 0;
     while (true) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         resp_iovs[1].base = (uint8_t*)resp + resp_len;
         resp_iovs[1].len = MIN(KEYMASTER_MAX_BUFFER_LENGTH,
                                (int)max_resp_len - (int)resp_len);
@@ -114,10 +127,12 @@ static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
         rc = trusty_ipc_recv(&km_chan, resp_iovs, NELEMS(resp_iovs), true);
         rc = check_response_error(cmd, header, rc);
         if (rc < 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             return rc;
         }
         resp_len += ((size_t)rc - sizeof(struct keymaster_message));
         if (header.cmd & KEYMASTER_STOP_BIT || resp_len >= max_resp_len) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             break;
         }
     }
@@ -139,6 +154,7 @@ static int km_read_raw_response(uint32_t cmd, void *resp, size_t resp_len)
 static int km_read_data_response(uint32_t cmd, int32_t *error,
                                  uint8_t* resp_data, uint32_t* resp_data_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct keymaster_message header = { .cmd = cmd };
     int rc = TRUSTY_ERR_GENERIC;
     size_t max_resp_len = *resp_data_len;
@@ -148,8 +164,11 @@ static int km_read_data_response(uint32_t cmd, int32_t *error,
      * only recv the keymaster_message header and response data.
      */
     struct trusty_ipc_iovec resp_iovs[4] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = &header, .len = sizeof(header) },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = error, .len = sizeof(int32_t) },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { .base = resp_data_len, .len = sizeof(uint32_t) },
         { .base = resp_data, .len = MIN(KEYMASTER_MAX_BUFFER_LENGTH, max_resp_len) }
     };
@@ -157,12 +176,14 @@ static int km_read_data_response(uint32_t cmd, int32_t *error,
     rc = trusty_ipc_recv(&km_chan, resp_iovs, NELEMS(resp_iovs), true);
     rc = check_response_error(cmd, header, rc);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return rc;
     }
     /* resp_data_bytes does not include the error or response data length */
     resp_data_bytes += ((size_t)rc - sizeof(struct keymaster_message) -
                         2 * sizeof(uint32_t));
     if (header.cmd & KEYMASTER_STOP_BIT) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NONE;
     }
 
@@ -171,10 +192,12 @@ static int km_read_data_response(uint32_t cmd, int32_t *error,
     size_t resp_data_remaining = *resp_data_len - resp_data_bytes;
     rc = km_read_raw_response(cmd, resp_data_start, resp_data_remaining);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return rc;
     }
     resp_data_bytes += rc;
     if (*resp_data_len != resp_data_bytes) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_GENERIC;
     }
     return TRUSTY_ERR_NONE;
@@ -190,27 +213,33 @@ static int km_do_tipc(uint32_t cmd, void* req,
                       uint32_t req_len, void* resp_data,
                       uint32_t* resp_data_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc = TRUSTY_ERR_GENERIC;
     struct km_no_response resp_header  = { .error = 0 };
 
     rc = km_send_request(cmd, req, req_len);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to send km request\n", __func__, rc);
         return rc;
     }
 
     if (!resp_data) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         rc = km_read_raw_response(cmd, &resp_header, sizeof(resp_header));
     } else {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         rc = km_read_data_response(cmd, &resp_header.error, resp_data,
                                    resp_data_len);
     }
 
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to read km response\n", __func__, rc);
         return rc;
     }
     if (resp_header.error != KM_ERROR_OK) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: keymaster returned error (%d)\n", __func__,
                      resp_header.error);
         return TRUSTY_ERR_GENERIC;
@@ -220,14 +249,17 @@ static int km_do_tipc(uint32_t cmd, void* req,
 
 static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
                               uint8_t subminor_ver) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(subminor_ver);
     int32_t message_version = -1;
     switch (major_ver) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case 0:
         message_version = 0;
         break;
     case 1:
         switch (minor_ver) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         case 0:
             message_version = 1;
             break;
@@ -245,17 +277,20 @@ static int32_t MessageVersion(uint8_t major_ver, uint8_t minor_ver,
 
 static int km_get_version(int32_t *version)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc = TRUSTY_ERR_GENERIC;
     struct km_get_version_resp resp = { .major_ver = 0, .minor_ver = 0, .subminor_ver = 0 };
 
     rc = km_send_request(KM_GET_VERSION, NULL, 0);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed to send km version request", rc);
         return rc;
     }
 
     rc = km_read_raw_response(KM_GET_VERSION, &resp, sizeof(resp));
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to read km response\n", __func__, rc);
         return rc;
     }
@@ -267,6 +302,7 @@ static int km_get_version(int32_t *version)
 
 int km_tipc_init(struct trusty_ipc_dev *dev)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc = TRUSTY_ERR_GENERIC;
     struct rot_data_t* p_rot_data = NULL;
     struct attestation_ids_t* p_attestation_ids = NULL;
@@ -279,6 +315,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
     /* connect to km service and wait for connect to complete */
     rc = trusty_ipc_connect(&km_chan, KEYMASTER_PORT, true);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to connect to '%s'\n", rc, KEYMASTER_PORT);
         return rc;
     }
@@ -286,10 +323,12 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
     int32_t version = -1;
     rc = km_get_version(&version);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to get keymaster version\n", rc);
         return rc;
     }
     if (version < trusty_km_version) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("keymaster version mismatch. Expected %d, received %d\n",
                      trusty_km_version, version);
         return TRUSTY_ERR_GENERIC;
@@ -308,6 +347,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
                 p_rot_data->digestSize);
 
     if (rc != KM_ERROR_OK && rc != KM_ERROR_ROOT_OF_TRUST_ALREADY_SET) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("set boot_params has failed( %d )\n", rc);
         return TRUSTY_ERR_GENERIC;
     }
@@ -316,6 +356,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
     rc = trusty_config_boot_patchlevel(p_rot_data->patchMonthYearDay);
 
     if (rc != KM_ERROR_OK) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("config boot_patchlevel has failed( %d )\n", rc);
         return TRUSTY_ERR_GENERIC;
     }
@@ -333,6 +374,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
                 p_attestation_ids->model, p_attestation_ids->modelSize);
 
     if (rc != KM_ERROR_OK) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("set attestation_ids has failed( %d )\n", rc);
         return TRUSTY_ERR_GENERIC;
     }
@@ -341,6 +383,7 @@ int km_tipc_init(struct trusty_ipc_dev *dev)
 
 void km_tipc_shutdown(struct trusty_ipc_dev *dev)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(dev);
     if (!initialized)
         return;
@@ -358,6 +401,7 @@ int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
                            const uint8_t* verified_boot_hash,
                            uint32_t verified_boot_hash_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct km_boot_params params = {
         .os_version = os_version,
         .os_patchlevel = os_patchlevel,
@@ -373,6 +417,7 @@ int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
     int rc = km_boot_params_serialize(&params, &req, &req_size);
 
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to serialize request\n", rc);
         goto end;
     }
@@ -380,6 +425,7 @@ int trusty_set_boot_params(uint32_t os_version, uint32_t os_patchlevel,
 
 end:
     if (req) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_free(req);
     }
     return rc;
@@ -387,6 +433,7 @@ end:
 
 int trusty_config_boot_patchlevel(uint32_t boot_patchlevel)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct km_boot_patchlevel params = {
         .boot_patchlevel = boot_patchlevel
     };
@@ -395,6 +442,7 @@ int trusty_config_boot_patchlevel(uint32_t boot_patchlevel)
     int rc = km_boot_patchlevel_serialize(&params, &req, &req_size);
 
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to serialize request\n", rc);
         goto end;
     }
@@ -402,6 +450,7 @@ int trusty_config_boot_patchlevel(uint32_t boot_patchlevel)
 
 end:
     if (req) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_free(req);
     }
     return rc;
@@ -424,6 +473,7 @@ int trusty_set_attestation_ids(const uint8_t *brand,
                                const uint8_t *model,
                                uint32_t model_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct km_attestation_ids params = {
         .brand_size = brand_size,
         .brand = brand,
@@ -446,6 +496,7 @@ int trusty_set_attestation_ids(const uint8_t *brand,
     uint32_t req_size = 0;
     int rc = km_attestation_ids_serialize(&params, &req, &req_size);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to serialize request\n", rc);
         goto end;
     }
@@ -453,6 +504,7 @@ int trusty_set_attestation_ids(const uint8_t *brand,
 
 end:
     if (req) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_free(req);
     }
     return rc;
@@ -462,6 +514,7 @@ static int trusty_send_attestation_data(uint32_t cmd, const uint8_t *data,
                                         uint32_t data_size,
                                         keymaster_algorithm_t algorithm)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct km_attestation_data attestation_data = {
         .algorithm = (uint32_t)algorithm,
         .data_size = data_size,
@@ -472,6 +525,7 @@ static int trusty_send_attestation_data(uint32_t cmd, const uint8_t *data,
     int rc = km_attestation_data_serialize(&attestation_data, &req, &req_size);
 
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("failed (%d) to serialize request\n", rc);
         goto end;
     }
@@ -479,6 +533,7 @@ static int trusty_send_attestation_data(uint32_t cmd, const uint8_t *data,
 
 end:
     if (req) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_free(req);
     }
     return rc;
@@ -487,6 +542,7 @@ end:
 int trusty_set_attestation_key(const uint8_t *key, uint32_t key_size,
                                keymaster_algorithm_t algorithm)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_send_attestation_data(KM_SET_ATTESTATION_KEY, key, key_size,
                                         algorithm);
 }
@@ -495,6 +551,7 @@ int trusty_append_attestation_cert_chain(const uint8_t *cert,
                                          uint32_t cert_size,
                                          keymaster_algorithm_t algorithm)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_send_attestation_data(KM_APPEND_ATTESTATION_CERT_CHAIN,
                                         cert, cert_size, algorithm);
 }

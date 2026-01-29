@@ -18,6 +18,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "UsbIo.h"
 #include "protocol/DevicePath.h"
 #include "UsbMassBot.h"
+#include "log.h"
 
 static
 EFI_STATUS
@@ -26,6 +27,7 @@ UsbClearEndpointStall (
   IN UINT8 Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_USB_DEVICE_REQUEST    Request;
   EFI_STATUS                Status;
   UINT32                    CmdResult;
@@ -72,6 +74,7 @@ UsbBotInit (
   OUT VOID                      **Context OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_PROTOCOL              *UsbBot;
   EFI_USB_INTERFACE_DESCRIPTOR  *Interface;
   EFI_USB_ENDPOINT_DESCRIPTOR   EndPoint;
@@ -94,12 +97,14 @@ UsbBotInit (
   Status = uefi_call_wrapper (UsbIo->UsbGetInterfaceDescriptor, 2, UsbIo, &UsbBot->Interface);
 
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto ON_ERROR;
   }
 
   Interface = &UsbBot->Interface;
 
   if (Interface->InterfaceProtocol != USB_MASS_STORE_BOT) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_UNSUPPORTED;
     goto ON_ERROR;
   }
@@ -108,14 +113,17 @@ UsbBotInit (
   // Locate and save the first bulk-in and bulk-out endpoint
   //
   for (Index = 0; Index < Interface->NumEndpoints; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = uefi_call_wrapper (UsbIo->UsbGetEndpointDescriptor, 3, UsbIo, Index, &EndPoint);
 
     if (EFI_ERROR (Status) || !USB_IS_BULK_ENDPOINT (EndPoint.Attributes)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       continue;
     }
 
     if (USB_IS_IN_ENDPOINT (EndPoint.EndpointAddress) &&
        (UsbBot->BulkInEndpoint == NULL)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
       UsbBot->BulkInEndpoint  = (EFI_USB_ENDPOINT_DESCRIPTOR *) (UsbBot + 1);
       CopyMem(UsbBot->BulkInEndpoint, &EndPoint, sizeof (EndPoint));
@@ -123,6 +131,7 @@ UsbBotInit (
 
     if (USB_IS_OUT_ENDPOINT (EndPoint.EndpointAddress) &&
        (UsbBot->BulkOutEndpoint == NULL)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
       UsbBot->BulkOutEndpoint   = (EFI_USB_ENDPOINT_DESCRIPTOR *) (UsbBot + 1) + 1;
       CopyMem (UsbBot->BulkOutEndpoint, &EndPoint, sizeof(EndPoint));
@@ -133,6 +142,7 @@ UsbBotInit (
   // If bulk-in or bulk-out endpoint is not found, report error.
   //
   if ((UsbBot->BulkInEndpoint == NULL) || (UsbBot->BulkOutEndpoint == NULL)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_UNSUPPORTED;
     goto ON_ERROR;
   }
@@ -143,8 +153,10 @@ UsbBotInit (
   UsbBot->CbwTag = 0x01;
 
   if (Context != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *Context = UsbBot;
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     FreePool (UsbBot);
   }
 
@@ -184,6 +196,7 @@ UsbBotSendCommand (
   IN UINT8                    Lun
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_CBW               Cbw;
   EFI_STATUS                Status;
   UINT32                    Result;
@@ -222,13 +235,16 @@ UsbBotSendCommand (
                             &Result
                             );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (USB_IS_ERROR (Result, EFI_USB_ERR_STALL) && DataDir == EfiUsbDataOut) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       //
       // Respond to Bulk-Out endpoint stall with a Reset Recovery,
       // according to section 5.3.1 of USB Mass Storage Class Bulk-Only Transport Spec, v1.0.
       //
       UsbBotResetDevice (UsbBot, FALSE);
     } else if (USB_IS_ERROR (Result, EFI_USB_ERR_NAK)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = EFI_NOT_READY;
     }
   }
@@ -265,6 +281,7 @@ UsbBotDataTransfer (
   IN UINT32                   Timeout
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_USB_ENDPOINT_DESCRIPTOR *Endpoint;
   EFI_STATUS                  Status;
   UINT32                      Result;
@@ -273,6 +290,7 @@ UsbBotDataTransfer (
   // If no data to transfer, just return EFI_SUCCESS.
   //
   if ((DataDir == EfiUsbNoData) || (*TransLen == 0)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_SUCCESS;
   }
 
@@ -280,8 +298,10 @@ UsbBotDataTransfer (
   // Select the endpoint then issue the transfer
   //
   if (DataDir == EfiUsbDataIn) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Endpoint = UsbBot->BulkInEndpoint;
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Endpoint = UsbBot->BulkOutEndpoint;
   }
 
@@ -298,16 +318,21 @@ UsbBotDataTransfer (
                             &Result
                             );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (USB_IS_ERROR (Result, EFI_USB_ERR_STALL)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_INFO, "UsbBotDataTransfer: (%r)\n", Status));      
       DEBUG ((EFI_D_INFO, "UsbBotDataTransfer: DataIn Stall\n"));
       UsbClearEndpointStall (UsbBot->UsbIo, Endpoint->EndpointAddress);
     } else if (USB_IS_ERROR (Result, EFI_USB_ERR_NAK)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = EFI_NOT_READY;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "UsbBotDataTransfer: (%r)\n", Status));
     }
     if(Status == EFI_TIMEOUT){
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       UsbBotResetDevice(UsbBot, FALSE);
     }
   }
@@ -342,6 +367,7 @@ UsbBotGetStatus (
   OUT UINT8                 *CmdStatus
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_CSW               Csw;
   UINTN                     Len;
   UINT8                     Endpoint;
@@ -358,6 +384,7 @@ UsbBotGetStatus (
   Timeout    = USB_BOT_RECV_CSW_TIMEOUT / USB_MASS_1_MILLISECOND;
 
   for (Index = 0; Index < USB_BOT_RECV_CSW_RETRY; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Attemp to the read Command Status Wrapper from bulk in endpoint
     //
@@ -374,23 +401,28 @@ UsbBotGetStatus (
                       &Result
                       );
     if (EFI_ERROR(Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       if (USB_IS_ERROR (Result, EFI_USB_ERR_STALL)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UsbClearEndpointStall (UsbIo, Endpoint);
       }
       continue;
     }
 
     if (Csw.Signature != USB_BOT_CSW_SIGNATURE) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       //
       // CSW is invalid, so perform reset recovery
       //
       Status = UsbBotResetDevice (UsbBot, FALSE);
     } else if (Csw.CmdStatus == USB_BOT_COMMAND_ERROR) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       //
       // Respond phase error also needs reset recovery
       //
       Status = UsbBotResetDevice (UsbBot, FALSE);
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       *CmdStatus = Csw.CmdStatus;
       break;
     }
@@ -436,6 +468,7 @@ UsbBotExecCommand (
   OUT UINT32                  *CmdStatus
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_PROTOCOL          *UsbBot;
   EFI_STATUS                Status;
   UINTN                     TransLen;
@@ -450,6 +483,7 @@ UsbBotExecCommand (
   //
   Status = UsbBotSendCommand (UsbBot, Cmd, CmdLen, DataDir, DataLen, Lun);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "UsbBotExecCommand: UsbBotSendCommand (%r)\n", Status));
     return Status;
   }
@@ -467,11 +501,13 @@ UsbBotExecCommand (
   //
   Status = UsbBotGetStatus (UsbBot, DataLen, &Result);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "UsbBotExecCommand: UsbBotGetStatus (%r)\n", Status));
     return Status;
   }
 
   if (Result == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *CmdStatus = USB_MASS_CMD_SUCCESS;
   }
 
@@ -497,6 +533,7 @@ UsbBotResetDevice (
   IN  BOOLEAN                 ExtendedVerification
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_PROTOCOL        *UsbBot;
   EFI_USB_DEVICE_REQUEST  Request;
   EFI_STATUS              Status;
@@ -506,11 +543,13 @@ UsbBotResetDevice (
   UsbBot = (USB_BOT_PROTOCOL *) Context;
 
   if (ExtendedVerification) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // If we need to do strictly reset, reset its parent hub port
     //
     Status = uefi_call_wrapper (UsbBot->UsbIo->UsbPortReset, 1, UsbBot->UsbIo);
     if (EFI_ERROR (Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return EFI_DEVICE_ERROR;
     }
   }
@@ -538,6 +577,7 @@ UsbBotResetDevice (
                             );
 
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_DEVICE_ERROR;
   }
 
@@ -571,6 +611,7 @@ UsbBotExecCommandWithRetry (
   OUT UINT32                   *CmdStatus
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS             Status;
   UINTN                  Retry;
   VOID                   *timeout_evt;
@@ -586,6 +627,7 @@ UsbBotExecCommandWithRetry (
                              &timeout_evt
                              );
   if (EFI_ERROR (Status)){
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     debug(L"UsbBotExecCommandWithRetry: no event create\n");
     return Status;
   }
@@ -597,11 +639,13 @@ UsbBotExecCommandWithRetry (
                              EFI_TIMER_PERIOD_SECONDS(60)
                              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     debug(L"UsbBotExecCommandWithRetry: no timer set\n");
     goto EXIT;
   }
 
   while (EFI_ERROR (uefi_call_wrapper(BS->CheckEvent, 1, timeout_evt))) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = UsbBotExecCommand(Context,
                                Cmd,
                                CmdLen,
@@ -625,6 +669,7 @@ UsbBotExecCommandWithRetry (
 
 EXIT:
   if (timeout_evt != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uefi_call_wrapper(BS->CloseEvent, 1, timeout_evt);
 }
   return Status;

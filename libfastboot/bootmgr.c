@@ -34,6 +34,7 @@
 
 #include "gpt.h"
 #include "bootmgr.h"
+#include "log.h"
 
 #define BOOTOPTION_LEN 8
 
@@ -53,8 +54,10 @@ static EFI_STATUS find_free_entry(UINT16 *entry)
         UINT32 flags;
 
 	for (i = 0; i <= 0xFFFF; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		len = SPrint(name, sizeof(name), VarBootOption, i);
 		if (len != BOOTOPTION_LEN) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to format load option variable name");
 			return EFI_UNSUPPORTED;
 		}
@@ -62,12 +65,14 @@ static EFI_STATUS find_free_entry(UINT16 *entry)
 		ret = uefi_call_wrapper(RT->GetVariable, 5, name, &EfiGlobalVariable,
 					&flags, &size, &data);
 		if (ret == EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			*entry = i;
 			return EFI_SUCCESS;
 		}
 		if (ret == EFI_BUFFER_TOO_SMALL)
 			continue;
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to read '%s' variable", name);
 			return ret;
 		}
@@ -78,10 +83,12 @@ static EFI_STATUS find_free_entry(UINT16 *entry)
 
 static EFI_STATUS find_load_option_entry(CHAR16 *description, UINT16 *entry)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN bufsize, namesize;
 	CHAR16 *name;
 	EFI_GUID guid = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 number[5];
 	UINTN size;
 	EFI_LOAD_OPTION *load_option = NULL;
@@ -93,19 +100,23 @@ static EFI_STATUS find_load_option_entry(CHAR16 *description, UINT16 *entry)
 				   possible.  */
 	name = AllocateZeroPool(bufsize);
 	if (!name) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to re-allocate variable name buffer");
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	for (;;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		namesize = bufsize;
 		ret = uefi_call_wrapper(RT->GetNextVariableName, 3, &namesize,
 					name, &guid);
 		if (ret == EFI_NOT_FOUND)
 			break;
 		if (ret == EFI_BUFFER_TOO_SMALL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			name = ReallocatePool(name, bufsize, namesize);
 			if (!name) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"Failed to re-allocate variable name buffer");
 				return EFI_OUT_OF_RESOURCES;
 			}
@@ -113,6 +124,7 @@ static EFI_STATUS find_load_option_entry(CHAR16 *description, UINT16 *entry)
 			continue;
 		}
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"GetNextVariableName failed");
 			goto exit;
 		}
@@ -126,12 +138,14 @@ static EFI_STATUS find_load_option_entry(CHAR16 *description, UINT16 *entry)
 
 		ret = get_efi_variable(&guid, name, &size, (VOID **)&load_option, &flags);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to read '%s' variable", name);
 			goto exit;
 		}
 
 		if (size < sizeof(EFI_LOAD_OPTION) + StrSize(description) ||
 		    StrCmp(load_option->description, description)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			FreePool(load_option);
 			continue;
 		}
@@ -156,6 +170,7 @@ static CHAR8 *buffer;
 
 static EFI_STATUS create_buffer(UINTN initial_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	buffer = AllocatePool(initial_size);
 	if (!buffer)
 		return EFI_OUT_OF_RESOURCES;
@@ -166,6 +181,7 @@ static EFI_STATUS create_buffer(UINTN initial_size)
 
 static EFI_STATUS append_to_buffer(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	buffer = ReallocatePool(buffer, buf_size, buf_size + size);
@@ -183,6 +199,7 @@ static EFI_STATUS append_to_buffer(VOID *data, UINTN size)
 
 static void free_buffer()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (buffer)
 		FreePool(buffer);
 	buf_size = 0;
@@ -190,6 +207,7 @@ static void free_buffer()
 
 static EFI_STATUS set_file_path(CHAR16 *bootloader_path)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_DEVICE_PATH file_path;
 	UINTN path_size = StrSize(bootloader_path);
@@ -211,12 +229,14 @@ static EFI_STATUS set_file_path(CHAR16 *bootloader_path)
 
 static EFI_STATUS set_device_path(CHAR16 *part_label, CHAR16 *bootloader_path)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_HANDLE handle = NULL;
 	EFI_DEVICE_PATH *device_path;
 
 	ret = gpt_get_partition_handle(part_label, LOGICAL_UNIT_USER, &handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get handle for '%s' partition",
 			   part_label);
 		return ret;
@@ -225,11 +245,13 @@ static EFI_STATUS set_device_path(CHAR16 *part_label, CHAR16 *bootloader_path)
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, handle,
 				&DevicePathProtocol, (VOID*)&device_path);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get device path");
 		return ret;
 	}
 
 	while (!IsDevicePathEndType(device_path)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = append_to_buffer(device_path, DevicePathNodeLength(device_path));
 		if (EFI_ERROR(ret))
 			return ret;
@@ -247,6 +269,7 @@ static EFI_STATUS set_device_path(CHAR16 *part_label, CHAR16 *bootloader_path)
 static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_option,
 				     UINT16 entry)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LOAD_OPTION *efi_load_option;
 	CHAR16 varname[BOOTOPTION_LEN + 1];
@@ -254,12 +277,14 @@ static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_opt
 
 	ret = create_buffer(offsetof(EFI_LOAD_OPTION, description));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create load option buffer");
 		return ret;
 	}
 
 	ret = append_to_buffer(load_option->description, StrSize(load_option->description));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to append description");
 		goto exit;
 	}
@@ -268,6 +293,7 @@ static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_opt
 
 	ret = set_device_path(part_label, load_option->path);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to set device path");
 		goto exit;
 	}
@@ -277,8 +303,10 @@ static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_opt
 	efi_load_option->file_path_list_length = buf_size - header_size;
 
 	if (load_option->opt_params) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = append_to_buffer(load_option->opt_params, StrSize(load_option->opt_params));
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to append optional parameters");
 			goto exit;
 		}
@@ -286,6 +314,7 @@ static EFI_STATUS create_load_option(CHAR16 *part_label, load_option_t *load_opt
 
 	len = SPrint(varname, sizeof(varname), VarBootOption, entry);
 	if (len != BOOTOPTION_LEN) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to format load option variable name");
 		ret = EFI_UNSUPPORTED;
 		goto exit;
@@ -302,6 +331,7 @@ exit:
 
 static BOOLEAN is_in_set(UINT16 value, UINT16 *set, UINTN set_length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < set_length; i++)
@@ -313,6 +343,7 @@ static BOOLEAN is_in_set(UINT16 value, UINT16 *set, UINTN set_length)
 
 static EFI_STATUS install_in_boot_order(UINT16 *entries, UINTN entry_nb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT16 *old_entries = NULL;
 	UINT16 *new_entries;
@@ -324,6 +355,7 @@ static EFI_STATUS install_in_boot_order(UINT16 *entries, UINTN entry_nb)
 	ret = get_efi_variable(&EfiGlobalVariable, VarBootOrder, &size,
 			       (VOID **)&old_entries, &flags);
 	if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read '%s' variable", VarBootOrder);
 		return ret;
 	}
@@ -343,6 +375,7 @@ static EFI_STATUS install_in_boot_order(UINT16 *entries, UINTN entry_nb)
 
 	new_entries = AllocatePool(new_size);
 	if (!new_entries) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to allocate new entries for '%s'", VarBootOrder);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto exit;
@@ -353,6 +386,7 @@ static EFI_STATUS install_in_boot_order(UINT16 *entries, UINTN entry_nb)
 		goto exit;
 
 	for (i = 0, j = entry_nb; i < size / sizeof(*entries); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (is_in_set(old_entries[i], entries, entry_nb))
 		    continue;
 		new_entries[j++] = old_entries[i];
@@ -374,11 +408,13 @@ exit:
 EFI_STATUS bootmgr_register_entries(CHAR16 *part_label,
 				    load_option_t *load_options, UINTN load_option_nb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT16 *entries;
 	UINTN i;
 
 	if (load_option_nb == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Cannot register 0 load options");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -388,15 +424,19 @@ EFI_STATUS bootmgr_register_entries(CHAR16 *part_label,
 		return EFI_OUT_OF_RESOURCES;
 
 	for (i = 0; i < load_option_nb; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = find_load_option_entry(load_options[i].description, &entries[i]);
 		if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to Look up for the existent load option");
 			goto exit;
 		}
 
 		if (ret == EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = find_free_entry(&entries[i]);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to find a new free load option entry");
 				goto exit;
 			}
@@ -404,6 +444,7 @@ EFI_STATUS bootmgr_register_entries(CHAR16 *part_label,
 
 		ret = create_load_option(part_label, &load_options[i], entries[i]);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to create/update the load option");
 			goto exit;
 		}

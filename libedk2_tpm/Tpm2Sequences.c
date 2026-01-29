@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -99,6 +100,7 @@ Tpm2HashSequenceStart (
   OUT TPMI_DH_OBJECT *SequenceHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_HASH_SEQUENCE_START_COMMAND  Cmd;
   TPM2_HASH_SEQUENCE_START_RESPONSE Res;
@@ -134,10 +136,12 @@ Tpm2HashSequenceStart (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HashSequenceStart: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -147,6 +151,7 @@ Tpm2HashSequenceStart (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HashSequenceStart: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -155,6 +160,7 @@ Tpm2HashSequenceStart (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HashSequenceStart: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -187,6 +193,7 @@ Tpm2SequenceUpdate (
   IN TPM2B_MAX_BUFFER *Buffer
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                    Status;
   TPM2_SEQUENCE_UPDATE_COMMAND  Cmd;
   TPM2_SEQUENCE_UPDATE_RESPONSE Res;
@@ -231,10 +238,12 @@ Tpm2SequenceUpdate (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd,&ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceUpdate: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -244,6 +253,7 @@ Tpm2SequenceUpdate (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceUpdate: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -252,6 +262,7 @@ Tpm2SequenceUpdate (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceUpdate: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -288,6 +299,7 @@ Tpm2EventSequenceComplete (
   OUT TPML_DIGEST_VALUES *Results
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                            Status;
   TPM2_EVENT_SEQUENCE_COMPLETE_COMMAND  Cmd;
   TPM2_EVENT_SEQUENCE_COMPLETE_RESPONSE Res;
@@ -340,10 +352,12 @@ Tpm2EventSequenceComplete (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "EventSequenceComplete: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -353,6 +367,7 @@ Tpm2EventSequenceComplete (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "EventSequenceComplete: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -361,6 +376,7 @@ Tpm2EventSequenceComplete (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "EventSequenceComplete: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -374,6 +390,7 @@ Tpm2EventSequenceComplete (
   // count
   Results->count = SwapBytes32(ReadUnaligned32 ((UINT32 *)BufferPtr));
   if (Results->count > HASH_COUNT) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2EventSequenceComplete - Results->count error %x\n", Results->count));
     return EFI_DEVICE_ERROR;
   }
@@ -381,11 +398,13 @@ Tpm2EventSequenceComplete (
   BufferPtr += sizeof(UINT32);
 
   for (Index = 0; Index < Results->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Results->digests[Index].hashAlg = SwapBytes16(ReadUnaligned16 ((UINT16 *)BufferPtr));
     BufferPtr += sizeof(UINT16);
 
     DigestSize = GetHashSizeFromAlgo (Results->digests[Index].hashAlg);
     if (DigestSize == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "EventSequenceComplete: Unknown hash algorithm %d\r\n", Results->digests[Index].hashAlg));
       return EFI_DEVICE_ERROR;
     }
@@ -418,6 +437,7 @@ Tpm2SequenceComplete (
   OUT TPM2B_DIGEST       *Result
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                            Status;
   TPM2_SEQUENCE_COMPLETE_COMMAND        Cmd;
   TPM2_SEQUENCE_COMPLETE_RESPONSE       Res;
@@ -466,10 +486,12 @@ Tpm2SequenceComplete (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceComplete: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -479,6 +501,7 @@ Tpm2SequenceComplete (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceComplete: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -487,6 +510,7 @@ Tpm2SequenceComplete (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "SequenceComplete: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -500,6 +524,7 @@ Tpm2SequenceComplete (
   // digestSize
   Result->size = SwapBytes16(ReadUnaligned16 ((UINT16 *)BufferPtr));
   if (Result->size > sizeof(TPMU_HA)){
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2SequenceComplete - Result->size error %x\n", Result->size));
     return EFI_DEVICE_ERROR;
   }
@@ -535,6 +560,7 @@ Tpm2HashSequence(
   IN TPM2B_DIGEST *Buffers,
   OUT TPM2B_DIGEST *Result )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS          Status = EFI_SUCCESS;
   TPMI_DH_OBJECT      SequenceHandle;
   TPM2B_MAX_BUFFER    HashBbuf;
@@ -544,14 +570,17 @@ Tpm2HashSequence(
 
   Status = Tpm2HashSequenceStart (HashAlg, &SequenceHandle);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2HashSequenceStart failed\r\n"));
     return Status;
   }
 
 
   for (Index = 0; Index < NumBuffers; Index ++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = Tpm2SequenceUpdate (SequenceHandle, (TPM2B_MAX_BUFFER *)&Buffers[Index]);
     if (EFI_ERROR (Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "Tpm2SequenceUpdate failed\r\n"));
       return Status;
     }
@@ -559,6 +588,7 @@ Tpm2HashSequence(
 
   Status = Tpm2SequenceComplete(SequenceHandle, &HashBbuf, Result);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2SequenceComplete failed\r\n"));
     return Status;
   }

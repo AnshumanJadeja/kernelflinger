@@ -47,12 +47,14 @@
 
 static inline void ui_log(CHAR16 *fmt, va_list args)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	vlog(fmt, args);
 	log(L"\n");
 }
 
 void ui_print(CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	va_start(args, fmt);
@@ -62,6 +64,7 @@ void ui_print(CHAR16 *fmt, ...)
 
 void ui_info(CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	va_start(args, fmt);
@@ -71,6 +74,7 @@ void ui_info(CHAR16 *fmt, ...)
 
 void ui_info_n(CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	va_start(args, fmt);
@@ -80,6 +84,7 @@ void ui_info_n(CHAR16 *fmt, ...)
 
 void ui_warning(CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	va_start(args, fmt);
@@ -89,6 +94,7 @@ void ui_warning(CHAR16 *fmt, ...)
 
 void ui_error(CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	va_start(args, fmt);
@@ -98,17 +104,20 @@ void ui_error(CHAR16 *fmt, ...)
 
 void ui_free(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Nothing to do */
 }
 
 void ui_wait_for_key_release(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Nothing to do */
 }
 
 /* Some UI related functions used in Kernelflinegr */
 static int get_hold_key_stall_time(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static unsigned long hold_key_stall_time;
 
@@ -119,10 +128,13 @@ static int get_hold_key_stall_time(void)
 					     HOLD_KEY_STALL_TIME_VAR,
 					     &hold_key_stall_time);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Couldn't read timeout variable; assuming default");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (hold_key_stall_time > 0 &&
 		    hold_key_stall_time < HOLD_KEY_STALL_TIME_MAX) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"hold_key_stall_time=%d ms", hold_key_stall_time);
 			goto out;
 		}
@@ -136,7 +148,9 @@ out:
 
 ui_events_t ui_keycode_to_event(UINT16 keycode)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (keycode) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case SCAN_UP:
 	case SCAN_PAGE_UP:
 	case SCAN_HOME:
@@ -158,6 +172,7 @@ ui_events_t ui_keycode_to_event(UINT16 keycode)
 
 ui_events_t ui_read_input(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_INPUT_KEY key;
 	EFI_STATUS ret;
 
@@ -172,6 +187,7 @@ ui_events_t ui_read_input(void)
 
 static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_INPUT_KEY key;
 	EFI_STATUS ret = EFI_SUCCESS;
 	BOOLEAN result = TRUE;
@@ -181,6 +197,7 @@ static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 	ret = uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2,
 					ST->ConIn, &key);
 	if (ret != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"err=%r", ret);
 		return FALSE;
 	}
@@ -192,6 +209,7 @@ static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 	 * we sleep again */
 	while (uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2,
 				 ST->ConIn, &key) == EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* spin */
 	}
 
@@ -200,13 +218,16 @@ static BOOLEAN test_key(BOOLEAN check_code, ui_events_t event)
 
 BOOLEAN ui_enforce_key_held(UINT32 milliseconds, ui_events_t event)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN ret = TRUE;
 	UINT32 i;
 	int stall_time = get_hold_key_stall_time();
 
 	for (i = 0; i < (milliseconds / stall_time); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = test_key(TRUE, event);
 		if (!ret) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			break;
 		}
 	}

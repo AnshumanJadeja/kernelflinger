@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2DeviceLib.h>
 #include <Tcg2Protocol.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -188,6 +189,7 @@ Tpm2NvReadPublic (
   OUT     TPM2B_NAME                *NvName
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READPUBLIC_COMMAND        SendBuffer;
   TPM2_NV_READPUBLIC_RESPONSE       RecvBuffer;
@@ -215,18 +217,22 @@ Tpm2NvReadPublic (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadPublic - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadPublic - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -239,6 +245,7 @@ Tpm2NvReadPublic (
   }
 
   if (RecvBufferSize <= sizeof (TPM2_RESPONSE_HEADER) + sizeof (UINT16) + sizeof(UINT16)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadPublic - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_NOT_FOUND;
   }
@@ -250,6 +257,7 @@ Tpm2NvReadPublic (
   NvNameSize = SwapBytes16 (ReadUnaligned16 ((UINT16 *)((UINT8 *)&RecvBuffer + sizeof(TPM2_RESPONSE_HEADER) + sizeof(UINT16) + NvPublicSize)));
 
   if (RecvBufferSize != sizeof(TPM2_RESPONSE_HEADER) + sizeof(UINT16) + NvPublicSize + sizeof(UINT16) + NvNameSize) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadPublic - RecvBufferSize Error - NvPublicSize %x, NvNameSize %x\n", RecvBufferSize, NvNameSize));
     return EFI_NOT_FOUND;
   }
@@ -279,6 +287,7 @@ Tpm2NvReadPublic (
   If a definition already exists at the index, the TPM will return TPM_RC_NV_DEFINED.
 
   @param[in]  AuthHandle         TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}.
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  AuthSession        Auth Session context
   @param[in]  Auth               The authorization data.
   @param[in]  NvPublic           The public area of the index.
@@ -296,6 +305,7 @@ Tpm2NvDefineSpace (
   IN      TPM2B_NV_PUBLIC           *NvPublic
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_DEFINESPACE_COMMAND       SendBuffer;
   TPM2_NV_DEFINESPACE_RESPONSE      RecvBuffer;
@@ -360,10 +370,12 @@ Tpm2NvDefineSpace (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvDefineSpace - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -371,9 +383,11 @@ Tpm2NvDefineSpace (
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvDefineSpace - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -416,6 +430,7 @@ Done:
   This command removes an index from the TPM.
 
   @param[in]  AuthHandle         TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}.
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  NvIndex            The NV Index.
   @param[in]  AuthSession        Auth Session context
   
@@ -431,6 +446,7 @@ Tpm2NvUndefineSpace (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_UNDEFINESPACE_COMMAND     SendBuffer;
   TPM2_NV_UNDEFINESPACE_RESPONSE    RecvBuffer;
@@ -468,10 +484,12 @@ Tpm2NvUndefineSpace (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvUndefineSpace - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -479,9 +497,11 @@ Tpm2NvUndefineSpace (
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvUndefineSpace - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -541,6 +561,7 @@ Tpm2NvRead (
   IN OUT  TPM2B_MAX_BUFFER          *OutData
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READ_COMMAND              SendBuffer;
   TPM2_NV_READ_RESPONSE             RecvBuffer;
@@ -583,19 +604,23 @@ Tpm2NvRead (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvRead - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvRead - responseCode - %x\n", ResponseCode));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -638,6 +663,7 @@ Tpm2NvRead (
     break;
   }
   if (Status != EFI_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
@@ -679,6 +705,7 @@ Tpm2NvWrite (
   IN      UINT16                    Offset
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_WRITE_COMMAND             SendBuffer;
   TPM2_NV_WRITE_RESPONSE            RecvBuffer;
@@ -723,19 +750,23 @@ Tpm2NvWrite (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvWrite - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvWrite - responseCode - %x\n", ResponseCode));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -806,6 +837,7 @@ Tpm2NvReadLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_READLOCK_COMMAND          SendBuffer;
   TPM2_NV_READLOCK_RESPONSE         RecvBuffer;
@@ -843,10 +875,12 @@ Tpm2NvReadLock (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadLock - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -854,9 +888,11 @@ Tpm2NvReadLock (
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvReadLock - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -893,6 +929,7 @@ Tpm2NvWriteLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_WRITELOCK_COMMAND         SendBuffer;
   TPM2_NV_WRITELOCK_RESPONSE        RecvBuffer;
@@ -930,10 +967,12 @@ Tpm2NvWriteLock (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvWriteLock - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -941,9 +980,11 @@ Tpm2NvWriteLock (
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvWriteLock - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -965,6 +1006,7 @@ Done:
   The command will SET TPMA_NV_WRITELOCKED for all indexes that have their TPMA_NV_GLOBALLOCK attribute SET.
 
   @param[in]  AuthHandle         TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}.
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  AuthSession        Auth Session context
 
   @retval EFI_SUCCESS            Operation completed successfully.
@@ -978,6 +1020,7 @@ Tpm2NvGlobalWriteLock (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_GLOBALWRITELOCK_COMMAND   SendBuffer;
   TPM2_NV_GLOBALWRITELOCK_RESPONSE  RecvBuffer;
@@ -1014,10 +1057,12 @@ Tpm2NvGlobalWriteLock (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvGlobalWriteLock - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -1025,9 +1070,11 @@ Tpm2NvGlobalWriteLock (
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2NvGlobalWriteLock - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;
@@ -1064,6 +1111,7 @@ Tpm2NvSetBits (
   IN      TPMS_AUTH_COMMAND         *AuthSession OPTIONAL,
   IN      UINT64                    Bits)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_NV_SETBITS_COMMAND           SendBuffer;
   TPM2_NV_SETBITS_RESPONSE          RecvBuffer;
@@ -1104,18 +1152,22 @@ Tpm2NvSetBits (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
 
   ResponseCode = SwapBytes32(RecvBuffer.Header.responseCode);
   if (ResponseCode != TPM_RC_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   }
   switch (ResponseCode) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_RC_SUCCESS:
     // return data
     break;

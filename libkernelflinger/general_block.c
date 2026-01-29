@@ -35,25 +35,31 @@
 #include <lib.h>
 #include "storage.h"
 #include "protocol/DevicePath.h"
+#include "log.h"
 
 /**
  *  Will ignore the USB device.
  */
 static EFI_DEVICE_PATH *get_general_block_device_path(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ACPI_HID_DEVICE_PATH *Acpi;
 	EFI_DEVICE_PATH *op = p;
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 				&& DevicePathSubType(p) == MSG_USB_DP) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			// Ignore the USB
 			return NULL;
 		}
 		if (DevicePathType(p) == ACPI_DEVICE_PATH
 				&& DevicePathSubType(p) == ACPI_DP) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			Acpi = (ACPI_HID_DEVICE_PATH *)p;
 			if ((Acpi->HID & PNP_EISA_ID_MASK) == PNP_EISA_ID_CONST
 					&& EISA_ID_TO_NUM(Acpi-> HID) == 0x0604) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				// Ignore the Floppy
 				return NULL;
 			}
@@ -68,17 +74,20 @@ static EFI_STATUS general_block_erase_blocks(__attribute__((unused)) EFI_HANDLE 
 				   __attribute__((unused)) EFI_LBA start,
 				   __attribute__((unused)) EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
 static EFI_STATUS general_block_check_logical_unit (__attribute__((unused)) EFI_DEVICE_PATH *p,
 					  logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_general_block(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_general_block_device_path(p) != NULL;
 }
 

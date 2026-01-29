@@ -40,6 +40,7 @@
 
 EFI_STATUS life_cycle_is_enduser(BOOLEAN *enduser)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = EFI_LIFE_CYCLE_STATE_PROTOCOL_GUID;
 	EFI_LIFE_CYCLE_STATE_PROTOCOL *lf;
@@ -47,6 +48,7 @@ EFI_STATUS life_cycle_is_enduser(BOOLEAN *enduser)
 
 	ret = LibLocateProtocol(&guid, (void **)&lf);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Life Cycle Protocol is not supported");
 		return ret;
 	}
@@ -56,6 +58,7 @@ EFI_STATUS life_cycle_is_enduser(BOOLEAN *enduser)
 
 	ret = uefi_call_wrapper(lf->GetLifeCycleState, 2, lf, &state);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get life cycle state");
 		return ret;
 	}

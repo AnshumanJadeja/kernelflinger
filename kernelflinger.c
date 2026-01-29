@@ -71,6 +71,7 @@
 #include "security_efi.h"
 #include "tpm2_security.h"
 #include "ivshmem.h"
+#include "log.h"
 
 BOOLEAN tee_tpm = false;
 
@@ -139,6 +140,7 @@ static VOID die(VOID) __attribute__ ((noreturn));
 #if DEBUG_MESSAGES
 static VOID print_rsci_values(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum wake_sources raw_wake_source = rsci_get_wake_source();
 	enum reset_sources raw_reset_source = rsci_get_reset_source();
 	enum reset_types raw_reset_type = rsci_get_reset_type();
@@ -160,6 +162,7 @@ static VOID print_rsci_values(VOID)
 
 static enum boot_target check_fastboot_sentinel(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	debug(L"checking ESP for %s", FASTBOOT_SENTINEL);
 	if (file_exists(g_disk_device, FASTBOOT_SENTINEL))
 		return FASTBOOT;
@@ -169,6 +172,7 @@ static enum boot_target check_fastboot_sentinel(VOID)
 
 static enum boot_target check_magic_key(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned long i;
 	EFI_STATUS ret = EFI_NOT_READY;
 	EFI_INPUT_KEY key;
@@ -182,9 +186,12 @@ static enum boot_target check_magic_key(VOID)
 						MAGIC_KEY_TIMEOUT_VAR,
 						&wait_ms);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Couldn't read timeout variable; assuming default");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (wait_ms > 1000) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"pathological magic key timeout, use default");
 			wait_ms = EFI_RESET_WAIT_MS;
 		}
@@ -196,6 +203,7 @@ static enum boot_target check_magic_key(VOID)
 	 * so wait for the ConIn to be ready after reset
 	 */
 	for (i = 0; i <= wait_ms; i += DETECT_KEY_STALL_TIME_MS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(ST->ConIn->ReadKeyStroke, 2,
 					ST->ConIn, &key);
 		if (ret == EFI_SUCCESS || i == wait_ms)
@@ -219,6 +227,7 @@ static enum boot_target check_magic_key(VOID)
 
 static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct bootloader_message bcb;
 	CHAR16 *target = NULL;
@@ -231,6 +240,7 @@ static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 
 	ret = read_bcb(MISC_LABEL, &bcb);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unable to read BCB");
 		t = NORMAL_BOOT;
 		goto out;
@@ -241,9 +251,11 @@ static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 	bcb.status[0] = '\0';
 	bcb_cmd = (CHAR8 *)bcb.command;
 	if (!strncmpa(bcb_cmd, (CHAR8 *)"boot-", 5)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		target = stra_to_str(bcb_cmd + 5);
 		debug(L"BCB boot target: '%s'", target);
 	} else if (!strncmpa(bcb_cmd, (CHAR8 *)"bootonce-", 9)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		target = stra_to_str(bcb_cmd + 9);
 		bcb_cmd[0] = '\0';
 		dirty = TRUE;
@@ -252,20 +264,24 @@ static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 	}
 
 	if (dirty) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = write_bcb(MISC_LABEL, &bcb);
 		if (EFI_ERROR(ret))
 			error(L"Unable to update BCB contents!");
 		}
 
 	if (!target) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		t = NORMAL_BOOT;
 		goto out;
 	}
 
 	if (target[0] == L'\\') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		UINTN len;
 
 		if (!file_exists(g_disk_device, target)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Specified BCB file '%s' doesn't exist",
 					target);
 			t = NORMAL_BOOT;
@@ -274,11 +290,14 @@ static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 
 		len = StrLen(target);
 		if (len > 4) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			*target_path = StrDuplicate(target);
 			if (!StrCmp(target + (len - 4), L".efi") ||
 					!StrCmp(target + (len - 4), L".EFI")) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				t = ESP_EFI_BINARY;
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				t = ESP_BOOTIMAGE;
 			}
 			goto out;
@@ -303,6 +322,7 @@ out:
 
 static enum boot_target check_loader_entry_one_shot(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *target;
 	enum boot_target bt;
@@ -318,7 +338,9 @@ static enum boot_target check_loader_entry_one_shot(VOID)
 	debug(L"target = %s", target);
 	bt = name_to_boot_target(target);
 	if (bt == UNKNOWN_TARGET) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!StrCmp(target, L"dm-verity device corrupted")) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"Reboot was triggered by dm-verity module because partition is corrupted");
 			ret = slot_set_verity_corrupted(TRUE);
 			if (EFI_ERROR(ret))
@@ -327,6 +349,7 @@ static enum boot_target check_loader_entry_one_shot(VOID)
 			error(L"Unknown oneshot boot target: '%s'", target);
 		bt = NORMAL_BOOT;
 	} else if (bt == CHARGER && !get_off_mode_charge()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Off mode charge is not set, powering off.");
 		bt = POWER_OFF;
 	}
@@ -337,7 +360,9 @@ static enum boot_target check_loader_entry_one_shot(VOID)
 
 static BOOLEAN reset_is_due_to_watchdog_or_panic(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static enum reset_sources WATCHDOG_RESET_SOURCES[] = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		RESET_KERNEL_WATCHDOG,
 		RESET_SECURITY_WATCHDOG,
 		RESET_PMIC_WATCHDOG,
@@ -349,6 +374,7 @@ static BOOLEAN reset_is_due_to_watchdog_or_panic(void)
 	reset_source = rsci_get_reset_source();
 	for (i = 0; i < ARRAY_SIZE(WATCHDOG_RESET_SOURCES); i++)
 		if (reset_source == WATCHDOG_RESET_SOURCES[i]) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"Watchdog reset source = %d", reset_source);
 			return TRUE;
 		}
@@ -364,23 +390,29 @@ static BOOLEAN reset_is_due_to_watchdog_or_panic(void)
  */
 static enum boot_target check_watchdog(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 counter;
 	EFI_TIME time_ref =  {0}, now = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (!get_crash_event_menu())
 		return NORMAL_BOOT;
 
 	ret = get_watchdog_status(&counter, &time_ref);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the watchdog status");
 		return NORMAL_BOOT;
 	}
 
 	if (!reset_is_due_to_watchdog_or_panic()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (counter != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = reset_watchdog_status();
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to reset the watchdog status");
 				goto error;
 			}
@@ -390,6 +422,7 @@ static enum boot_target check_watchdog(VOID)
 
 #ifdef USER
 	if (is_reboot_reason(L"shutdown")) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		del_reboot_reason();
 		return POWER_OFF;
 	}
@@ -397,20 +430,24 @@ static enum boot_target check_watchdog(VOID)
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the current time");
 		goto error;
 	}
 
 	if (counter > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (efi_time_to_ctime(&now) < efi_time_to_ctime(&time_ref) ||
 			efi_time_to_ctime(&now) - efi_time_to_ctime(&time_ref) > WATCHDOG_DELAY)
 			counter = 0;
 	}
 
 	if (counter == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		time_ref = now;
 		ret = set_watchdog_time_reference(&now);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to set the watchdog time reference");
 			goto error;
 		}
@@ -420,6 +457,7 @@ static enum boot_target check_watchdog(VOID)
 	debug(L"Incrementing watchdog counter (%d)", counter);
 
 	if (counter <= get_watchdog_counter_max()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = set_watchdog_counter(counter);
 		if (EFI_ERROR(ret))
 			efi_perror(ret, L"Failed to set the watchdog counter");
@@ -444,6 +482,7 @@ error:
 #ifndef USE_SBL
 static enum boot_target check_command_line(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN argc, pos;
 	CHAR16 **argv;
 	CHAR16 *options;
@@ -455,14 +494,17 @@ static enum boot_target check_command_line(VOID)
 		return NORMAL_BOOT;
 
 	for (pos = 0; pos < argc; pos++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Argument %d: %s", pos, argv[pos]);
 
 		if (!StrCmp(argv[pos], L"-f")) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			bt = FASTBOOT;
 			continue;
 		}
 #ifndef USER
 		if (!StrCmp(argv[pos], L"-U")) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			pos++;
 			unittest_main(pos >= argc ? NULL : argv[pos]);
 			FreePool(argv);
@@ -470,8 +512,10 @@ static enum boot_target check_command_line(VOID)
 		}
 #endif
 		if (!StrCmp(argv[pos], L"-a")) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			pos++;
 			if (pos >= argc) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"-a requires a memory address");
 				goto out;
 			}
@@ -485,11 +529,13 @@ static enum boot_target check_command_line(VOID)
 
 		/* If we get here the argument isn't recognized */
 		if (pos == 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* EFI is inconsistent and only seems to populate the image
 			 * name as argv[0] when called from a shell. Do nothing.
 			 */
 			continue;
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"unexpected argument %s", argv[pos]);
 			goto out;
 		}
@@ -507,6 +553,7 @@ out:
  */
 static union bootMode
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT16 _bits;
 	struct {
 		UINT16 target           : 5; /* [4:0] */
@@ -522,6 +569,7 @@ static union bootMode
 
 static enum boot_target check_command_line()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	enum boot_target target = NORMAL_BOOT;
 	static EFI_LOADED_IMAGE *limg;
@@ -534,6 +582,7 @@ static enum boot_target check_command_line()
 
 	enum CmdType
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		RESET,
 		BOOT_TARGET,
 		BOOT,
@@ -556,62 +605,75 @@ static enum boot_target check_command_line()
 	};
 
 	struct Cmdline CmdlineArray[] = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"reset=",
 			strlen((CHAR8 *)"reset="),
 			RESET
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"boot_target=",
 			strlen((CHAR8 *)"boot_target="),
 			BOOT_TARGET
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"fw.boot=",
 			strlen((CHAR8 *)"fw.boot="),
 			BOOT
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"SecureBoot=",
 			strlen((CHAR8 *)"SecureBoot="),
 			SECUREBOOT
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.bootloader=",
 			strlen((CHAR8 *)"androidboot.bootloader="),
 			BOOTVERSION
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.bootreason=",
 			strlen((CHAR8 *)"androidboot.bootreason="),
 			BOOTREASON
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.serialno=",
 			strlen((CHAR8 *)"androidboot.serialno="),
 			SERIALNO
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"fw_boottsc=",
 			strlen("fw_boottsc="),
 			FIRMWARE_BOOTTIME
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"fw.status=",
 			strlen((CHAR8 *)"fw.status="),
 			FIRMWARE_STATUS
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"tee=",
 			strlen((CHAR8 *)"tee="),
 			OPTEE
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"tpm=",
 			strlen((CHAR8 *)"tpm="),
 			TPM
 		},
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"userbuild=",
 			strlen((CHAR8 *)"userbuild="),
 			USERBLD
@@ -624,6 +686,7 @@ static enum boot_target check_command_line()
 				&LoadedImageProtocol, (VOID **)&limg,
 				g_parent_image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open LoadedImageProtocol");
 		return FASTBOOT;
 	}
@@ -635,6 +698,7 @@ static enum boot_target check_command_line()
 	cmd_buf[0] = 0;
 
 	for (i = 0; i < argc; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L" cmd %02d: %s", i, argv[i]);
 		arglen = StrLen(argv[i]);
 
@@ -644,6 +708,7 @@ static enum boot_target check_command_line()
 
 		ret = str_to_stra((CHAR8 *)arg8, argv[i], arglen + 1);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Non-ascii characters in command line");
 			FreePool(argv);
 			FreePool(options);
@@ -651,13 +716,17 @@ static enum boot_target check_command_line()
 		}
 
 		if (cmd_len + arglen + 1 < MAX_CMD_BUF) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			for (j = 0; j < sizeof(CmdlineArray)/sizeof(CmdlineArray[0]); j++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				if((arglen >= CmdlineArray[j].length) && !strncmp(arg8, CmdlineArray[j].name, CmdlineArray[j].length))
 					break;
 			}
 
 			if (j < sizeof(CmdlineArray)/sizeof(CmdlineArray[0])) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				switch(CmdlineArray[j].type) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				/* Parse "reset=xxx" */
 				case RESET:
 					set_reboot_reason(argv[i] + CmdlineArray[j].length);
@@ -668,6 +737,7 @@ static enum boot_target check_command_line()
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					/* Only handle CRASHMODE case, other mode should be decided by "fw.boot". */
 					if (!strcmp(nptr, (CHAR8 *)"CRASHMODE")) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						target = CRASHMODE;
 						goto out;
 					}
@@ -682,6 +752,7 @@ static enum boot_target check_command_line()
 
 				/* Parse "SecureBoot=x" */
 				case SECUREBOOT: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT8 val;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					val = (UINT8)strtoul((char *)nptr, 0, 10);
@@ -693,10 +764,13 @@ static enum boot_target check_command_line()
 
 				/* Parse "fw.status=x" */
 				case FIRMWARE_STATUS: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					union
 					{
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						struct
 						{
+         debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 							UINT32 secure_boot:1;
 							UINT32 measured_boot:1;
 							UINT32 dci_debug_npk:1;
@@ -715,6 +789,7 @@ static enum boot_target check_command_line()
 
 				/* Parse "fw_boottsc=xxxxx" */
 				case FIRMWARE_BOOTTIME: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT64 VALUE;
 					UINT32 cpu_khz;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
@@ -737,6 +812,7 @@ static enum boot_target check_command_line()
 				case BOOTREASON:
 					continue;
 				case OPTEE: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT8 val;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					val = (UINT8)strtoul((char *)nptr, 0, 10);
@@ -749,6 +825,7 @@ static enum boot_target check_command_line()
 					continue;
 				}
 				case TPM: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT8 val;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					val = (UINT8)strtoul((char *)nptr, 0, 10);
@@ -760,6 +837,7 @@ static enum boot_target check_command_line()
 					continue;
 				}
 				case USERBLD: {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT8 val;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					val = (UINT8)strtoul((char *)nptr, 0, 10);
@@ -777,8 +855,10 @@ static enum boot_target check_command_line()
 			}
 
 			if (cmd_buf[0] != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = strncpy_s((CHAR8 *)(cmd_buf + cmd_len), MAX_CMD_BUF - cmd_len, (const CHAR8 *)" ", 1);
 				if (EFI_ERROR(ret)) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					target = FASTBOOT;
 					goto out;
 				}
@@ -787,6 +867,7 @@ static enum boot_target check_command_line()
 
 			ret = strncpy_s((CHAR8 *)(cmd_buf + cmd_len), MAX_CMD_BUF - cmd_len, (const CHAR8 *)arg8, arglen);
 			if (EFI_ERROR(ret)) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					target = FASTBOOT;
 					goto out;
 			}
@@ -804,6 +885,7 @@ out:
 
 static enum boot_target check_battery_inserted(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum wake_sources wake_source;
 
 	if (!get_off_mode_charge())
@@ -818,6 +900,7 @@ static enum boot_target check_battery_inserted(void)
 
 static enum boot_target check_charge_mode(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum wake_sources wake_source;
 
 	if (!get_off_mode_charge())
@@ -826,6 +909,7 @@ static enum boot_target check_charge_mode(void)
 	wake_source = rsci_get_wake_source();
 	if ((wake_source == WAKE_USB_CHARGER_INSERTED) ||
 		(wake_source == WAKE_ACDC_CHARGER_INSERTED)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Wake source = %d", wake_source);
 		return CHARGER;
 	}
@@ -839,6 +923,7 @@ enum boot_target check_battery(void)
 		return NORMAL_BOOT;
 
 	if (is_battery_below_boot_OS_threshold()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		BOOLEAN charger_plugged = is_charger_plugged_in();
 
 		debug(L"Battery is below boot OS threshold");
@@ -874,6 +959,7 @@ enum boot_target check_battery(void)
  */
 static enum boot_target choose_boot_target(CHAR16 **target_path, BOOLEAN *oneshot)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target ret;
 
 	*target_path = NULL;
@@ -914,11 +1000,13 @@ static enum boot_target choose_boot_target(CHAR16 **target_path, BOOLEAN *onesho
 	debug(L"Bootlogic: Check BCB...");
 	ret = check_bcb(target_path, oneshot);
 	if (ret != NORMAL_BOOT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* clear LOADER_ENTRY_ONESHOT after detecting oneshot from bcb,
 		* in case of unexpected boot target in next boot. */
 		if(*oneshot == TRUE)
 			del_efi_variable(&loader_guid, LOADER_ENTRY_ONESHOT);
 		else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/*The bootloader is expected to load and boot into recovery image upon seeting*/
 			/*boot-fastboot in the BCB command. Recovery the parse the BCB message and*/
 			/*switches to fastbootd mode*/
@@ -960,6 +1048,7 @@ out:
   */
 static void disable_slot_if_efi_loaded_slot_failed()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 loaded_slot;
 	UINT8 slot;
 	EFI_STATUS ret;
@@ -969,6 +1058,7 @@ static void disable_slot_if_efi_loaded_slot_failed()
 
 	ret = get_efi_loaded_slot(&loaded_slot);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Just assume loaded slot is active slot if cannot get information
 		 * of loaded slot (whether EFI_NOT_FOUND or 'real' EFI error),
 		 * don't need additional action but print message for 'real' error.
@@ -980,15 +1070,18 @@ static void disable_slot_if_efi_loaded_slot_failed()
 
 	nb_slots = slot_get_suffixes(&suffixes);
 	if (loaded_slot >= nb_slots) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid slot: %d, nb_slots: %d", (int)loaded_slot, nb_slots);
 		return;
 	}
 
 	for (slot = 0; slot < nb_slots; ++slot) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (slot == loaded_slot)
 			continue;
 		ret = get_efi_loaded_slot_failed(slot, &err);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* 1. kfld did not try this slot if EFI_NOT_FOUND.
 			 * 2. Assume kfld did not try this slot if 'real' error happens.
 			 * don't disable slot in both cases but print message for 'real' error.
@@ -998,6 +1091,7 @@ static void disable_slot_if_efi_loaded_slot_failed()
 			continue;
 		}
 		if (EFI_ERROR(err)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* Disable it if kfld tried this slot but failed. */
 			debug(L"Disable slot %d because kfld failed to load it",
 					slot, err);
@@ -1015,6 +1109,7 @@ static void disable_slot_if_efi_loaded_slot_failed()
 static void reboot_if_slot_is_different(IN AvbSlotVerifyData *slot_data,
 		IN enum boot_target boot_target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 slot;
 	char *suffix;
@@ -1026,6 +1121,7 @@ static void reboot_if_slot_is_different(IN AvbSlotVerifyData *slot_data,
 
 	ret = get_efi_loaded_slot(&slot);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Just assume loaded slot is active slot if cannot get information
 		 * of loaded slot (whether EFI_NOT_FOUND or 'real' EFI error),
 		 * don't need additional action but print message for 'real' error.
@@ -1037,11 +1133,13 @@ static void reboot_if_slot_is_different(IN AvbSlotVerifyData *slot_data,
 
 	nb_slots = slot_get_suffixes(&suffixes);
 	if (slot >= nb_slots) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid slot: %d, nb_slots: %d", (int)slot, nb_slots);
 		return;
 	}
 	suffix = suffixes[slot];
 	if (strcmp((CHAR8 *)slot_data->ab_suffix, suffix)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Avb flow suffix %a doesn't equal to the suffix "
 			L"in efi variable %a, reboot to target %d",
 			slot_data->ab_suffix, suffix, boot_target);
@@ -1074,12 +1172,15 @@ static EFI_STATUS avb_load_verify_boot_image(
 		UINT8 *boot_state,
 		AvbSlotVerifyData **slot_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	switch (boot_target) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case NORMAL_BOOT:
 	case CHARGER:
 		if (!slot_data) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_INVALID_PARAMETER;
 			break;
 		}
@@ -1089,10 +1190,12 @@ static EFI_STATUS avb_load_verify_boot_image(
 		break;
 	case RECOVERY:
 		if (!slot_data) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_INVALID_PARAMETER;
 			break;
 		}
 		if (recovery_in_boot_partition()) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = avb_load_verify_boot_image(NORMAL_BOOT, target_path, bootimage, oneshot, boot_state, slot_data);
 			if (ret == EFI_SUCCESS && *slot_data)
 				reboot_if_slot_is_different(*slot_data, boot_target);
@@ -1134,12 +1237,14 @@ static EFI_STATUS avb_load_verify_image(
 		IN enum boot_target boot_target,
 		OUT VOID **bootimage)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 boot_state;
 	AvbSlotVerifyData *slot_data;
 	CHAR16 *label16;
 
 	switch (boot_target) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case NORMAL_BOOT:
 	case CHARGER:
 	case RECOVERY:
@@ -1151,6 +1256,7 @@ static EFI_STATUS avb_load_verify_image(
 	}
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		label16  = stra_to_str(label);
 		debug(L"%s image loaded failed", label16);
 		FreePool(label16);
@@ -1165,6 +1271,7 @@ static EFI_STATUS avb_load_verify_image(
 static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 						const EFI_GUID *restricted_guid)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	VOID *oemvars;
 	UINT32 osz;
 	EFI_STATUS ret;
@@ -1172,6 +1279,7 @@ static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 	ret = get_bootimage_2nd(bootimage, &oemvars, &osz);
 	if (ret == EFI_SUCCESS && osz > OEMVARS_MAGIC_SZ &&
 		!memcmp(oemvars, OEMVARS_MAGIC, OEMVARS_MAGIC_SZ)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"secondstage contains raw oemvars");
 		return flash_oemvars_silent_write_error((CHAR8 *)oemvars + OEMVARS_MAGIC_SZ,
 							osz - OEMVARS_MAGIC_SZ,
@@ -1181,7 +1289,9 @@ static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 #ifdef HAL_AUTODETECT
 	ret = get_bootimage_blob(bootimage, BLOB_TYPE_OEMVARS, &oemvars, &osz);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret == EFI_UNSUPPORTED || ret == EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"No blobstore in this boot image");
 			return EFI_SUCCESS;
 		}
@@ -1196,7 +1306,9 @@ static EFI_STATUS set_image_oemvars_nocheck(VOID *bootimage,
 
 static EFI_STATUS set_image_oemvars(VOID *bootimage)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!get_oemvars_update()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"OEM vars should be up-to-date");
 		return EFI_SUCCESS;
 	}
@@ -1218,8 +1330,10 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 #ifdef USER
 	/* per bootloaderequirements.pdf */
 	if (boot_state == BOOT_STATE_ORANGE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = android_clear_memory();
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to clear memory. Load image aborted.");
 			return ret;
 		}
@@ -1236,8 +1350,10 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 #endif
 
 	if (tee_tpm && is_bootimg_target(boot_target)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = ivsh_send_rot_data(bootimage, boot_state, vb_data);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"Unable to send the root of trust data to optee");
 			die();
 		}
@@ -1246,14 +1362,17 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 	/* install acpi tables before starting trusty */
 	ret = setup_acpi_table(bootimage, boot_target);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"setup_acpi_table");
 		return ret;
 	}
 
 #ifdef USE_TRUSTY
 	if (is_bootimg_target(boot_target)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 		if (boot_state == BOOT_STATE_RED) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USERDEBUG
 			debug(L"Red state: start trusty anyway as ENG build");
 #else
@@ -1264,18 +1383,21 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 		debug(L"loading trusty");
 		ret = load_tos_image(&tosimage);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Load tos image failed");
 			die();
 		}
 
 		ret = update_rot_data(bootimage, boot_state, vb_data);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Unable to get the root of trust data for trusty");
 			die();
 		}
 
 		ret = update_attestation_ids(vendorbootimage);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Unable to get the attestation ids for trusty");
 			die();
 		}
@@ -1283,6 +1405,7 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 		set_boottime_stamp(TM_LOAD_TOS_DONE);
 		ret = start_trusty(tosimage);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Unable to start trusty; stop.");
 			die();
 		}
@@ -1314,6 +1437,7 @@ static EFI_STATUS load_image(VOID *bootimage, VOID *initbootimage, VOID *vendorb
 
 static VOID die(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Allow plenty of time for the error to be visible before the
 	 * screen goes blank
 	 */
@@ -1323,6 +1447,7 @@ static VOID die(VOID)
 
 VOID connect_all_drivers(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_HANDLE *handles;
 	UINTN      nb_handle = 0;
@@ -1344,6 +1469,7 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 
 static VOID enter_fastboot_mode(UINT8 boot_state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	enum boot_target target;
 	EFI_HANDLE image;
@@ -1354,6 +1480,7 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 	AvbSlotVerifyData *slot_data;
 
 	if (is_running_on_kvm()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/*
 		 * When running on kvm, OVMF will not connect network driver and other
 		 * driver that is not necessary for boot to achieve better performance,
@@ -1373,15 +1500,18 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 	stop_bls_proto();
 #endif
 	for (;;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		target = UNKNOWN_TARGET;
 
 		ret = fastboot_start(&bootimage, &efiimage, &imagesize, &target);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Fastboot mode failed");
 			break;
 		}
 
 		if (bootimage) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* 'fastboot boot' case, only allowed on unlocked devices.
 			 * check just to make sure
 			 */
@@ -1391,6 +1521,7 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
                          * slot data here.
                          */
 			if (device_is_unlocked()) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 ret = android_image_load_partition_avb_ab(NULL,
                                                 &bootimage_p, &boot_state, &slot_data);
                                 if (EFI_ERROR(ret))
@@ -1404,11 +1535,13 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 		}
 
 		if (efiimage) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = uefi_call_wrapper(BS->LoadImage, 6, FALSE, g_parent_image,
 						NULL, efiimage, imagesize, &image);
 			FreePool(efiimage);
 			efiimage = NULL;
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Unable to load the received EFI image");
 				continue;
 			}
@@ -1424,6 +1557,7 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 		 * mode to keep the RAM state.
 		 */
 		if (target == CRASHMODE) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_UI
 			target = ux_prompt_user_for_boot_target(NO_ERROR_CODE);
 			if (target == FASTBOOT)
@@ -1444,11 +1578,13 @@ static VOID enter_fastboot_mode(UINT8 boot_state)
 
 static void bootloader_recover_mode(UINT8 boot_state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 
 	(VOID)boot_state;
 
 	if (is_running_on_kvm()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/*
 		 * When running on kvm, OVMF will not connect network driver and other
 		 * driver that is not necessary for boot to achieve better performance,
@@ -1474,6 +1610,7 @@ static void bootloader_recover_mode(UINT8 boot_state)
 static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 			UINT8 *hash , UINTN hash_size )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN power_off = FALSE;
 	enum boot_target bt;
 
@@ -1483,6 +1620,7 @@ static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 	(VOID)hash_size;
 
 	if (boot_state > min_boot_state()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		power_off = TRUE;
 
 #ifndef USER
@@ -1497,6 +1635,7 @@ static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 	bt = ux_prompt_user(error_code, power_off, boot_state, hash, hash_size);
 
 	if (bt == CRASHMODE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Rebooting to bootloader recover mode");
 		bootloader_recover_mode(boot_state);
 	}
@@ -1513,6 +1652,7 @@ static VOID boot_error(enum ux_error_code error_code , UINT8 boot_state,
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *target_path = NULL;
 	VOID *vendorbootimage = NULL;
@@ -1528,6 +1668,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	VBDATA *vb_data = NULL;
 #ifdef __CRASH_DUMP
 	EFI_GUID dump_partition =  { 0xCAB9B00C, 0xCC1B, 0x4C0F, {0xB9, 0x32, 0x82, 0x92, 0x0D, 0xA5, 0x22, 0x51} };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 
 	set_boottime_stamp(TM_EFI_MAIN);
@@ -1546,6 +1687,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 			&LoadedImageProtocol, (VOID **)&g_loaded_image,
 			image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"OpenProtocol: LoadedImageProtocol");
 		return ret;
 	}
@@ -1553,6 +1695,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 	/* loaded from mass storage (not DnX) */
 	if (g_disk_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = storage_set_boot_device(g_disk_device);
 		if (EFI_ERROR(ret))
 			error(L"Failed to set boot device");
@@ -1560,7 +1703,9 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 	// Set the boot device now
 	if (!get_boot_device_handle()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!get_boot_device()) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			// Get boot device failed
 			error(L"Failed to find boot device");
 			return EFI_NO_MEDIA;
@@ -1574,12 +1719,14 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 	ret = set_device_security_info(NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to init security info, enter fastboot mode");
 		boot_target = FASTBOOT;
 	}
 
 	ret = slot_init();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Slot management initialization failed");
 		return ret;
 	}
@@ -1603,6 +1750,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	if (boot_target == EXIT_SHELL)
 		return EFI_SUCCESS;
 	if (boot_target == CRASHMODE) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_UI
 		boot_target = ux_prompt_user_for_boot_target(NO_ERROR_CODE);
 		if (boot_target != FASTBOOT)
@@ -1614,20 +1762,24 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	}
 
 	if (tee_tpm) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"tee tpm enable, ivshmem_init#############");
 		ret = ivshmem_init();
 		if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to init ivshmem, enter fastboot mode");
 			boot_target = FASTBOOT;
 		}
 	}
 
 	if (!is_live_boot() && (tee_tpm || andr_tpm)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (tee_tpm)
 			ret = tee_tpm2_init();
 		else if (andr_tpm)
 			ret = tpm2_init();
 		if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to init TPM, enter fastboot mode");
 			boot_target = FASTBOOT;
 		}
@@ -1666,13 +1818,16 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	debug(L"checking device state");
 
 	if (is_live_boot()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		boot_state = BOOT_STATE_ORANGE;
 		lock_prompted = TRUE;
 		boot_error(LIVE_BOOT_CODE, boot_state, NULL, 0);
 	} else if (device_is_unlocked()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		boot_state = BOOT_STATE_ORANGE;
 		debug(L"Device is unlocked");
 	} else if (!is_platform_secure_boot_enabled() && !device_is_provisioning()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"uefi secure boot is disabled");
 		boot_state = BOOT_STATE_YELLOW;
 		lock_prompted = TRUE;
@@ -1687,6 +1842,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 #ifdef USER
 	if (device_is_provisioning()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"device is provisioning, force Fastboot mode");
 		enter_fastboot_mode(boot_state);
 	}
@@ -1703,11 +1859,13 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 #endif
 	/* EFI binaries are validated by the BIOS */
 	if (boot_target == ESP_EFI_BINARY) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"entering EFI binary");
 		if (!target_path)
 			return EFI_INVALID_PARAMETER;
 		ret = uefi_enter_binary(g_disk_device, target_path, oneshot, 0, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"EFI Application exited abnormally");
 			pause(3);
 		}
@@ -1716,6 +1874,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	}
 
 	if (boot_target == FASTBOOT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"entering Fastboot mode");
 		enter_fastboot_mode(boot_state);
 	}
@@ -1741,6 +1900,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	set_boottime_stamp(TM_VERIFY_BOOT_DONE);
 
 	if (boot_state == BOOT_STATE_RED) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (boot_target == RECOVERY)
 			boot_error(BAD_RECOVERY_CODE, boot_state, NULL, 0);
 		else
@@ -1748,6 +1908,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	}
 
 	switch (boot_target) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case RECOVERY:
 	case ESP_BOOTIMAGE:
 		/* We're either about to do an OTA update, or doing a one-shot
@@ -1773,6 +1934,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 		efi_perror(ret, L"Failed to start boot image");
 
 	switch (boot_target) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case NORMAL_BOOT:
 	case CHARGER:
 		if (slot_get_active())
@@ -1780,6 +1942,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 		break;
 	case RECOVERY:
 		if (recovery_in_boot_partition()) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (slot_get_active())
 				reboot_to_target(boot_target, EfiResetCold);
 		}

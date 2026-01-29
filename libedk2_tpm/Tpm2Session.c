@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -69,6 +70,7 @@ Tpm2StartAuthSession (
      OUT  TPM2B_NONCE               *NonceTPM
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_START_AUTH_SESSION_COMMAND   SendBuffer;
   TPM2_START_AUTH_SESSION_RESPONSE  RecvBuffer;
@@ -102,6 +104,7 @@ Tpm2StartAuthSession (
   WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Symmetric->algorithm));
   Buffer += sizeof(UINT16);
   switch (Symmetric->algorithm) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_ALG_NULL:
     break;
   case TPM_ALG_AES:
@@ -144,14 +147,17 @@ Tpm2StartAuthSession (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2StartAuthSession - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2StartAuthSession - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -162,6 +168,7 @@ Tpm2StartAuthSession (
   *SessionHandle = SwapBytes32 (RecvBuffer.SessionHandle);
   NonceTPM->size = SwapBytes16 (RecvBuffer.NonceTPM.size);
   if (NonceTPM->size > sizeof(TPMU_HA)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2StartAuthSession - NonceTPM->size error %x\n", NonceTPM->size));
     return EFI_DEVICE_ERROR;
   }

@@ -38,6 +38,7 @@
 #include "uefi_utils.h"
 #include "security_interface.h"
 #include "crashdump.h"
+#include "log.h"
 
 BOOLEAN tee_tpm = 0;
 BOOLEAN andr_tpm = 0;
@@ -54,17 +55,20 @@ static UINT64 cur_offset;
 
 void __attribute__((weak)) part_select(int num)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	(void)num;
 }
 
 EFI_STATUS flash_write(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!gparti.bio)
 		return EFI_INVALID_PARAMETER;
 
 	if (!is_inside_partition(cur_offset, size)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Attempt to write outside of partition [%ld %ld] [%ld %ld]",
 				part_start, part_end, cur_offset, cur_offset + size);
 		return EFI_INVALID_PARAMETER;
@@ -72,6 +76,7 @@ EFI_STATUS flash_write(VOID *data, UINTN size)
 	ret = uefi_call_wrapper(gparti.dio->WriteDisk, 5, gparti.dio, gparti.bio->Media->MediaId, cur_offset, size, data);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to write bytes");
 		return ret;
 	}
@@ -84,6 +89,7 @@ EFI_STATUS flash_write(VOID *data, UINTN size)
 
 EFI_STATUS flash_write_as_block(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 *aligned_buf;
 	VOID *buf;
@@ -96,11 +102,13 @@ EFI_STATUS flash_write_as_block(VOID *data, UINTN size)
 	buf_size = min(gparti.bio->Media->BlockSize * 2048, size);
 	ret = alloc_aligned(&buf, (VOID **)&aligned_buf, buf_size, gparti.bio->Media->IoAlign);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Unable to allocate the buf");
 		return ret;
 	}
 
 	for (; size; size -= write_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		write_size = min(size, buf_size);
 		memcpy(aligned_buf,data,write_size);
 		ret = flash_write(aligned_buf, write_size);
@@ -115,6 +123,7 @@ out:
 
 EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN nr_entries, key, entry_sz;
 	CHAR8 *mem_entries;
@@ -126,6 +135,7 @@ EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 
 	mem_entries = (CHAR8 *)LibMemoryMap(&nr_entries, &key, &entry_sz, &entry_ver);
 	if (!mem_entries) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return EFI_OUT_OF_RESOURCES;
 	}
 
@@ -134,12 +144,14 @@ EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 #ifndef __LP64__
 	ret = pae_init(mem_entries, nr_entries, entry_sz);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"pae_init failed\n");
 		goto err;
 	}
 #endif
 	ret = gpt_get_partition_by_uuid(uuid, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition by UUID");
 		goto err;
 	}
@@ -153,26 +165,31 @@ EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 	head.region_num = 0;
 
 	for (i = 0; i < nr_entries; mem_entries += entry_sz, i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		EFI_MEMORY_DESCRIPTOR *entry;
 
 		entry = (EFI_MEMORY_DESCRIPTOR *)mem_entries;
 		if (entry->Type == EfiConventionalMemory) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			head.dump_ram_region[head.region_num].start = entry->PhysicalStart;
 			head.dump_ram_region[head.region_num].map_sz = entry->NumberOfPages * EFI_PAGE_SIZE;
 			head.region_num += 1;
 		} else if (entry->Type == EfiLoaderCode) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			shm_start = (VOID *)(entry->PhysicalStart);
 		}
 	}
 
 	if (shm_start == NULL)
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Can't find reserved share memory region\n");
 		goto err;
         }
 
 	ret = flash_write_as_block((void *)&head, DUMP_HEAD_SIZE);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to write dump head to partition\n");
 		goto err;
 	}
@@ -180,12 +197,14 @@ EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 	//write reserved share memory, should below 4G, aigned.
 	ret = flash_write_as_block(shm_start, (UINTN)RESERVED_MEM_SIZE);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to write shm region to partition\n");
 		goto err;
 	}
 
 
 	for (i = 0; i < head.region_num; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		int blocks = 0;
 		EFI_PHYSICAL_ADDRESS start = head.dump_ram_region[i].start;
 		UINT64 map_sz = head.dump_ram_region[i].map_sz, len,lba_skip;
@@ -195,23 +214,27 @@ EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 		debug(L"%d",head.region_num-i);
 
 		for (; map_sz > 0; map_sz -= len, start += len) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			len = map_sz;
 #ifdef __LP64__
 			buf = (void *)start;
 #else
 			ret = pae_map(start, (unsigned char **)&buf, &len);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"PAE map fail for high-mem\n");
 				goto pae_err;
 			}
 #endif
 			ret = flash_write_as_block(buf, len);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to write dump ram 0x%llx to partition\n",buf);
 				goto err;
 			}
 			log(L".");
 			if (blocks % 16 == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				log(L"\n");
 			}
 			blocks ++;
@@ -231,8 +254,10 @@ err:
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef __CRASH_DUMP
 	EFI_GUID dump_partition =  { 0xCAB9B00C, 0xCC1B, 0x4C0F, {0xB9, 0x32, 0x82, 0x92, 0x0D, 0xA5, 0x22, 0x51} };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 
 	set_boottime_stamp(TM_EFI_MAIN);

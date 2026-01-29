@@ -36,19 +36,23 @@
 #include "timer.h"
 #include "acpi.h"
 #include "libavb.h"
+#include "log.h"
 //Global AvbOps data structure
 static AvbOps *ops = NULL;
 
 AvbOps *avb_init(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         avb_print("UEFI AVB-based bootloader\n");
 
         if (ops != NULL) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             return ops;
         }
 
         ops = uefi_avb_ops_new();
         if (!ops) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 avb_fatal("Error allocating AvbOps.\n");
                 return NULL;
         }
@@ -58,11 +62,14 @@ AvbOps *avb_init(void)
 
 bool avb_update_stored_rollback_indexes_for_slot(AvbOps* ops, AvbSlotVerifyData* slot_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         int n;
 
         for (n = 0; n < AVB_MAX_NUMBER_OF_ROLLBACK_INDEX_LOCATIONS; n++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 uint64_t rollback_index = slot_data->rollback_indexes[n];
                 if (rollback_index > 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         AvbIOResult io_ret;
                         uint64_t current_stored_rollback_index;
 
@@ -71,6 +78,7 @@ bool avb_update_stored_rollback_indexes_for_slot(AvbOps* ops, AvbSlotVerifyData*
                                 return false;
 
                         if (rollback_index > current_stored_rollback_index) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 io_ret = ops->write_rollback_index(ops, n, rollback_index);
                                 if (io_ret != AVB_IO_RESULT_OK)
                                         return false;
@@ -90,14 +98,17 @@ static EFI_STATUS avb_prepend_command_line_rootfs(
                 __attribute__((__unused__)) OUT CHAR16 **cmdline16,
                 IN enum boot_target boot_target)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
 
         if (boot_target == RECOVERY || boot_target == MEMORY)
                 return ret;
 
         if (use_slot()) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = prepend_command_line(cmdline16, AVB_ROOTFS_PREFIX);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Failed to add AVB rootfs prefix");
                         return ret;
                 }
@@ -117,7 +128,9 @@ EFI_STATUS prepend_slot_command_line(CHAR16 **cmdline16,
         avb_prepend_command_line_rootfs(cmdline16, boot_target);
 
         if (use_slot()) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (slot_get_active()) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         ret = prepend_command_line(cmdline16,
                                 L"androidboot.slot_suffix=%a",
                                 slot_get_active());
@@ -128,10 +141,12 @@ EFI_STATUS prepend_slot_command_line(CHAR16 **cmdline16,
                 if (vb_data && vb_data->cmdline &&
                         (!avb_strstr(vb_data->cmdline,"root=")))
                 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef DYNAMIC_PARTITIONS
                         ret = gpt_get_partition_uuid(slot_label(SYSTEM_LABEL),
                                 &system_uuid, LOGICAL_UNIT_USER);
                         if (EFI_ERROR(ret)) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 efi_perror(ret,
                                         L"Failed to get %s partition UUID",
                                         SYSTEM_LABEL);
@@ -153,6 +168,7 @@ EFI_STATUS prepend_slot_command_line(CHAR16 **cmdline16,
 
 UINTN get_vb_cmdlen(VBDATA *vb_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (vb_data && vb_data->cmdline)
                 return strlen(vb_data->cmdline);
         return 0;
@@ -160,6 +176,7 @@ UINTN get_vb_cmdlen(VBDATA *vb_data)
 
 char *get_vb_cmdline(VBDATA *vb_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return vb_data->cmdline;
 }
 
@@ -168,14 +185,18 @@ EFI_STATUS android_query_image_from_avb_result(
                 IN const char *label,
                 OUT VOID **image)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         AvbPartitionData *pdata = NULL;
 
         for (size_t n = 0; n < slot_data->num_loaded_partitions; ++n) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 pdata = &slot_data->loaded_partitions[n];
                 if (!strcmp(pdata->partition_name, label)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         *image = pdata->data;
                         if (!strcmp(label, "boot") || !strcmp(label, "tos") ||
                                 !strcmp(label, "recovery")) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 if (get_bootimage_header(*image))
                                         return EFI_SUCCESS;
                         } else
@@ -193,15 +214,18 @@ EFI_STATUS get_avb_flow_result(
                 IN AvbABFlowResult flow_result,
                 IN OUT UINT8 *boot_state)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (!slot_data || !boot_state)
                 return EFI_INVALID_PARAMETER;
 
         if (slot_data->num_loaded_partitions < 1) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 avb_error("No avb partition.\n");
                 return EFI_LOAD_ERROR;
         }
 
         switch (flow_result) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         case AVB_AB_FLOW_RESULT_OK:
                 if (allow_verification_error && *boot_state < BOOT_STATE_ORANGE)
                         *boot_state = BOOT_STATE_ORANGE;
@@ -213,6 +237,7 @@ EFI_STATUS get_avb_flow_result(
         case AVB_AB_FLOW_RESULT_ERROR_NO_BOOTABLE_SLOTS:
         case AVB_AB_FLOW_RESULT_ERROR_INVALID_ARGUMENT:
                 if (allow_verification_error && *boot_state <= BOOT_STATE_ORANGE) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* Do nothing since we allow this. */
                         avb_debugv("Allow avb ab flow with result ",
                         avb_ab_flow_result_to_string(flow_result),
@@ -239,15 +264,18 @@ EFI_STATUS get_avb_result(
                 IN AvbSlotVerifyResult verify_result,
                 IN OUT UINT8 *boot_state)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (!slot_data || !boot_state)
                 return EFI_INVALID_PARAMETER;
 
         if (slot_data->num_loaded_partitions < 1) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 avb_error("No avb partition.\n");
                 return EFI_LOAD_ERROR;
         }
 
         switch (verify_result) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         case AVB_SLOT_VERIFY_RESULT_OK:
                 if (allow_verification_error && *boot_state < BOOT_STATE_ORANGE)
                         *boot_state = BOOT_STATE_ORANGE;
@@ -257,6 +285,7 @@ EFI_STATUS get_avb_result(
         case AVB_SLOT_VERIFY_RESULT_ERROR_ROLLBACK_INDEX:
         case AVB_SLOT_VERIFY_RESULT_ERROR_PUBLIC_KEY_REJECTED:
                 if (allow_verification_error && *boot_state <= BOOT_STATE_ORANGE) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* Do nothing since we allow this. */
                         avb_debugv("Allow avb verified with result ",
                         avb_slot_verify_result_to_string(verify_result),
@@ -280,7 +309,9 @@ EFI_STATUS get_avb_result(
 
 EFI_STATUS android_install_acpi_table_avb(AvbSlotVerifyData *slot_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const char *acpi_part_names[] = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_ACPI
                 "acpi",
 #endif
@@ -294,8 +325,10 @@ EFI_STATUS android_install_acpi_table_avb(AvbSlotVerifyData *slot_data)
 
         android_query_image_from_avb_result(slot_data, "boot", &image);
         if (image != NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 hdr = (struct boot_img_hdr *)image;
                 if ((hdr->header_version == 2) && (hdr->acpi_size > 0)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         VOID *acpi_addr = image +
                                 pagealign(hdr, hdr->kernel_size) +
                                 pagealign(hdr, hdr->ramdisk_size) +
@@ -307,15 +340,18 @@ EFI_STATUS android_install_acpi_table_avb(AvbSlotVerifyData *slot_data)
         }
 
         for (int i = 0; acpi_part_names[i] != NULL; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = android_query_image_from_avb_result(slot_data,
                                                     acpi_part_names[i], &image);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"'%a' image not found!", acpi_part_names[i]);
                         return ret;
                 }
                 ret = install_acpi_table_from_partitions(image,
                                                          acpi_part_names[i]);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Failed to install acpi table from %a image",
                                    acpi_part_names[i]);
                         return ret;
@@ -330,12 +366,14 @@ EFI_STATUS android_image_load_partition_avb(
                 IN OUT UINT8* boot_state,
                 AvbSlotVerifyData **slot_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
         AvbOps *ops;
         const char *slot_suffix = "";
         AvbSlotVerifyResult verify_result = 0;
         AvbSlotVerifyFlags flags;
         const char *requested_partitions[] = {label,
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_ACPI
                 "acpi",
 #endif
@@ -347,13 +385,16 @@ EFI_STATUS android_image_load_partition_avb(
 
         ops = avb_init();
         if (! ops) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = EFI_OUT_OF_RESOURCES;
                 goto fail;
         }
 
         if (use_slot()) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 slot_suffix = slot_get_active();
                 if (!slot_suffix) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         error(L"suffix is null");
                         slot_suffix = "";
                 }
@@ -378,12 +419,14 @@ EFI_STATUS android_image_load_partition_avb(
                         boot_state);
 
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to get avb result for boot");
                 goto fail;
         }
 
         ret = android_query_image_from_avb_result(*slot_data, label, bootimage_p);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 avb_error("Cannot find android image partition!\n");
                 goto fail;
         }
@@ -404,6 +447,7 @@ EFI_STATUS android_image_load_partition_avb_ab(
                 IN OUT UINT8* boot_state,
                 AvbSlotVerifyData **slot_data)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USE_SLOT
         return android_image_load_partition_avb(label, bootimage_p, boot_state, slot_data);
 #else
@@ -411,6 +455,7 @@ EFI_STATUS android_image_load_partition_avb_ab(
         AvbABFlowResult flow_result;
         AvbSlotVerifyFlags flags;
         const char *requested_partitions[] = {label,
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_ACPI
                 "acpi",
 #endif
@@ -430,6 +475,7 @@ EFI_STATUS android_image_load_partition_avb_ab(
                 flow_result,
                 boot_state);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to get avb slot a/b flow result for boot");
                 goto fail;
         }
@@ -437,6 +483,7 @@ EFI_STATUS android_image_load_partition_avb_ab(
 
         ret = android_query_image_from_avb_result(*slot_data, label, bootimage_p);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 avb_error("Cannot find android image partition!\n");
                 goto fail;
         }

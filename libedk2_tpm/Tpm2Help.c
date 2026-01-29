@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <efilib.h>
 #include "Tpm2Help.h"
 #include "Tcg2Protocol.h"
+#include "log.h"
 
 typedef struct {
   TPMI_ALG_HASH              HashAlgo;
@@ -29,6 +30,7 @@ STATIC INTERNAL_HASH_INFO mHashInfo[] = {
   {TPM_ALG_SM3_256,       SM3_256_DIGEST_SIZE,  HASH_ALG_SM3_256},
   {TPM_ALG_SHA384,        SHA384_DIGEST_SIZE,   HASH_ALG_SHA384},
   {TPM_ALG_SHA512,        SHA512_DIGEST_SIZE,   HASH_ALG_SHA512},
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 /**
@@ -44,10 +46,13 @@ GetHashSizeFromAlgo (
   IN TPMI_ALG_HASH    HashAlgo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINTN  Index;
 
   for (Index = 0; Index < sizeof(mHashInfo)/sizeof(mHashInfo[0]); Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (mHashInfo[Index].HashAlgo == HashAlgo) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return mHashInfo[Index].HashSize;
     }
   }
@@ -73,6 +78,7 @@ SwapBytes16 (
   IN      UINT16                    Operand
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return (UINT16) ((Operand << 8) | (Operand >> 8));
 }
 
@@ -95,6 +101,7 @@ SwapBytes32 (
   IN      UINT32                    Operand
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32  LowerBytes;
   UINT32  HigherBytes;
 
@@ -123,6 +130,7 @@ SwapBytes64 (
   IN      UINT64                    Operand
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT64  LowerBytes;
   UINT64  HigherBytes;
 
@@ -155,6 +163,7 @@ WriteUnaligned32 (
   IN      UINT32                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
@@ -183,6 +192,7 @@ WriteUnaligned16 (
   IN      UINT16                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
@@ -208,6 +218,7 @@ ReadUnaligned16 (
   IN CONST UINT16              *Buffer
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (Buffer != NULL);
 
   return *Buffer;
@@ -234,6 +245,7 @@ ReadUnaligned32 (
   )
 
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (Buffer != NULL);
 
   return *Buffer;
@@ -262,6 +274,7 @@ WriteUnaligned64 (
   IN      UINT64                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (Buffer != NULL);
 
   return *Buffer = Value;
@@ -283,6 +296,7 @@ CopyAuthSessionCommand (
   OUT     UINT8                     *AuthSessionOut
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8  *Buffer;
 
   Buffer = (UINT8 *)AuthSessionOut;
@@ -291,6 +305,7 @@ CopyAuthSessionCommand (
   // Add in Auth session
   //
   if (AuthSessionIn != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //  sessionHandle
     WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(AuthSessionIn->sessionHandle));
     Buffer += sizeof(UINT32);
@@ -313,6 +328,7 @@ CopyAuthSessionCommand (
     CopyMem (Buffer, AuthSessionIn->hmac.buffer, AuthSessionIn->hmac.size);
     Buffer += AuthSessionIn->hmac.size;
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //  sessionHandle
     WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(TPM_RS_PW));
     Buffer += sizeof(UINT32);

@@ -43,6 +43,7 @@
 #include "lsacpi.h"
 #include "lspartition.h"
 #include "lspci.h"
+#include "log.h"
 
 #define MAX_ARGS	8
 
@@ -74,6 +75,7 @@ static shcmd_t *SHCMD[] = {
 
 static void free_shell_ctx(shell_ctx_t *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!ctx)
 		return;
 	if (ctx->arg)
@@ -85,6 +87,7 @@ static void free_shell_ctx(shell_ctx_t *ctx)
 
 static shcmd_t *get_command(const char *name)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(SHCMD); i++)
@@ -96,11 +99,13 @@ static shcmd_t *get_command(const char *name)
 
 static EFI_STATUS shell_service_open(const char *arg, void **ctx_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	shell_ctx_t *ctx;
 
 	ctx = AllocateZeroPool(sizeof(*ctx));
 	if (!ctx) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to allocate shell service context structure");
 		ret = EFI_OUT_OF_RESOURCES;
 		goto err;
@@ -108,6 +113,7 @@ static EFI_STATUS shell_service_open(const char *arg, void **ctx_p)
 
 	/* If no command is supplied, let's list the commands.  */
 	if (*arg == '\0') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ctx->cmd = &list_shcmd;
 		ctx->argc = 1;
 		ctx->argv[0] = ctx->cmd->name;
@@ -116,6 +122,7 @@ static EFI_STATUS shell_service_open(const char *arg, void **ctx_p)
 
 	ctx->arg = strdup(arg);
 	if (!ctx->arg) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to duplicate arg string");
 		ret = EFI_OUT_OF_RESOURCES;
 		goto err;
@@ -124,12 +131,14 @@ static EFI_STATUS shell_service_open(const char *arg, void **ctx_p)
 	ret = string_to_argv(ctx->arg, &ctx->argc, (CHAR8 **)ctx->argv,
 			     ARRAY_SIZE(ctx->argv), " ", " ");
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to split string into argv");
 		goto err;
 	}
 
 	ctx->cmd = get_command(ctx->argv[0]);
 	if (!ctx->cmd) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unknown command '%a'", ctx->argv[0]);
 		ret = EFI_INVALID_PARAMETER;
 		goto err;
@@ -147,6 +156,7 @@ err:
 static asock_t current_socket;
 static EFI_STATUS shell_service_ready(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	shell_ctx_t *ctx = asock_context(s);
 
@@ -168,12 +178,14 @@ static EFI_STATUS shell_service_ready(asock_t s)
 
 static EFI_STATUS shell_service_close(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	free_shell_ctx(asock_context(s));
 	return EFI_SUCCESS;
 }
 
 static EFI_STATUS shell_service_okay(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return asock_send_close(s);
 }
 
@@ -181,10 +193,12 @@ static EFI_STATUS shell_service_read(__attribute__((__unused__)) asock_t s,
 				     __attribute__((__unused__)) unsigned char *data,
 				     __attribute__((__unused__)) UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
 service_t shell_service = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name	= "shell",
 	.open	= shell_service_open,
 	.ready	= shell_service_ready,
@@ -195,6 +209,7 @@ service_t shell_service = {
 
 static EFI_STATUS help_main(INTN argc, const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	shcmd_t *cmd;
 
 	if (argc != 2)
@@ -202,6 +217,7 @@ static EFI_STATUS help_main(INTN argc, const char **argv)
 
 	cmd = get_command(argv[1]);
 	if (!cmd) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ss_printf(L"Unknown command '%a'\n", argv[1]);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -211,6 +227,7 @@ static EFI_STATUS help_main(INTN argc, const char **argv)
 }
 
 static shcmd_t help_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "help",
 	.summary = "Print usage for a command",
 	.help = "Usage: help <COMMAND>",
@@ -220,9 +237,11 @@ static shcmd_t help_shcmd = {
 static EFI_STATUS list_main(INTN argc,
 			    __attribute__((__unused__)) const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const char TITLE[] = "Command";
 	UINTN i, max_len;
 	CHAR16 fmt[16] = { 0 };
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (argc != 1)
 		return EFI_INVALID_PARAMETER;
@@ -240,6 +259,7 @@ static EFI_STATUS list_main(INTN argc,
 }
 
 static shcmd_t list_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "list",
 	.summary = "List the commands",
 	.help = "Usage: list",
@@ -253,6 +273,7 @@ static shcmd_t list_shcmd = {
    socket once the command has exited (end of its main function). */
 EFI_STATUS ss_printf(const CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 	UINTN length;
 	CHAR16 buf16[BUFFER_SIZE];
@@ -264,6 +285,7 @@ EFI_STATUS ss_printf(const CHAR16 *fmt, ...)
 	va_end(args);
 
 	if (!ctx->buf) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ctx->buf = AllocatePool(length);
 		if (!ctx->buf)
 			goto err;
@@ -271,6 +293,7 @@ EFI_STATUS ss_printf(const CHAR16 *fmt, ...)
 		ret = str_to_stra(ctx->buf, buf16, length);
 		ctx->buf_size += length;
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ctx->buf = ReallocatePool(ctx->buf, ctx->buf_size,
 					  ctx->buf_size + length - 1);
 		if (!ctx->buf)
@@ -289,6 +312,7 @@ err:
 
 EFI_STATUS ss_read_number(const char *arg, const char *name, UINT64 *value)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *endptr;
 
 	if (!arg || !name || !value)
@@ -296,6 +320,7 @@ EFI_STATUS ss_read_number(const char *arg, const char *name, UINT64 *value)
 
 	*value = strtoull(arg, &endptr, 0);
 	if (*endptr != '\0') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ss_printf(L"Failed to parse '%a' %a parameter\n", arg, name);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -307,6 +332,7 @@ EFI_STATUS ss_read_number(const char *arg, const char *name, UINT64 *value)
 
 static CHAR16 *get_address_format(EFI_PHYSICAL_ADDRESS address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static CHAR16 fmt[8];
 	UINTN i;
 
@@ -320,8 +346,10 @@ static CHAR16 *get_address_format(EFI_PHYSICAL_ADDRESS address)
 void ss_hexdump(unsigned char *buf, UINTN length,
 		EFI_PHYSICAL_ADDRESS address, BOOLEAN canonical)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *addr_fmt;
 	char ascii[PRINT_SIZE + 1] = { '\0' };
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned char *cur, *end;
 	UINTN col;
 
@@ -331,6 +359,7 @@ void ss_hexdump(unsigned char *buf, UINTN length,
 	for (col = 0, cur = (char *)(UINTN)buf;
 	     cur != end;
 	     address++, cur++, col = (col + 1) % PRINT_SIZE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (col == 0)
 			ss_printf(addr_fmt, address);
 
@@ -342,7 +371,9 @@ void ss_hexdump(unsigned char *buf, UINTN length,
 			ascii[col] = '.';
 
 		if (col == PRINT_SIZE - 1) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (canonical) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ss_printf(L"  |%a|", ascii);
 				memset_s(ascii, sizeof(ascii) - 1, '.', sizeof(ascii) - 1);
 			}
@@ -351,6 +382,7 @@ void ss_hexdump(unsigned char *buf, UINTN length,
 	}
 
 	if (col != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (; col < PRINT_SIZE; col++)
 			ss_printf(L" %a  ", col % sizeof(UINT64) ? "" : " ");
 		if (canonical)
@@ -362,6 +394,7 @@ void ss_hexdump(unsigned char *buf, UINTN length,
 #ifndef __LP64__
 EFI_STATUS ss_pae_map(EFI_PHYSICAL_ADDRESS *address, UINT64 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	unsigned char *to;
 	EFI_MEMORY_DESCRIPTOR *map;
@@ -382,6 +415,7 @@ EFI_STATUS ss_pae_map(EFI_PHYSICAL_ADDRESS *address, UINT64 length)
 		goto err;
 
 	if (len != length) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_BUFFER_TOO_SMALL;
 		goto err;
 	}

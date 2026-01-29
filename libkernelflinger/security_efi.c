@@ -35,6 +35,7 @@
 #include "security_efi.h"
 #include "protocol/BootloaderSeedProtocol.h"
 #include "tpm2_security.h"
+#include "log.h"
 
 #define BOOTLOADER_SEED_MAX_ENTRIES  10
 
@@ -43,6 +44,7 @@ static BOOTLOADER_SEED_PROTOCOL *bls_proto = NULL;
 
 static BOOTLOADER_SEED_PROTOCOL *get_bls_proto(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!bls_proto)
@@ -56,6 +58,7 @@ static BOOTLOADER_SEED_PROTOCOL *get_bls_proto(void)
 
 EFI_STATUS stop_bls_proto(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOTLOADER_SEED_PROTOCOL *bls;
 	EFI_STATUS ret = EFI_SUCCESS;
 
@@ -65,6 +68,7 @@ EFI_STATUS stop_bls_proto(void)
 
 	ret = uefi_call_wrapper(bls->EndOfService, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"call EndOfService of bootloader seed protocol fail");
 		return ret;
 	}
@@ -76,6 +80,7 @@ EFI_STATUS stop_bls_proto(void)
 /* Now the input security_data should be NULL. */
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN void *security_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	return ret;
@@ -83,6 +88,7 @@ EFI_STATUS set_device_security_info(__attribute__((unused)) IN void *security_da
 
 EFI_STATUS set_platform_secure_boot(__attribute__((unused)) IN UINT8 secure)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
@@ -95,6 +101,7 @@ EFI_STATUS set_platform_secure_boot(__attribute__((unused)) IN UINT8 secure)
  */
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
@@ -115,6 +122,7 @@ BOOLEAN is_platform_secure_boot_enabled(VOID)
 
 BOOLEAN is_eom_and_secureboot_enabled(VOID)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN sbflags;
 	BOOLEAN enduser = TRUE;
 
@@ -125,13 +133,16 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 static EFI_STATUS bls_get_seed_list(BOOTLOADER_SEED_INFO_LIST *blist)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	BOOTLOADER_SEED_PROTOCOL *bls;
 
 	bls = get_bls_proto();
 	if (bls) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(bls->GetSeedInfoList, 1, blist);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"call GetSeedInfoList fail");
 			return ret;
 		}
@@ -144,11 +155,13 @@ static EFI_STATUS bls_get_seed_list(BOOTLOADER_SEED_INFO_LIST *blist)
 
 static UINT32 bls_get_max_svn_index(BOOTLOADER_SEED_INFO_LIST *blist)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 i, max_svn_idx = 0;
 
 #ifdef USERDEBUG
 	/* if no seed found, use dummy seed for userdebug build */
 	if (blist->NumOfSeeds == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"No seed found, use dummy seed");
 		memset_s(blist, sizeof(BOOTLOADER_SEED_INFO_LIST), 0, sizeof(BOOTLOADER_SEED_INFO_LIST));
 		return 0;
@@ -158,7 +171,9 @@ static UINT32 bls_get_max_svn_index(BOOTLOADER_SEED_INFO_LIST *blist)
 		return -1;
 
 	for (i = 1; i < blist->NumOfSeeds; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (blist->SeedList[i].cse_svn > blist->SeedList[max_svn_idx].cse_svn) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			max_svn_idx = i;
 		}
 	}
@@ -169,6 +184,7 @@ static UINT32 bls_get_max_svn_index(BOOTLOADER_SEED_INFO_LIST *blist)
 
 static EFI_STATUS bls_get_seed(VOID *seed)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	BOOTLOADER_SEED_INFO_LIST blist;
 	INT32 max_svn_idx;
@@ -177,12 +193,14 @@ static EFI_STATUS bls_get_seed(VOID *seed)
 
 	ret = bls_get_seed_list(&blist);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"failed to get bls seed list");
 		return ret;
 	}
 
 	max_svn_idx = bls_get_max_svn_index(&blist);
 	if (max_svn_idx < 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"get max svn idx error");
 		memset_s(&blist, sizeof(BOOTLOADER_SEED_INFO_LIST), 0, sizeof(BOOTLOADER_SEED_INFO_LIST));
 		barrier();
@@ -197,6 +215,7 @@ static EFI_STATUS bls_get_seed(VOID *seed)
 
 static EFI_STATUS tpm2_get_seed(VOID *seed)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (is_live_boot())
@@ -204,6 +223,7 @@ static EFI_STATUS tpm2_get_seed(VOID *seed)
 
 	ret = tpm2_read_trusty_seed(seed);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read trusty seed from TPM");
 		return ret;
 	}
@@ -214,6 +234,7 @@ static EFI_STATUS tpm2_get_seed(VOID *seed)
 
 EFI_STATUS get_seed(OUT VOID *seed)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (!seed)
@@ -227,6 +248,7 @@ EFI_STATUS get_seed(OUT VOID *seed)
 		ret = bls_get_seed(seed);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read trusty seed");
 		return ret;
 	}

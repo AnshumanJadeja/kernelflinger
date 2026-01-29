@@ -34,9 +34,11 @@
 
 #include "adb_socket.h"
 #include "service.h"
+#include "log.h"
 
 static EFI_STATUS reboot_service_open(const char *arg, void **context)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *target = NULL;
 
 	if (!arg || !context)
@@ -44,12 +46,14 @@ static EFI_STATUS reboot_service_open(const char *arg, void **context)
 
 	target = stra_to_str((CHAR8 *)arg);
 	if (!target) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to convert reboot target to CHAR16");
 		return EFI_OUT_OF_RESOURCES;
 	}
 
 	/* Sanity check */
 	if (name_to_boot_target(target) == UNKNOWN_TARGET) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Unknown boot target %s", target);
 		FreePool(target);
 		return EFI_INVALID_PARAMETER;
@@ -62,6 +66,7 @@ static EFI_STATUS reboot_service_open(const char *arg, void **context)
 
 static EFI_STATUS reboot_service_ready(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
@@ -72,6 +77,7 @@ static EFI_STATUS reboot_service_ready(asock_t s)
 
 static EFI_STATUS reboot_service_close(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
@@ -82,6 +88,7 @@ static EFI_STATUS reboot_service_close(asock_t s)
 
 static EFI_STATUS reboot_service_okay(__attribute__((__unused__)) asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"reboot_service does not support OKAY message");
 	return EFI_UNSUPPORTED;
 }
@@ -90,11 +97,13 @@ static EFI_STATUS reboot_service_read(__attribute__((__unused__)) asock_t s,
 				      __attribute__((__unused__)) unsigned char *data,
 				      __attribute__((__unused__)) UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"reboot_service does not support READ message");
 	return EFI_UNSUPPORTED;
 }
 
 service_t reboot_service = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name	 = "reboot",
 	.open	 = reboot_service_open,
 	.ready	 = reboot_service_ready,

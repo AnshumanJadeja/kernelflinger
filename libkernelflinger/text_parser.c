@@ -33,9 +33,11 @@
 #include <lib.h>
 
 #include "text_parser.h"
+#include "log.h"
 
 void skip_whitespace(char **line)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *cur = *line;
 	while (*cur && isspace(*cur))
 		cur++;
@@ -46,6 +48,7 @@ EFI_STATUS parse_text_buffer(VOID *data, UINTN size,
 			     EFI_STATUS (*parse_line)(char *line, VOID *ctx),
 			     VOID *context)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	char *buf, *line, *eol, *p;
 	int lineno = 0;
@@ -53,6 +56,7 @@ EFI_STATUS parse_text_buffer(VOID *data, UINTN size,
 	/* Extra byte so we can always terminate the last line. */
 	buf = AllocatePool(size + 1);
 	if (!buf) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to allocate text copy buffer");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -63,6 +67,7 @@ EFI_STATUS parse_text_buffer(VOID *data, UINTN size,
 	buf[size] = 0;
 
 	for (line = buf; line - buf < (ssize_t)size; line = eol + 1) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		lineno++;
 
 		/* Detect line and terminate. */
@@ -82,6 +87,7 @@ EFI_STATUS parse_text_buffer(VOID *data, UINTN size,
 
 		ret = parse_line(line, context);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed at line %d", lineno);
 			break;
 		}

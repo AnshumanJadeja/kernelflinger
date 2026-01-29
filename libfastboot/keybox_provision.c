@@ -37,22 +37,26 @@ EFI_STATUS flash_keybox(VOID *data, UINTN size)
 	struct gpt_partition_interface gpart;
 	keybox_header_t kb_header =
 		{
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			.magic = "MAGICKEYBOX",
 			.size = size,
 		};
 
 	if (!data) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"keybox data is NULL!");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	if (size > MAX_KEYBOX_SIZE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"keybox size exceeded limit");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	ret = gpt_get_partition_by_label(L"teedata", &gpart, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Partition teedata not found");
 		goto exit;
 	}
@@ -68,6 +72,7 @@ EFI_STATUS flash_keybox(VOID *data, UINTN size)
 				sizeof(keybox_header_t),
 				(void *)&kb_header);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Could not write keybox header to disk.");
 		goto exit;
 	}
@@ -81,6 +86,7 @@ EFI_STATUS flash_keybox(VOID *data, UINTN size)
 				size,
 				data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Could not write keybox to disk.");
 		goto exit;
 	}

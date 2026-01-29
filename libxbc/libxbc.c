@@ -15,6 +15,7 @@
  */
 
 #include "libxbc.h"
+#include "log.h"
 
 /*
  * Simple checksum for a buffer.
@@ -24,8 +25,10 @@
  * @return check sum result.
  */
 static uint32_t checksum(const unsigned char* const buffer, uint32_t size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint32_t sum = 0;
     for (uint32_t i = 0; i < size; i++) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         sum += buffer[i];
     }
     return sum;
@@ -39,6 +42,7 @@ static uint32_t checksum(const unsigned char* const buffer, uint32_t size) {
  * @return true if the trailer is present, false if not.
  */
 static BOOLEAN isTrailerPresent(uint64_t bootconfig_end_addr) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return !strncmp((CHAR8 *)(bootconfig_end_addr - BOOTCONFIG_MAGIC_SIZE),
                     BOOTCONFIG_MAGIC, BOOTCONFIG_MAGIC_SIZE);
 }
@@ -48,10 +52,13 @@ static BOOLEAN isTrailerPresent(uint64_t bootconfig_end_addr) {
  */
 int32_t addBootConfigParameters(char* params, uint32_t params_size,
     uint64_t bootconfig_start_addr, uint32_t bootconfig_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!params || !bootconfig_start_addr) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return -1;
     }
     if (params_size == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return 0;
     }
     int32_t applied_bytes = 0;
@@ -59,10 +66,12 @@ int32_t addBootConfigParameters(char* params, uint32_t params_size,
     uint64_t end = bootconfig_start_addr + bootconfig_size;
 
     if (isTrailerPresent(end)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       end -= BOOTCONFIG_TRAILER_SIZE;
       applied_bytes -= BOOTCONFIG_TRAILER_SIZE;
       memcpy_s(&new_size, BOOTCONFIG_SIZE_SIZE, (void *)end, BOOTCONFIG_SIZE_SIZE);
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       new_size = bootconfig_size;
     }
 
@@ -81,15 +90,19 @@ int32_t addBootConfigParameters(char* params, uint32_t params_size,
  */
 int32_t addBootConfigTrailer(uint64_t bootconfig_start_addr,
                             uint32_t bootconfig_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!bootconfig_start_addr) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return -1;
     }
     if (bootconfig_size == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return 0;
     }
     uint64_t end = bootconfig_start_addr + bootconfig_size;
 
     if (isTrailerPresent(end)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         // no need to overwrite the current trailers
         return 0;
     }

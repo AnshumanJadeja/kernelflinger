@@ -26,6 +26,7 @@
 #include "avb_rsa.h"
 #include "avb_sha.h"
 #include "avb_util.h"
+#include "log.h"
 
 /* NOTE: The PKC1-v1.5 padding is a blob of binary DER of ASN.1 and is
  * obtained from section 5.2.2 of RFC 4880.
@@ -33,6 +34,7 @@
 
 static const uint8_t
     padding_RSA2048_SHA256[AVB_RSA2048_NUM_BYTES - AVB_SHA256_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -55,6 +57,7 @@ static const uint8_t
 
 static const uint8_t
     padding_RSA4096_SHA256[AVB_RSA4096_NUM_BYTES - AVB_SHA256_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -98,6 +101,7 @@ static const uint8_t
 
 static const uint8_t
     padding_RSA8192_SHA256[AVB_RSA8192_NUM_BYTES - AVB_SHA256_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -184,6 +188,7 @@ static const uint8_t
 
 static const uint8_t
     padding_RSA2048_SHA512[AVB_RSA2048_NUM_BYTES - AVB_SHA512_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -203,6 +208,7 @@ static const uint8_t
 
 static const uint8_t
     padding_RSA4096_SHA512[AVB_RSA4096_NUM_BYTES - AVB_SHA512_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -244,6 +250,7 @@ static const uint8_t
 
 static const uint8_t
     padding_RSA8192_SHA512[AVB_RSA8192_NUM_BYTES - AVB_SHA512_DIGEST_SIZE] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         0x00, 0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -326,36 +333,46 @@ static const uint8_t
         0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, 0x05, 0x00, 0x04, 0x40};
 
 static AvbAlgorithmData algorithm_data[_AVB_ALGORITHM_NUM_TYPES] = {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* AVB_ALGORITHM_TYPE_NONE */
     {.padding = NULL, .padding_len = 0, .hash_len = 0},
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* AVB_ALGORITHM_TYPE_SHA256_RSA2048 */
     {.padding = padding_RSA2048_SHA256,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA2048_SHA256),
      .hash_len = AVB_SHA256_DIGEST_SIZE},
     /* AVB_ALGORITHM_TYPE_SHA256_RSA4096 */
     {.padding = padding_RSA4096_SHA256,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA4096_SHA256),
      .hash_len = AVB_SHA256_DIGEST_SIZE},
     /* AVB_ALGORITHM_TYPE_SHA256_RSA8192 */
     {.padding = padding_RSA8192_SHA256,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA8192_SHA256),
      .hash_len = AVB_SHA256_DIGEST_SIZE},
     /* AVB_ALGORITHM_TYPE_SHA512_RSA2048 */
     {.padding = padding_RSA2048_SHA512,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA2048_SHA512),
      .hash_len = AVB_SHA512_DIGEST_SIZE},
     /* AVB_ALGORITHM_TYPE_SHA512_RSA4096 */
     {.padding = padding_RSA4096_SHA512,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA4096_SHA512),
      .hash_len = AVB_SHA512_DIGEST_SIZE},
     /* AVB_ALGORITHM_TYPE_SHA512_RSA8192 */
     {.padding = padding_RSA8192_SHA512,
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
      .padding_len = sizeof(padding_RSA8192_SHA512),
      .hash_len = AVB_SHA512_DIGEST_SIZE},
 };
 
 const AvbAlgorithmData* avb_get_algorithm_data(AvbAlgorithmType algorithm) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if ((size_t)algorithm < _AVB_ALGORITHM_NUM_TYPES) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return &algorithm_data[algorithm];
   }
   return NULL;
@@ -363,6 +380,7 @@ const AvbAlgorithmData* avb_get_algorithm_data(AvbAlgorithmType algorithm) {
 
 bool avb_rsa_public_key_header_validate_and_byteswap(
     const AvbRSAPublicKeyHeader* src, AvbRSAPublicKeyHeader* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_memcpy(dest, src, sizeof(AvbRSAPublicKeyHeader));
 
   dest->key_num_bits = avb_be32toh(dest->key_num_bits);

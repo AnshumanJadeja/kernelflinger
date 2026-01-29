@@ -8,6 +8,7 @@
 
 #include "Base.h"
 #include "BaseIoLibIntrinsicInternal.h"
+#include "log.h"
 
 /**
   Reads a 64-bit I/O port.
@@ -30,6 +31,7 @@ IoRead64 (
 __attribute__((__unused__))  IN      UINTN                     Port
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (FALSE);
   return 0;
 }
@@ -57,6 +59,7 @@ __attribute__((__unused__))  IN      UINTN                     Port,
 __attribute__((__unused__))  IN      UINT64                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (FALSE);
   return 0;
 }
@@ -82,11 +85,13 @@ MmioRead8 (
   IN      UINTN                     Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             Value;
   BOOLEAN                           Flag;
 
   Flag = FilterBeforeMmIoRead1 (FilterWidth8, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     Value = *(volatile UINT8*)Address;
     MemoryFence ();
@@ -118,10 +123,12 @@ MmioWrite8 (
   IN      UINT8                     Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   Flag = FilterBeforeMmIoWrite1 (FilterWidth8, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     *(volatile UINT8*)Address = Value;
     MemoryFence ();
@@ -152,12 +159,14 @@ MmioRead16_1 (
   IN      UINTN                     Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT16                            Value;
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 1) == 0);
   Flag = FilterBeforeMmIoRead1 (FilterWidth16, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     Value = *(volatile UINT16*)Address;
     MemoryFence ();
@@ -190,12 +199,14 @@ MmioWrite16_1 (
   IN      UINT16                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 1) == 0);
 
   Flag = FilterBeforeMmIoWrite1 (FilterWidth16, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     *(volatile UINT16*)Address = Value;
     MemoryFence ();
@@ -226,6 +237,7 @@ MmioRead32 (
   IN      UINTN                     Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32                            Value;
   BOOLEAN                           Flag;
 
@@ -233,6 +245,7 @@ MmioRead32 (
 
   Flag = FilterBeforeMmIoRead1 (FilterWidth32, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     Value = *(volatile UINT32*)Address;
     MemoryFence ();
@@ -265,12 +278,14 @@ MmioWrite32 (
   IN      UINT32                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 3) == 0);
 
   Flag = FilterBeforeMmIoWrite1 (FilterWidth32, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     *(volatile UINT32*)Address = Value;
     MemoryFence ();
@@ -301,6 +316,7 @@ MmioRead64 (
   IN      UINTN                     Address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT64                            Value;
   BOOLEAN                           Flag;
 
@@ -308,6 +324,7 @@ MmioRead64 (
 
   Flag = FilterBeforeMmIoRead1 (FilterWidth64, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     Value = *(volatile UINT64*)Address;
     MemoryFence ();
@@ -338,12 +355,14 @@ MmioWrite64 (
   IN      UINT64                    Value
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 7) == 0);
 
   Flag = FilterBeforeMmIoWrite1 (FilterWidth64, Address, &Value);
   if (Flag) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     MemoryFence ();
     *(volatile UINT64*)Address = Value;
     MemoryFence ();

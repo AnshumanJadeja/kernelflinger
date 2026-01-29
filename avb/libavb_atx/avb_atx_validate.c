@@ -28,6 +28,7 @@
 #include <libavb/avb_sha.h>
 #include <libavb/avb_sysdeps.h>
 #include <libavb/avb_util.h>
+#include "log.h"
 
 /* The most recent unlock challenge generated. */
 static uint8_t last_unlock_challenge[AVB_ATX_UNLOCK_CHALLENGE_SIZE];
@@ -37,6 +38,7 @@ static bool last_unlock_challenge_set = false;
 static void sha256(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSHA256Ctx context;
   avb_sha256_init(&context);
   avb_sha256_update(&context, data, length);
@@ -48,6 +50,7 @@ static void sha256(const uint8_t* data,
 static void sha512(const uint8_t* data,
                    uint32_t length,
                    uint8_t hash[AVB_SHA512_DIGEST_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSHA512Ctx context;
   avb_sha512_init(&context);
   avb_sha512_update(&context, data, length);
@@ -57,6 +60,7 @@ static void sha512(const uint8_t* data,
 
 /* Computes the SHA256 |hash| of a NUL-terminated |str|. */
 static void sha256_str(const char* str, uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   sha256((const uint8_t*)str, avb_strlen(str), hash);
 }
 
@@ -64,14 +68,17 @@ static void sha256_str(const char* str, uint8_t hash[AVB_SHA256_DIGEST_SIZE]) {
 static bool verify_permanent_attributes(
     const AvbAtxPermanentAttributes* attributes,
     const uint8_t expected_hash[AVB_SHA256_DIGEST_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t hash[AVB_SHA256_DIGEST_SIZE];
 
   if (attributes->version != 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unsupported permanent attributes version.\n");
     return false;
   }
   sha256((const uint8_t*)attributes, sizeof(AvbAtxPermanentAttributes), hash);
   if (0 != avb_safe_memcmp(hash, expected_hash, AVB_SHA256_DIGEST_SIZE)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid permanent attributes.\n");
     return false;
   }
@@ -84,10 +91,12 @@ static bool verify_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_key_version,
     const uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const AvbAlgorithmData* algorithm_data;
   uint8_t certificate_hash[AVB_SHA512_DIGEST_SIZE];
 
   if (certificate->signed_data.version != 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unsupported certificate format.\n");
     return false;
   }
@@ -103,16 +112,19 @@ static bool verify_certificate(
                       AVB_SHA512_DIGEST_SIZE,
                       algorithm_data->padding,
                       algorithm_data->padding_len)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid certificate signature.\n");
     return false;
   }
   if (certificate->signed_data.key_version < minimum_key_version) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Key rollback detected.\n");
     return false;
   }
   if (0 != avb_safe_memcmp(certificate->signed_data.usage,
                            expected_usage,
                            AVB_SHA256_DIGEST_SIZE)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid certificate usage.\n");
     return false;
   }
@@ -124,11 +136,13 @@ static bool verify_pik_certificate(
     const AvbAtxCertificate* certificate,
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot.ca", expected_usage);
   if (!verify_certificate(
           certificate, authority, minimum_version, expected_usage)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid PIK certificate.\n");
     return false;
   }
@@ -141,12 +155,14 @@ static bool verify_psk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot", expected_usage);
   if (!verify_certificate(
           certificate, authority, minimum_version, expected_usage)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid PSK certificate.\n");
     return false;
   }
@@ -154,6 +170,7 @@ static bool verify_psk_certificate(
   if (0 != avb_safe_memcmp(certificate->signed_data.subject,
                            expected_subject,
                            AVB_SHA256_DIGEST_SIZE)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("PSK: Product ID mismatch.\n");
     return false;
   }
@@ -166,12 +183,14 @@ static bool verify_puk_certificate(
     const uint8_t authority[AVB_ATX_PUBLIC_KEY_SIZE],
     uint64_t minimum_version,
     const uint8_t product_id[AVB_ATX_PRODUCT_ID_SIZE]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t expected_subject[AVB_SHA256_DIGEST_SIZE];
   uint8_t expected_usage[AVB_SHA256_DIGEST_SIZE];
 
   sha256_str("com.google.android.things.vboot.unlock", expected_usage);
   if (!verify_certificate(
           certificate, authority, minimum_version, expected_usage)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid PUK certificate.\n");
     return false;
   }
@@ -179,6 +198,7 @@ static bool verify_puk_certificate(
   if (0 != avb_safe_memcmp(certificate->signed_data.subject,
                            expected_subject,
                            AVB_SHA256_DIGEST_SIZE)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("PUK: Product ID mismatch.\n");
     return false;
   }
@@ -192,6 +212,7 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
     const uint8_t* public_key_metadata,
     size_t public_key_metadata_length,
     bool* out_is_trusted) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];
@@ -206,27 +227,32 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
   result = ops->atx_ops->read_permanent_attributes(ops->atx_ops,
                                                    &permanent_attributes);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read permanent attributes.\n");
     return result;
   }
   result = ops->atx_ops->read_permanent_attributes_hash(
       ops->atx_ops, permanent_attributes_hash);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read permanent attributes hash.\n");
     return result;
   }
   if (!verify_permanent_attributes(&permanent_attributes,
                                    permanent_attributes_hash)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
   /* Sanity check public key metadata. */
   if (public_key_metadata_length != sizeof(AvbAtxPublicKeyMetadata)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid public key metadata.\n");
     return AVB_IO_RESULT_OK;
   }
   avb_memcpy(&metadata, public_key_metadata, sizeof(AvbAtxPublicKeyMetadata));
   if (metadata.version != 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unsupported public key metadata.\n");
     return AVB_IO_RESULT_OK;
   }
@@ -235,12 +261,14 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
   result = ops->read_rollback_index(
       ops, AVB_ATX_PIK_VERSION_LOCATION, &minimum_version);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read PIK minimum version.\n");
     return result;
   }
   if (!verify_pik_certificate(&metadata.product_intermediate_key_certificate,
                               permanent_attributes.product_root_public_key,
                               minimum_version)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
@@ -248,6 +276,7 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
   result = ops->read_rollback_index(
       ops, AVB_ATX_PSK_VERSION_LOCATION, &minimum_version);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read PSK minimum version.\n");
     return result;
   }
@@ -256,11 +285,13 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
           metadata.product_intermediate_key_certificate.signed_data.public_key,
           minimum_version,
           permanent_attributes.product_id)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
   /* Verify the PSK is the same key that verified vbmeta. */
   if (public_key_length != AVB_ATX_PUBLIC_KEY_SIZE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Public key length mismatch.\n");
     return AVB_IO_RESULT_OK;
   }
@@ -268,6 +299,7 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
                metadata.product_signing_key_certificate.signed_data.public_key,
                public_key_data,
                AVB_ATX_PUBLIC_KEY_SIZE)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Public key mismatch.\n");
     return AVB_IO_RESULT_OK;
   }
@@ -288,18 +320,21 @@ AvbIOResult avb_atx_validate_vbmeta_public_key(
 
 AvbIOResult avb_atx_generate_unlock_challenge(
     AvbAtxOps* atx_ops, AvbAtxUnlockChallenge* out_unlock_challenge) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
 
   /* We need the permanent attributes to compute the product_id_hash. */
   result = atx_ops->read_permanent_attributes(atx_ops, &permanent_attributes);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read permanent attributes.\n");
     return result;
   }
   result = atx_ops->get_random(
       atx_ops, AVB_ATX_UNLOCK_CHALLENGE_SIZE, last_unlock_challenge);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to generate random challenge.\n");
     return result;
   }
@@ -318,6 +353,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
     AvbAtxOps* atx_ops,
     const AvbAtxUnlockCredential* unlock_credential,
     bool* out_is_trusted) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbIOResult result = AVB_IO_RESULT_OK;
   AvbAtxPermanentAttributes permanent_attributes;
   uint8_t permanent_attributes_hash[AVB_SHA256_DIGEST_SIZE];
@@ -331,6 +367,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
 
   /* Sanity check the credential. */
   if (unlock_credential->version != 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unsupported unlock credential format.\n");
     return AVB_IO_RESULT_OK;
   }
@@ -338,17 +375,20 @@ AvbIOResult avb_atx_validate_unlock_credential(
   /* Read and verify permanent attributes. */
   result = atx_ops->read_permanent_attributes(atx_ops, &permanent_attributes);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read permanent attributes.\n");
     return result;
   }
   result = atx_ops->read_permanent_attributes_hash(atx_ops,
                                                    permanent_attributes_hash);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read permanent attributes hash.\n");
     return result;
   }
   if (!verify_permanent_attributes(&permanent_attributes,
                                    permanent_attributes_hash)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
@@ -356,6 +396,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
   result = atx_ops->ops->read_rollback_index(
       atx_ops->ops, AVB_ATX_PIK_VERSION_LOCATION, &minimum_version);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read PIK minimum version.\n");
     return result;
   }
@@ -363,6 +404,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
           &unlock_credential->product_intermediate_key_certificate,
           permanent_attributes.product_root_public_key,
           minimum_version)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
@@ -370,6 +412,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
   result = atx_ops->ops->read_rollback_index(
       atx_ops->ops, AVB_ATX_PSK_VERSION_LOCATION, &minimum_version);
   if (result != AVB_IO_RESULT_OK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Failed to read PSK minimum version.\n");
     return result;
   }
@@ -379,11 +422,13 @@ AvbIOResult avb_atx_validate_unlock_credential(
               .public_key,
           minimum_version,
           permanent_attributes.product_id)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return AVB_IO_RESULT_OK;
   }
 
   /* Hash the most recent unlock challenge. */
   if (!last_unlock_challenge_set) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Challenge does not exist.\n");
     return AVB_IO_RESULT_OK;
   }
@@ -401,6 +446,7 @@ AvbIOResult avb_atx_validate_unlock_credential(
                       AVB_SHA512_DIGEST_SIZE,
                       algorithm_data->padding,
                       algorithm_data->padding_len)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid unlock challenge signature.\n");
     return AVB_IO_RESULT_OK;
   }

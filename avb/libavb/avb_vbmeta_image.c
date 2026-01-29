@@ -28,12 +28,14 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_version.h"
+#include "log.h"
 
 AvbVBMetaVerifyResult avb_vbmeta_image_verify(
     const uint8_t* data,
     size_t length,
     const uint8_t** out_public_key_data,
     size_t* out_public_key_length) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbVBMetaVerifyResult ret;
   AvbVBMetaImageHeader h;
   uint8_t* computed_hash;
@@ -48,20 +50,24 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   ret = AVB_VBMETA_VERIFY_RESULT_INVALID_VBMETA_HEADER;
 
   if (out_public_key_data != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_public_key_data = NULL;
   }
   if (out_public_key_length != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_public_key_length = 0;
   }
 
   /* Ensure magic is correct. */
   if (avb_safe_memcmp(data, AVB_MAGIC, AVB_MAGIC_LEN) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Magic is incorrect.\n");
     goto out;
   }
 
   /* Before we byteswap, ensure length is long enough. */
   if (length < sizeof(AvbVBMetaImageHeader)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Length is smaller than header.\n");
     goto out;
   }
@@ -73,6 +79,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
    */
   if ((h.required_libavb_version_major != AVB_VERSION_MAJOR) ||
       (h.required_libavb_version_minor > AVB_VERSION_MINOR)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Mismatch between image version and libavb version.\n");
     ret = AVB_VBMETA_VERIFY_RESULT_UNSUPPORTED_VERSION;
     goto out;
@@ -80,6 +87,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
 
   /* Ensure |release_string| ends with a NUL byte. */
   if (h.release_string[AVB_RELEASE_STRING_SIZE - 1] != '\0') {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Release string does not end with a NUL byte.\n");
     goto out;
   }
@@ -87,6 +95,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   /* Ensure inner block sizes are multiple of 64. */
   if ((h.authentication_data_block_size & 0x3f) != 0 ||
       (h.auxiliary_data_block_size & 0x3f) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Block size is not a multiple of 64.\n");
     goto out;
   }
@@ -95,10 +104,12 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   uint64_t block_total = sizeof(AvbVBMetaImageHeader);
   if (!avb_safe_add_to(&block_total, h.authentication_data_block_size) ||
       !avb_safe_add_to(&block_total, h.auxiliary_data_block_size)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow while computing size of boot image.\n");
     goto out;
   }
   if (block_total > length) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Block sizes add up to more than given length.\n");
     goto out;
   }
@@ -106,6 +117,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   uintptr_t data_ptr = (uintptr_t)data;
   /* Ensure passed in memory doesn't wrap. */
   if (!avb_safe_add(NULL, (uint64_t)data_ptr, length)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Boot image location and length mismatch.\n");
     goto out;
   }
@@ -114,12 +126,14 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   uint64_t hash_end;
   if (!avb_safe_add(&hash_end, h.hash_offset, h.hash_size) ||
       hash_end > h.authentication_data_block_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Hash is not entirely in its block.\n");
     goto out;
   }
   uint64_t signature_end;
   if (!avb_safe_add(&signature_end, h.signature_offset, h.signature_size) ||
       signature_end > h.authentication_data_block_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Signature is not entirely in its block.\n");
     goto out;
   }
@@ -128,6 +142,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   uint64_t pubkey_end;
   if (!avb_safe_add(&pubkey_end, h.public_key_offset, h.public_key_size) ||
       pubkey_end > h.auxiliary_data_block_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Public key is not entirely in its block.\n");
     goto out;
   }
@@ -135,11 +150,13 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   /* Ensure public key metadata (if set) is entirely in the Auxiliary
    * data block. */
   if (h.public_key_metadata_size > 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint64_t pubkey_md_end;
     if (!avb_safe_add(&pubkey_md_end,
                       h.public_key_metadata_offset,
                       h.public_key_metadata_size) ||
         pubkey_md_end > h.auxiliary_data_block_size) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_error("Public key metadata is not entirely in its block.\n");
       goto out;
     }
@@ -147,6 +164,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
 
   /* Bail early if there's no hash or signature. */
   if (h.algorithm_type == AVB_ALGORITHM_TYPE_NONE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ret = AVB_VBMETA_VERIFY_RESULT_OK_NOT_SIGNED;
     goto out;
   }
@@ -154,12 +172,14 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   /* Ensure algorithm field is supported. */
   algorithm = avb_get_algorithm_data(h.algorithm_type);
   if (!algorithm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid or unknown algorithm.\n");
     goto out;
   }
 
   /* Bail if the embedded hash size doesn't match the chosen algorithm. */
   if (h.hash_size != algorithm->hash_len) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Embedded hash has wrong size.\n");
     goto out;
   }
@@ -173,6 +193,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   auxiliary_block = authentication_block + h.authentication_data_block_size;
 
   switch (h.algorithm_type) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* Explicit fall-through: */
     case AVB_ALGORITHM_TYPE_SHA256_RSA2048:
     case AVB_ALGORITHM_TYPE_SHA256_RSA4096:
@@ -203,6 +224,7 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
   if (avb_safe_memcmp(authentication_block + h.hash_offset,
                       computed_hash,
                       h.hash_size) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Hash does not match!\n");
     ret = AVB_VBMETA_VERIFY_RESULT_HASH_MISMATCH;
     goto out;
@@ -219,15 +241,19 @@ AvbVBMetaVerifyResult avb_vbmeta_image_verify(
                      algorithm->padding_len);
 
   if (verification_result == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ret = AVB_VBMETA_VERIFY_RESULT_SIGNATURE_MISMATCH;
     goto out;
   }
 
   if (h.public_key_size > 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (out_public_key_data != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       *out_public_key_data = auxiliary_block + h.public_key_offset;
     }
     if (out_public_key_length != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       *out_public_key_length = h.public_key_size;
     }
   }
@@ -240,6 +266,7 @@ out:
 
 void avb_vbmeta_image_header_to_host_byte_order(const AvbVBMetaImageHeader* src,
                                                 AvbVBMetaImageHeader* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_memcpy(dest, src, sizeof(AvbVBMetaImageHeader));
 
   dest->required_libavb_version_major =
@@ -275,9 +302,11 @@ void avb_vbmeta_image_header_to_host_byte_order(const AvbVBMetaImageHeader* src,
 }
 
 const char* avb_vbmeta_verify_result_to_string(AvbVBMetaVerifyResult result) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char* ret = NULL;
 
   switch (result) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case AVB_VBMETA_VERIFY_RESULT_OK:
       ret = "OK";
       break;
@@ -300,6 +329,7 @@ const char* avb_vbmeta_verify_result_to_string(AvbVBMetaVerifyResult result) {
   }
 
   if (ret == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Unknown AvbVBMetaVerifyResult value.\n");
     ret = "(unknown)";
   }

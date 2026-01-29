@@ -38,6 +38,7 @@
 #include "protocol/Mmc.h"
 #include "protocol/SdHostIo.h"
 #include "sdio.h"
+#include "log.h"
 
 #define SDCARD_ERASE_GROUP_START	32
 #define SDCARD_ERASE_GROUP_END		33
@@ -47,6 +48,7 @@ EFI_STATUS sdio_get(EFI_DEVICE_PATH *p,
 		    EFI_HANDLE *handle,
 		    EFI_SD_HOST_IO_PROTOCOL **sdio)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = EFI_SD_HOST_IO_PROTOCOL_GUID;
 
@@ -57,6 +59,7 @@ EFI_STATUS sdio_get(EFI_DEVICE_PATH *p,
 		return EFI_INVALID_PARAMETER;
 
 	if (!*handle) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->LocateDevicePath, 3, &guid, &p, handle);
 		if (EFI_ERROR(ret))
 			return ret;
@@ -67,6 +70,7 @@ EFI_STATUS sdio_get(EFI_DEVICE_PATH *p,
 
 static BOOLEAN is_valid_card_type(CARD_TYPE type)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return type > UnknownCard && type <= SDMemoryCard2High;
 }
 
@@ -75,22 +79,26 @@ EFI_STATUS sdio_get_card_info(EFI_SD_HOST_IO_PROTOCOL *sdio,
 			      CARD_TYPE *type,
 			      UINT16 *address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct _EFI_EMMC_CARD_INFO_PROTOCOL *info;
 	EFI_GUID guid = EFI_CARD_INFO_PROTOCOL_GUID;
 
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, handle, &guid, (void **)&info);
 	if (EFI_ERROR(ret)) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 //		efi_perror(ret, L"Unable to locate card info protocol");
 		return ret;
 	}
 
 	if (sdio == info->CardData->v1.SdHostIo) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!is_valid_card_type(info->CardData->v1.CardType))
 			return EFI_UNSUPPORTED;
 		*type = info->CardData->v1.CardType;
 		*address = info->CardData->v1.Address;
 	} else if (sdio == info->CardData->v2.SdHostIo) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!is_valid_card_type(info->CardData->v2.CardType))
 			return EFI_UNSUPPORTED;
 		*type = info->CardData->v2.CardType;
@@ -105,6 +113,7 @@ static EFI_STATUS sdio_erase_group(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_LBA start,
 				   EFI_LBA end, UINTN timeout, UINT16 card_address,
 				   BOOLEAN emmc)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 status;
 	CARD_STATUS card_status;
@@ -113,10 +122,12 @@ static EFI_STATUS sdio_erase_group(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_LBA start,
 				emmc ? ERASE_GROUP_START : SDCARD_ERASE_GROUP_START,
 				start, NoData, NULL, 0, ResponseR1, SDIO_DFLT_TIMEOUT, &status);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed set start erase");
 		return ret;
 	}
 	if (status & STATUS_ERROR_MASK) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed set erase group start, status=0x%08x", status);
 		return ret;
 	}
@@ -125,10 +136,12 @@ static EFI_STATUS sdio_erase_group(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_LBA start,
 				emmc ? ERASE_GROUP_END : SDCARD_ERASE_GROUP_END,
 				end, NoData, NULL, 0, ResponseR1, SDIO_DFLT_TIMEOUT, &status);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed set end erase");
 		return ret;
 	}
 	if (status & STATUS_ERROR_MASK) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed set erase group end, status=0x%08x", status);
 		return ret;
 	}
@@ -136,21 +149,25 @@ static EFI_STATUS sdio_erase_group(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_LBA start,
 	ret = uefi_call_wrapper(sdio->SendCommand, 9, sdio, ERASE, 0x80000000,
 				NoData, NULL, 0, ResponseR1, timeout, &status);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Erase command Failed");
 		return ret;
 	}
 	if (status & STATUS_ERROR_MASK) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Erase Failed, status=0x%08x", status);
 		return ret;
 	}
 
 	do {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		pause(1);
 		ret = uefi_call_wrapper(sdio->SendCommand, 9, sdio, SEND_STATUS,
 					card_address << 16, NoData, NULL, 0,
 					ResponseR1, SDIO_DFLT_TIMEOUT,
 					(UINT32 *)&card_status);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed get status");
 			return ret;
 		}
@@ -164,6 +181,7 @@ EFI_STATUS sdio_erase(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_BLOCK_IO *bio,
 		      UINT16 card_address, UINTN erase_grp_size, UINTN erase_timeout,
 		      BOOLEAN emmc)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_LBA left;
 	UINTN timeout;
@@ -176,6 +194,7 @@ EFI_STATUS sdio_erase(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_BLOCK_IO *bio,
 	in such a case we cannot afford a group erase*/
 
 	if ((end - start + 1) < erase_grp_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, start, end);
 		if (EFI_ERROR(ret))
 			error(L"Failed to fill with zeros");
@@ -184,8 +203,10 @@ EFI_STATUS sdio_erase(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_BLOCK_IO *bio,
 
 	left = start % erase_grp_size;
 	if (left) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, start, start + erase_grp_size - left - 1);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to fill with zeros");
 			return ret;
 		}
@@ -194,8 +215,10 @@ EFI_STATUS sdio_erase(EFI_SD_HOST_IO_PROTOCOL *sdio, EFI_BLOCK_IO *bio,
 
 	left = (end + 1) % erase_grp_size;
 	if (left) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, end + 1 - left, end);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to fill with zeros");
 			return ret;
 		}

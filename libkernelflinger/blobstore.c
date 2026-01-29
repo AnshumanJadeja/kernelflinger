@@ -85,16 +85,19 @@ struct blobstore *blobstore_get(void *mem, unsigned int size)
 		return NULL;
 
 	if (memcmp(bs->magic, BLOB_STORE_MAGIC, sizeof(bs->magic))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"bad blobstore magic, probably not a blobstore");
 		return NULL;
 	}
 
 	if (size != bs->total_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"bad size value %u != %u", size, bs->total_size);
 		return NULL;
 	}
 
 	if (bs->version != 1) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"unsupported blobstore version");
 		return NULL;
 	}
@@ -106,6 +109,7 @@ struct blobstore *blobstore_get(void *mem, unsigned int size)
 int blobstore_get_item(struct blobstore *bs, char *key, enum blobtype type,
 		       void **data, unsigned int *size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned char *start;
 	unsigned int hash;
 	unsigned int offset;
@@ -118,20 +122,25 @@ int blobstore_get_item(struct blobstore *bs, char *key, enum blobtype type,
 	debug(L"GET: %a-%d (%d=%d)", key, type, hash, offset);
 
 	if (!offset) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"not found in hash table");
 		return -2;
 	}
 
 	if (offset >= bs->total_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"bad offset in blobstore hash table");
 		return -1;
 	}
 
 	do  {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		mb = (struct metablock *)(start + offset);
 		if (!strncmp((CHAR8 *)key, (CHAR8 *)mb->blob_key, BLOB_KEY_LENGTH) &&
 		    type == mb->blob_type) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (mb->data_offset + mb->data_size > bs->total_size) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"bad offset in blobstore meta block");
 				return -1;
 			}

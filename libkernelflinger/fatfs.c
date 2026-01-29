@@ -32,22 +32,27 @@
 #include "fatfs.h"
 #include "gpt.h"
 #include "ff.h"
+#include "log.h"
 
 static FATSYSTEM g_fatsystem;
 
 VOID debug_ascii(CHAR8 * ch, UINT16 size) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT16 i;
 	CHAR8 *p;
 	p=ch;
 	for(i = 0; i < size;i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"%c", p[i]);
 	}
 }
 VOID debug_hex(UINT32 offset, CHAR8 *data, UINT16 size){
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT16 i;
 	UINT32 off;
 	CHAR8 *d;
 	for(i = 0; i < size/8;i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		off=offset+i*8;
 		d = &data[i*8];
 		debug(L"%x   %x,%x,%x,%x,%x,%x,%x,%x",off, d[0],
@@ -56,14 +61,17 @@ VOID debug_hex(UINT32 offset, CHAR8 *data, UINT16 size){
 	}
 }
 UINT32 fat_getbpb_offset(){
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return g_fatsystem.bpb_offset;
 }
 
 EFI_STATUS fat_readdisk(UINT32 offset, UINT32 len, void *data) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATSYSTEM *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	if (fs == NULL || fs->parti.dio == NULL || fs->parti.bio == NULL)
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"fat_readdisk init fail");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -79,10 +87,12 @@ EFI_STATUS fat_readdisk(UINT32 offset, UINT32 len, void *data) {
 
 EFI_STATUS fat_writedisk( UINT32 offset, UINT32 len, void *data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATSYSTEM *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	if (fs == NULL || fs->parti.bio == NULL)
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"fat_writedisk init fail");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -95,6 +105,7 @@ EFI_STATUS fat_writedisk( UINT32 offset, UINT32 len, void *data)
 static TCHAR * fwuImage = L"/FwuImage.bin";
 EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATSYSTEM  *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	FRESULT f_ret;
@@ -103,42 +114,51 @@ EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
     //find efi system partition to put fw update image
     ret = gpt_get_efi_partition(&fs->parti);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get efi system partition");
 		return ret;
 	}
 	fs->bpb_offset = fs->parti.part.starting_lba*512;
 	ret = fat_readdisk(fs->bpb_offset,512,fs->fatfs.win);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get FAT BPB");
 		return ret;
 	}
 	fs->fatfs.pdrv = 4;
 	if(FR_OK != f_mount(&fs->fatfs,L"/",1)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"the file is not mount success");
 		return EFI_NOT_FOUND;
 	}
 	debug(L"f_mount success");
 	f_ret = f_open(&fp, fwuImage, FA_READ|FA_WRITE);
 	if( f_ret == FR_NO_FILE ) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"%s file is not existing", fwuImage);
 		f_ret = f_open(&fp, fwuImage,FA_READ|FA_WRITE|FA_CREATE_NEW);
 		if (f_ret != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"f_create err:%d", f_ret);
 			return ret;
 		}
 	} else if( f_ret == 0 ) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"open %s success", fwuImage);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"f_open err:%d", f_ret);
 		return ret;
 	}
 	ret = f_write(&fp,data,size,&bsize);
 	if(ret != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"f_write error:%d", ret);
 		return ret;
 	}
 	debug(L"f_write OK:%d", ret);
 	if(size != bsize) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"write %x is not equal %x",size,bsize);
 		return EFI_VOLUME_CORRUPTED;
 	}
@@ -146,6 +166,7 @@ EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
 	ret = f_close(&fp);
 
 	if(ret != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"f_close error:%d", ret);
 		return ret;
 	}
@@ -153,6 +174,7 @@ EFI_STATUS flash_fwupdate(VOID *data, UINTN size)
 }
 EFI_STATUS fat_test()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATSYSTEM  *fs = &g_fatsystem;
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_GUID guid;
@@ -162,14 +184,17 @@ EFI_STATUS fat_test()
 	UINT32 readb;
 	ret = gpt_get_partition_by_label(PRIMARY_LABEL, &fs->parti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get disk information");
 		return ret;
 	}
 	guid = fs->parti.part.type;
 	debug(L"the guid(%x-%x-%x) is matched",guid.Data1,guid.Data2,guid.Data3 );
 	if (0 == CompareGuid(&fs->parti.part.type, &EfiPartTypeSystemPartitionGuid)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"the guid is matched");
 	}else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"can not find Efi system partition");
 	}
 	fs->bpb_offset = fs->parti.part.starting_lba*512;
@@ -177,12 +202,14 @@ EFI_STATUS fat_test()
 	debug(L"bpb_offset is %x",fs->bpb_offset);
 	ret = fat_readdisk(fs->bpb_offset,512,fs->fatfs.win);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get FAT BPB");
 		return ret;
 	}
 	debug_hex(0,fs->fatfs.win,512);
 	fs->fatfs.pdrv = 4;
 	if(FR_OK != f_mount(&fs->fatfs,L"/",1)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"the file is not mount success");
 		return EFI_NOT_FOUND;
 	}
@@ -190,49 +217,62 @@ EFI_STATUS fat_test()
 	debug(L"f_mount success");
 	f_ret = f_open(&fp, L"/fat16.txt",FA_READ);
 	if (!f_ret) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"open fat16.txt success");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"open fat16.txt result %d,", f_ret);
 	}
 	f_ret = f_read(&fp,ch,32,&readb);
 	ch[32] = 0;
 	if (!f_ret) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"read fat16.txt len %d",readb);
 		debug_ascii(ch,32);
 	}else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"read fat16.txt error %d", f_ret);
 	}
 	f_close(&fp);
 	f_ret = f_open(&fp, L"/austin.txt",FA_READ|FA_WRITE);
 	if( f_ret == FR_NO_FILE ) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"/austin.txt file is not existing");
 		f_ret = f_open(&fp, L"/austin.txt",FA_READ|FA_WRITE|FA_CREATE_NEW);
 		if (f_ret != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"f_create err:%d", f_ret);
 			return ret;
 		}
 	} else if( f_ret == 0 ) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"open /austin.txt success");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"f_open err:%d", f_ret);
 		return ret;
 	}
 	INT16 i;
 	for(i = 0;i<26;i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ch[i] = 'a'+i;
 	}
 	for (i = 0; i < 3;i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = f_write(&fp,ch+i*8,8,&readb);
 		if(ret != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"f_write error:%d", ret);
 			break;
 		}
 	}
 	f_ret = f_read(&fp,ch,24,&readb);
 	if (!f_ret) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"read austin.txt len %d",readb);
 		debug_ascii(ch,24);
 	}else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"read austin.txt error %d", f_ret);
 	}
 	f_close(&fp);
@@ -242,11 +282,14 @@ EFI_STATUS fat_test()
 
 
 UINT32 get_fattime() {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_TIME now = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get the current time");
 		return 42<<25|1<<21|1<<16;
 	}

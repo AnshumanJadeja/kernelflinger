@@ -28,6 +28,7 @@
  */
 
 #include <lib.h>
+#include "log.h"
 
 static __inline char *med3(char *, char *, char *, int (*)(const void *, const void *));
 static __inline void swapfunc(char *, char *, size_t, int);
@@ -40,6 +41,7 @@ static __inline void swapfunc(char *, char *, size_t, int);
 	TYPE *pi = (TYPE *) (parmi);	\
 	TYPE *pj = (TYPE *) (parmj);	\
 	do {				\
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		TYPE t = *pi;		\
 		*pi++ = *pj;		\
 		*pj++ = t;		\
@@ -52,6 +54,7 @@ static __inline void swapfunc(char *, char *, size_t, int);
 static __inline void
 swapfunc(char *a, char *b, size_t n, int swaptype)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (swaptype <= 1)
 		swapcode(long, a, b, n)
 	else
@@ -60,6 +63,7 @@ swapfunc(char *a, char *b, size_t n, int swaptype)
 
 #define swap(a, b)				\
 	if (swaptype == 0) {			\
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		long t = *(long *)(a);		\
 		*(long *)(a) = *(long *)(b);	\
 		*(long *)(b) = t;		\
@@ -71,6 +75,7 @@ swapfunc(char *a, char *b, size_t n, int swaptype)
 static __inline char *
 med3(char *a, char *b, char *c, int (*cmp)(const void *, const void *))
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return cmp(a, b) < 0 ?
 		(cmp(b, c) < 0 ? b : (cmp(a, c) < 0 ? c : a ))
 		:(cmp(b, c) > 0 ? b : (cmp(a, c) < 0 ? a : c ));
@@ -79,6 +84,7 @@ med3(char *a, char *b, char *c, int (*cmp)(const void *, const void *))
 void
 qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *))
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
 	int cmp_result, swaptype, swap_cnt;
 	size_t d, r;
@@ -87,6 +93,7 @@ qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *))
 loop:	SWAPINIT(a, es);
 	swap_cnt = 0;
 	if (n < 7) {		/* Insertion sort on smallest arrays */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (pm = (char *)a + es; pm < (char *) a + n * es; pm += es)
 			for (pl = pm; pl > (char *) a && cmp(pl - es, pl) > 0;
 			     pl -= es)
@@ -95,9 +102,11 @@ loop:	SWAPINIT(a, es);
 	}
 	pm = (char *)a + (n / 2) * es; /* Small arrays, middle element */
 	if (n > 7) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		pl = (char *)a;
 		pn = (char *)a + (n - 1) * es;
 		if (n > 40) {	/* Big array, pseudomedian of 9 */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			d = (n / 8) * es;
 			pl = med3(pl, pl + d, pl + 2 * d, cmp);
 			pm = med3(pm - d, pm, pm + d, cmp);
@@ -110,8 +119,11 @@ loop:	SWAPINIT(a, es);
 
 	pc = pd = (char *)a + (n - 1) * es;
 	for (;;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		while (pb <= pc && (cmp_result = cmp(pb, a)) <= 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (cmp_result == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				swap_cnt = 1;
 				swap(pa, pb);
 				pa += es;
@@ -119,7 +131,9 @@ loop:	SWAPINIT(a, es);
 			pb += es;
 		}
 		while (pb <= pc && (cmp_result = cmp(pc, a)) >= 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (cmp_result == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				swap_cnt = 1;
 				swap(pc, pd);
 				pd -= es;
@@ -134,6 +148,7 @@ loop:	SWAPINIT(a, es);
 		pc -= es;
 	}
 	if (swap_cnt == 0) {  /* Switch to insertion sort */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (pm = (char *) a + es; pm < (char *) a + n * es; pm += es)
 			for (pl = pm; pl > (char *) a && cmp(pl - es, pl) > 0;
 			     pl -= es)
@@ -149,6 +164,7 @@ loop:	SWAPINIT(a, es);
 	if ((r = pb - pa) > es)
 		qsort(a, r / es, es, cmp);
 	if ((r = pd - pc) > es) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Iterate rather than recurse to save stack space */
 		a = pn - r;
 		n = r / es;

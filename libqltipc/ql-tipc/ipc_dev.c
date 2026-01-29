@@ -26,6 +26,7 @@
 #include <trusty/trusty_ipc.h>
 #include <trusty/trusty_mem.h>
 #include <trusty/util.h>
+#include "log.h"
 
 #define NS_PTE_PHYSADDR(pte) ((pte)&0xFFFFFFFFF000ULL)
 
@@ -66,6 +67,7 @@ static size_t iovec_size(const struct trusty_ipc_iovec* iovs, size_t iovs_cnt) {
     trusty_assert(iovs);
 
     for (i = 0; i < iovs_cnt; i++) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         cb += iovs[i].len;
     }
 
@@ -76,12 +78,14 @@ static size_t iovec_to_buf(void* buf,
                            size_t buf_len,
                            const struct trusty_ipc_iovec* iovs,
                            size_t iovs_cnt) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     size_t i;
     size_t buf_pos = 0;
 
     trusty_assert(iovs);
 
     for (i = 0; i < iovs_cnt; i++) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t to_copy = (size_t)iovs[i].len;
 
         if (!to_copy)
@@ -106,6 +110,7 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec* iovs,
                            size_t iovs_cnt,
                            const void* buf,
                            size_t buf_len) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     size_t i;
     size_t copied = 0;
     const uint8_t* buf_ptr = buf;
@@ -117,6 +122,7 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec* iovs,
         return 0;
 
     for (i = 0; i < iovs_cnt; i++) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         size_t to_copy = buf_len;
 
         if (to_copy > iovs[i].len)
@@ -141,7 +147,9 @@ static size_t buf_to_iovec(const struct trusty_ipc_iovec* iovs,
 static int check_response(struct trusty_ipc_dev* dev,
                           volatile struct trusty_ipc_cmd_hdr* hdr,
                           uint16_t cmd) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (hdr->opcode != (cmd | QL_TIPC_DEV_RESP)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* malformed response */
         trusty_error("%s: malformed response cmd: 0x%x\n", __func__,
                      hdr->opcode);
@@ -149,6 +157,7 @@ static int check_response(struct trusty_ipc_dev* dev,
     }
 
     if (hdr->status) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* secure OS responded with error: TODO need error code */
         trusty_error("%s: cmd 0x%x: status = %d\n", __func__, hdr->opcode,
                      hdr->status);
@@ -173,6 +182,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
     /* allocate device context */
     dev = trusty_calloc(1, sizeof(*dev));
     if (!dev) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed to allocate Trusty IPC device\n", __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
@@ -182,6 +192,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
     dev->buf_size = shared_buf_size;
     dev->buf_vaddr = trusty_alloc_pages(shared_buf_size / PAGE_SIZE);
     if (!dev->buf_vaddr) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed to allocate shared memory\n", __func__);
         rc = TRUSTY_ERR_NO_MEMORY;
         goto err_alloc_pages;
@@ -190,6 +201,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
     /* Get memory attributes */
     rc = trusty_encode_page_info(&dev->buf_ns, dev->buf_vaddr);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed to get shared memory attributes\n", __func__);
         rc = TRUSTY_ERR_GENERIC;
         goto err_page_info;
@@ -198,6 +210,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
     rc = trusty_dev_share_memory(dev->tdev, &dev->buf_id, &dev->buf_ns,
                                  dev->buf_size / PAGE_SIZE);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to share memory\n", __func__, rc);
         rc = TRUSTY_ERR_SECOS_ERR;
         goto err_share_memory;
@@ -205,6 +218,7 @@ int trusty_ipc_dev_create(struct trusty_ipc_dev** idev,
 
     rc = trusty_dev_init_ipc(dev->tdev, dev->buf_id, dev->buf_size);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to create Trusty IPC device\n", __func__,
                      rc);
         rc = TRUSTY_ERR_SECOS_ERR;
@@ -220,6 +234,7 @@ err_page_info:
 err_create_sec_dev:
     rc2 = trusty_dev_reclaim_memory(dev->tdev, dev->buf_id);
     if (rc2) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_fatal("%s: failed to remove shared memory\n", __func__);
     }
 err_share_memory:
@@ -230,6 +245,7 @@ err_alloc_pages:
 }
 
 void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     trusty_assert(dev);
 
@@ -239,11 +255,13 @@ void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
     rc = trusty_dev_shutdown_ipc(dev->tdev, dev->buf_id, dev->buf_size);
     trusty_assert(!rc);
     if (rc != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: failed (%d) to shutdown Trusty IPC device\n",
                      __func__, rc);
     }
     rc = trusty_dev_reclaim_memory(dev->tdev, dev->buf_id);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_fatal("%s: failed to remove shared memory\n", __func__);
     }
     trusty_free_pages(dev->buf_vaddr, dev->buf_size / PAGE_SIZE);
@@ -253,6 +271,7 @@ void trusty_ipc_dev_shutdown(struct trusty_ipc_dev* dev) {
 int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
                            const char* port,
                            uint64_t cookie) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     size_t port_len;
     volatile struct trusty_ipc_cmd_hdr* cmd;
@@ -266,6 +285,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
     /* check port name length */
     port_len = trusty_strlen(port) + 1;
     if (port_len > (dev->buf_size - sizeof(*cmd) + sizeof(*req))) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* it would not fit into buffer */
         trusty_error("%s: port name is too long (%zu)\n", __func__, port_len);
         return TRUSTY_ERR_INVALID_ARGS;
@@ -287,6 +307,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
     rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* secure OS returned an error */
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return TRUSTY_ERR_SECOS_ERR;
@@ -294,6 +315,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_CONNECT);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: connect cmd failed (%d)\n", __func__, rc);
         return rc;
     }
@@ -303,6 +325,7 @@ int trusty_ipc_dev_connect(struct trusty_ipc_dev* dev,
 }
 
 int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     volatile struct trusty_ipc_cmd_hdr* cmd;
 
@@ -321,12 +344,14 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
     rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return TRUSTY_ERR_SECOS_ERR;
     }
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_DISCONNECT);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: disconnect cmd failed (%d)\n", __func__, rc);
         return rc;
     }
@@ -337,6 +362,7 @@ int trusty_ipc_dev_close(struct trusty_ipc_dev* dev, handle_t handle) {
 }
 
 bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     bool has_event;
     volatile struct trusty_ipc_cmd_hdr* cmd;
@@ -356,17 +382,20 @@ bool trusty_ipc_dev_has_event(struct trusty_ipc_dev* dev, handle_t chan) {
     rc = trusty_dev_exec_fc_ipc(dev->tdev, dev->buf_id,
                                 sizeof(*cmd) + cmd->payload_len);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return false;
     }
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_FC_HAS_EVENT);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: get event cmd failed (%d)\n", __func__, rc);
         return false;
     }
 
     if ((size_t)cmd->payload_len < sizeof(has_event)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: invalid response length (%zd)\n", __func__,
                      (size_t)cmd->payload_len);
         return false;
@@ -400,17 +429,20 @@ int trusty_ipc_dev_get_event(struct trusty_ipc_dev* dev,
     rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return TRUSTY_ERR_SECOS_ERR;
     }
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_GET_EVENT);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: get event cmd failed (%d)\n", __func__, rc);
         return rc;
     }
 
     if ((size_t)cmd->payload_len < sizeof(*event)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: invalid response length (%zd)\n", __func__,
                      (size_t)cmd->payload_len);
         return TRUSTY_ERR_SECOS_ERR;
@@ -425,6 +457,7 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev* dev,
                         handle_t chan,
                         const struct trusty_ipc_iovec* iovs,
                         size_t iovs_cnt) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     size_t msg_size;
     volatile struct trusty_ipc_cmd_hdr* cmd;
@@ -433,6 +466,7 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev* dev,
     /* calc message length */
     msg_size = iovec_size(iovs, iovs_cnt);
     if (msg_size > dev->buf_size - sizeof(*cmd)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* msg is too big to fit provided buffer */
         trusty_error("%s: chan %d: msg is too long (%zu)\n", __func__, chan,
                      msg_size);
@@ -455,12 +489,14 @@ int trusty_ipc_dev_send(struct trusty_ipc_dev* dev,
     rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return TRUSTY_ERR_SECOS_ERR;
     }
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_SEND);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: send msg failed (%d)\n", __func__, rc);
     }
 
@@ -471,6 +507,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
                         handle_t chan,
                         const struct trusty_ipc_iovec* iovs,
                         size_t iovs_cnt) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     size_t copied;
     volatile struct trusty_ipc_cmd_hdr* cmd;
@@ -488,12 +525,14 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
     rc = trusty_dev_exec_ipc(dev->tdev, dev->buf_id,
                              sizeof(*cmd) + cmd->payload_len);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: secure OS returned (%d)\n", __func__, rc);
         return TRUSTY_ERR_SECOS_ERR;
     }
 
     rc = check_response(dev, cmd, QL_TIPC_DEV_RECV);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: recv cmd failed (%d)\n", __func__, rc);
         return rc;
     }
@@ -502,6 +541,7 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
     copied = buf_to_iovec(iovs, iovs_cnt, (const void*)cmd->payload,
                           cmd->payload_len);
     if (copied != (size_t)cmd->payload_len) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* msg is too big to fit provided buffer */
         trusty_error("%s: chan %d: buffer too small (%zu vs. %zu)\n", __func__,
                      chan, copied, (size_t)cmd->payload_len);
@@ -512,5 +552,6 @@ int trusty_ipc_dev_recv(struct trusty_ipc_dev* dev,
 }
 
 void trusty_ipc_dev_idle(struct trusty_ipc_dev* dev, bool event_poll) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_idle(dev->tdev, event_poll);
 }

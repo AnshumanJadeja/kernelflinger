@@ -35,6 +35,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include "timer.h"
+#include "log.h"
 
 #define BOOT_STAGE_FIRMWARE "FWS"
 #define BOOT_STAGE_OSLOADER_INIT "LIS"
@@ -51,9 +52,11 @@ static BOOLEAN  time_stamp = TRUE;
 
 typedef union
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint64_t val;
 	struct
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		uint32_t lo;
 		uint32_t hi;
 	};
@@ -63,6 +66,7 @@ typedef union
 static uint64_t __attribute__((unused,always_inline))
 __RDMSR (unsigned idx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	msr_t msr;
 
 	asm volatile ("rdmsr" : "=a" (msr.lo), "=d" (msr.hi) : "c" (idx));
@@ -72,6 +76,7 @@ __RDMSR (unsigned idx)
 static uint64_t __attribute__((unused,always_inline))
 __RDTSC (void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t lo, hi;
 
 	asm volatile ("rdtsc" : "=a" (lo), "=d" (hi));
@@ -79,12 +84,14 @@ __RDTSC (void)
 }
 
 uint64_t rdtsc(void) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return __RDTSC();
 }
 
 /* return mhz */
 uint32_t get_cpu_freq(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t cpu_freq;
 	uint32_t max_nb_ratio;
 	msr_t platform_info;
@@ -98,11 +105,14 @@ uint32_t get_cpu_freq(void)
 
 uint32_t get_tsc_mhz(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t tsc_mhz = 0;
 	uint32_t reg[4] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	cpuid(0x15, reg);
 	if (reg[0] && reg[1] && reg[2]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		tsc_mhz = (uint32_t)(((uint64_t)reg[2] * reg[1] / reg[0] / 1000000));
 	}
 
@@ -111,12 +121,14 @@ uint32_t get_tsc_mhz(void)
 
 uint32_t boottime_in_msec(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint64_t tick, bt_us;
 	uint32_t bt_ms;
 	uint32_t tsc_mhz;
 
 	tsc_mhz = get_tsc_mhz();
 	if (tsc_mhz == 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		 time_stamp = FALSE;
 		 return 0;
 	}
@@ -130,6 +142,7 @@ uint32_t boottime_in_msec(void)
 
 void set_boottime_stamp(int num)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if ((num < 0) || (num >= TM_POINT_LAST) || (time_stamp == FALSE))
 		return;
 
@@ -138,12 +151,15 @@ void set_boottime_stamp(int num)
 
 void set_efi_enter_point(unsigned int value)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	efi_enter_point = value;
 }
 
 void construct_stages_boottime(CHAR8 *time_str, size_t buf_len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 interval_str[16] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (!time_str)
 		return;

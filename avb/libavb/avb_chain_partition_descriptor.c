@@ -24,9 +24,11 @@
 
 #include "avb_chain_partition_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_chain_partition_descriptor_validate_and_byteswap(
     const AvbChainPartitionDescriptor* src, AvbChainPartitionDescriptor* dest) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbChainPartitionDescriptor));
@@ -36,6 +38,7 @@ bool avb_chain_partition_descriptor_validate_and_byteswap(
     return false;
 
   if (dest->parent_descriptor.tag != AVB_DESCRIPTOR_TAG_CHAIN_PARTITION) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid tag for chain partition descriptor.\n");
     return false;
   }
@@ -45,6 +48,7 @@ bool avb_chain_partition_descriptor_validate_and_byteswap(
   dest->public_key_len = avb_be32toh(dest->public_key_len);
 
   if (dest->rollback_index_location < 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Invalid rollback index location value.\n");
     return false;
   }
@@ -53,10 +57,12 @@ bool avb_chain_partition_descriptor_validate_and_byteswap(
   expected_size = sizeof(AvbChainPartitionDescriptor) - sizeof(AvbDescriptor);
   if (!avb_safe_add_to(&expected_size, dest->partition_name_len) ||
       !avb_safe_add_to(&expected_size, dest->public_key_len)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Overflow while adding up sizes.\n");
     return false;
   }
   if (expected_size > dest->parent_descriptor.num_bytes_following) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_error("Descriptor payload size overflow.\n");
     return false;
   }

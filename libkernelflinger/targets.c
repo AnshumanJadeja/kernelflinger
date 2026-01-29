@@ -32,34 +32,52 @@
 
 #include <lib.h>
 #include <targets.h>
+#include "log.h"
 
 static struct target {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         enum boot_target bt;
         const CHAR16 *name;
         const CHAR16 *description;
 } TARGETS[] = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { NORMAL_BOOT,    L"",           L"Android" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { NORMAL_BOOT,    L"boot",       L"Android" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { RECOVERY,       L"recovery",   L"Recovery OS" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { FASTBOOT,       L"bootloader", L"Fastboot mode" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { FASTBOOT,       L"fastboot",   L"Fastboot mode" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { DNX,            L"dnx",        L"Download and Execute mode" },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef CRASHMODE_USE_ADB
         { CRASHMODE,      L"crashmode",  L"Crashmode" },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #else
         { CRASHMODE,      NULL,          L"Crashmode" },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
         /* Internal only */
         { CHARGER,        L"charging",   L"Charger mode" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { ESP_BOOTIMAGE,  NULL,          L"ESP bootimage" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { ESP_EFI_BINARY, NULL,          L"ESP efi binary" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { MEMORY,         NULL,          L"RAM bootimage" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { POWER_OFF,      NULL,          L"Power Off" },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { EXIT_SHELL,     NULL,          L"Exit to shell" },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static struct target *find_entry(enum boot_target bt)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TARGETS); i++)
@@ -71,21 +89,25 @@ static struct target *find_entry(enum boot_target bt)
 
 const CHAR16 *boot_target_name(enum boot_target bt)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct target *target = find_entry(bt);
         return target ? target->name : NULL;
 }
 
 const CHAR16 *boot_target_description(enum boot_target bt)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct target *target = find_entry(bt);
         return target ? target->description : L"Unknown target";
 }
 
 enum boot_target name_to_boot_target(const CHAR16 *str)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TARGETS); i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (!TARGETS[i].name)
                         continue;
                 if (!StrCmp(str, TARGETS[i].name))
@@ -97,9 +119,11 @@ enum boot_target name_to_boot_target(const CHAR16 *str)
 
 EFI_STATUS reboot_to_target(enum boot_target bt, EFI_RESET_TYPE type)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const CHAR16 *name;
 
         if (bt == POWER_OFF) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 halt_system();
                 return EFI_DEVICE_ERROR;
         }

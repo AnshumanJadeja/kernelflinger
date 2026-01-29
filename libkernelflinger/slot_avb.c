@@ -39,6 +39,7 @@
 #include <endian.h>
 #include <libavb_ab.h>
 #include <libavb_user/uefi_avb_ops.h>
+#include "log.h"
 
 /* Constants.  */
 const CHAR16 *SLOT_STORAGE_PART = MISC_LABEL;
@@ -67,14 +68,17 @@ static AvbABSlotData *slots = boot_ctrl.slot_info;
 
 static const CHAR16 *label_with_suffix(const CHAR16 *label, const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static CHAR16 res_label[MAX_LABEL_LEN] = {'\0'};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN label_len, i, j;
 
 	label_len = StrLen(label);
 
 	res_label[0] = '\0';
 	if ((label_len + SUFFIX_LEN + 1) * sizeof(CHAR16) > sizeof(res_label)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Not enough space to build the actual label");
 		return res_label;
 	}
@@ -91,14 +95,17 @@ static const CHAR16 *label_with_suffix(const CHAR16 *label, const char *suffix)
 
 UINTN get_part_nb_slot(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 	const CHAR16 *new_label;
 	struct gpt_partition_interface gparti;
 
 	for (i = 0; i < MAX_NB_SLOT; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		new_label = label_with_suffix(label, suffixes[i]);
 		if (!new_label) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to create %s label with suffix", label);
 			return 0;
 		}
@@ -107,6 +114,7 @@ UINTN get_part_nb_slot(const CHAR16 *label)
 		if (ret == EFI_NOT_FOUND)
 			return i;
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to lookup for %s partition");
 			return 0;
 		}
@@ -117,6 +125,7 @@ UINTN get_part_nb_slot(const CHAR16 *label)
 
 static inline EFI_STATUS sync_boot_ctrl(BOOLEAN out)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (out)
 		avb_ab_data_read(&ab_ops, &boot_ctrl);
 	else
@@ -127,16 +136,19 @@ static inline EFI_STATUS sync_boot_ctrl(BOOLEAN out)
 
 static EFI_STATUS read_boot_ctrl(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return sync_boot_ctrl(TRUE);
 }
 
 static EFI_STATUS write_boot_ctrl(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return sync_boot_ctrl(FALSE);
 }
 
 static BOOLEAN is_suffix(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < MAX_NB_SLOT; i++)
@@ -148,12 +160,15 @@ static BOOLEAN is_suffix(const char *suffix)
 
 static slot_metadata_t *get_slot(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!use_slot()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Slot management is disabled");
 		return NULL;
 	}
 
 	if (!suffix || !*suffix || !is_suffix(suffix)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid slot suffix");
 		return NULL;
 	}
@@ -164,6 +179,7 @@ static slot_metadata_t *get_slot(const char *suffix)
 
 static slot_metadata_t *highest_priority_slot(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, cur;
 
 	for (cur = 0, i = 1; i < MAX_NB_SLOT; i++)
@@ -177,6 +193,7 @@ static slot_metadata_t *highest_priority_slot(void)
 
 static EFI_STATUS disable_slot(slot_metadata_t *slot, BOOLEAN store)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	memset_s(slot, sizeof(*slot), 0, sizeof(*slot));
@@ -194,6 +211,7 @@ static EFI_STATUS disable_slot(slot_metadata_t *slot, BOOLEAN store)
 
 static EFI_STATUS select_highest_priority_slot(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	slot_metadata_t *slot;
 
@@ -204,6 +222,7 @@ static EFI_STATUS select_highest_priority_slot(void)
 
 	if (slot->tries_remaining == 0 &&
 		slot->successful_boot == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = disable_slot(slot, TRUE);
 		if (EFI_ERROR(ret))
 			return ret;
@@ -216,6 +235,7 @@ static EFI_STATUS select_highest_priority_slot(void)
 
 EFI_STATUS slot_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 	UINTN nb_slot;
@@ -230,6 +250,7 @@ EFI_STATUS slot_init(void)
 	ab_ops.ops = ops;
 
 	for (i = 0; i < MAX_NB_SLOT; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		suffixes[i] = _suffixes + i * sizeof(SUFFIX_FMT);
 		efi_snprintf((CHAR8 *)suffixes[i], sizeof(SUFFIX_FMT),
 			     (CHAR8 *)SUFFIX_FMT, SLOT_START_CHAR + i);
@@ -237,6 +258,7 @@ EFI_STATUS slot_init(void)
 
 	nb_slot = get_part_nb_slot(BOOT_LABEL);
 	if (!nb_slot) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Current partition scheme does not have BOOT
 		 * partition with slots. Disable slot management. */
 		is_used = FALSE;
@@ -248,6 +270,7 @@ EFI_STATUS slot_init(void)
 
 	ret = read_boot_ctrl();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret == EFI_NOT_FOUND)
 			return EFI_SUCCESS;
 		efi_perror(ret, L"Failed to read A/B metadata");
@@ -255,14 +278,17 @@ EFI_STATUS slot_init(void)
 	}
 
 	if (!boot_ctrl.magic) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"No A/B metadata");
 		return EFI_SUCCESS;
 	}
 	debug(L"Avb magic 0x%x", boot_ctrl.magic);
 
 	if (boot_ctrl.magic == BOOT_CTRL_MAGIC) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Avb magic is right");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"A/B metadata is corrupted, re-initialize");
 		slot_reset();
 	}
@@ -273,11 +299,13 @@ EFI_STATUS slot_init(void)
 
 BOOLEAN use_slot(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return is_used;
 }
 
 const CHAR16 *slot_label(const CHAR16 *base)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const CHAR16 *label;
 	UINTN nb_slot;
 	char *suffix;
@@ -290,6 +318,7 @@ const CHAR16 *slot_label(const CHAR16 *base)
 
 	nb_slot = get_part_nb_slot(base);
 	if (!nb_slot) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/*
 		 * Current partition scheme does not have slots.
 		 */
@@ -307,6 +336,7 @@ const CHAR16 *slot_label(const CHAR16 *base)
 
 const CHAR16 *slot_base(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static CHAR16 res_base[MAX_LABEL_LEN];
 	UINTN label_len, base_len;
@@ -337,13 +367,16 @@ const CHAR16 *slot_base(const CHAR16 *label)
 
 const char *slot_get_active(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	AvbSlotVerifyData *data;
 	const char *requested_partitions[] = {"boot", NULL};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if (!use_slot())
 		return NULL;
 
 	if (cur_suffix) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"slot_get_active direct return %a", cur_suffix);
 		return cur_suffix;
 	}
@@ -361,8 +394,10 @@ const char *slot_get_active(void)
 
 EFI_STATUS slot_set_active(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	slot_metadata_t *slot;
 	const char *suffix_translate[] = {"_a", "_b"};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	if(*suffix == 'a')
 		suffix = suffix_translate[0];
@@ -386,6 +421,7 @@ EFI_STATUS slot_set_active(const char *suffix)
 
 UINTN slot_get_suffixes(char **suffixes_p[])
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!use_slot())
 		return 0;
 
@@ -395,6 +431,7 @@ UINTN slot_get_suffixes(char **suffixes_p[])
 
 const char *slot_get_successful(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	slot_metadata_t *slot;
 
 	slot = get_slot(suffix);
@@ -406,6 +443,7 @@ const char *slot_get_successful(const char *suffix)
 
 const char *slot_get_unbootable(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	slot_metadata_t *slot;
 
 	slot = get_slot(suffix);
@@ -417,6 +455,7 @@ const char *slot_get_unbootable(const char *suffix)
 
 const char *slot_get_retry_count(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char res[2];
 	slot_metadata_t *slot;
 	int len;
@@ -435,6 +474,7 @@ const char *slot_get_retry_count(const char *suffix)
 
 BOOLEAN slot_get_verity_corrupted(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!use_slot())
 		return FALSE;
 
@@ -443,12 +483,14 @@ BOOLEAN slot_get_verity_corrupted(void)
 
 EFI_STATUS slot_set_verity_corrupted(BOOLEAN corrupted)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	corrupted = !corrupted;
 	return EFI_SUCCESS;
 }
 
 EFI_STATUS slot_reset(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN nb_slot;
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
@@ -461,6 +503,7 @@ EFI_STATUS slot_reset(void)
 	 * Init avb for fastboot mode, and update misc with default value.
 	 */
 	if (ops == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ops = uefi_avb_ops_new();
 		if (ops == NULL)
 			error(L"Error allocating AvbOps when slot_reset.");
@@ -469,6 +512,7 @@ EFI_STATUS slot_reset(void)
 
 	nb_slot = get_part_nb_slot(BOOT_LABEL);
 	if (!nb_slot) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/*
 		 * Current partition scheme does not have BOOT
 		 * partition with slots. Disable slot management.
@@ -478,12 +522,14 @@ EFI_STATUS slot_reset(void)
 	}
 
 	if (nb_slot > MAX_NB_SLOT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Current partition scheme has unexpected number of slots");
 		return EFI_UNSUPPORTED;
 	}
 
 	ret = gpt_get_partition_by_label(MISC_LABEL, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to lookup for MISC partition");
 		is_used = FALSE;
 		return EFI_SUCCESS;
@@ -497,11 +543,13 @@ EFI_STATUS slot_reset(void)
 
 EFI_STATUS slot_restore(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return use_slot() ? write_boot_ctrl() : EFI_SUCCESS;
 }
 
 EFI_STATUS slot_boot(__attribute__((__unused__)) enum boot_target target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/*
 	 * Just set misc info by avb.
 	 */
@@ -510,6 +558,7 @@ EFI_STATUS slot_boot(__attribute__((__unused__)) enum boot_target target)
 
 EFI_STATUS slot_boot_failed(enum boot_target target)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	slot_metadata_t *slot;
 
@@ -521,6 +570,7 @@ EFI_STATUS slot_boot_failed(enum boot_target target)
 
 	slot = get_slot(cur_suffix);
 	if (!slot) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"No active slot");
 		return EFI_NOT_FOUND;
 	}
@@ -536,6 +586,7 @@ EFI_STATUS slot_boot_failed(enum boot_target target)
 
 void slot_set_active_cached(const char *suffix)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (suffixes == NULL || SUFFIX_INDEX(suffix) < 0 || SUFFIX_INDEX(suffix) >= (int)(sizeof(suffixes) / sizeof(suffixes[0])))
 		cur_suffix = NULL;
 	else
@@ -545,6 +596,7 @@ void slot_set_active_cached(const char *suffix)
 
 EFI_STATUS slot_init_use_misc(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!use_slot())
@@ -552,6 +604,7 @@ EFI_STATUS slot_init_use_misc(void)
 
 	ret = read_boot_ctrl();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret == EFI_NOT_FOUND)
 			return EFI_SUCCESS;
 		efi_perror(ret, L"Failed to read A/B metadata");
@@ -559,6 +612,7 @@ EFI_STATUS slot_init_use_misc(void)
 	}
 
 	if (!boot_ctrl.magic) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"No A/B metadata");
 		return EFI_SUCCESS;
 	}
@@ -573,7 +627,9 @@ EFI_STATUS slot_init_use_misc(void)
 
 EFI_STATUS disable_slot_by_index(UINT8 slot_index)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (slot_index >= MAX_NB_SLOT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid slot id %d", (int)slot_index);
 		return EFI_INVALID_PARAMETER;
 	}

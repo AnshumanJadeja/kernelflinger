@@ -32,6 +32,7 @@
 
 #include "lib.h"
 #include "vars.h"
+#include "log.h"
 
 static const char *VENDOR_IMG_NAME = "splash_intel";
 
@@ -41,10 +42,12 @@ static UINTN wmargin;
 static UINTN hmargin;
 
 static EFI_STATUS ux_init_screen() {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static BOOLEAN initialized;
 	EFI_STATUS ret;
 
 	if (!initialized) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		uefi_call_wrapper(ST->ConOut->Reset, 2, ST->ConOut, FALSE);
 		uefi_call_wrapper(ST->ConOut->SetAttribute, 2, ST->ConOut,
 				  EFI_WHITE | EFI_BACKGROUND_BLACK);
@@ -55,6 +58,7 @@ static EFI_STATUS ux_init_screen() {
 
 	ret = ui_init(&swidth, &sheight);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to setup the graphical mode");
 		return ret;
 	}
@@ -68,36 +72,54 @@ static EFI_STATUS ux_init_screen() {
 
 static EFI_STATUS installer_display_text()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN width, height, x, y, linesarea, colsarea;
 	ui_image_t *vendor;
 	EFI_STATUS ret;
 	ui_textline_t ui_texts[] = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "Celadon Installer Notice:",		  TRUE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_YELLOW, "Warning: You are installing celadon.",  FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_YELLOW, "All data on device will be destroyed!", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "To continue installing, press one of the following key:",	FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "UP/PG UP/RIGHT/HOME",	TRUE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTGRAY, "To quit press one of the following key or wait timeout",	FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_LIGHTRED, "DOWN/PG DOWN/LEFT/END",	TRUE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ &COLOR_WHITE, "", FALSE },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ NULL, NULL, FALSE }
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	};
 	ui_textline_t *texts[2] =  {ui_texts, NULL};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	ui_clear_screen();
 
 	vendor = ui_image_get(VENDOR_IMG_NAME);
 	if (!vendor) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(EFI_UNSUPPORTED, L"Unable to load '%a' image",
 			   VENDOR_IMG_NAME);
 		return EFI_UNSUPPORTED;
 	}
 
 	if (swidth > sheight) {	/* Landscape orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Display splash scaled on the left half of the screen,
 		 * text area on the right */
 		width = (swidth / 2) - (2 * wmargin);
@@ -106,6 +128,7 @@ static EFI_STATUS installer_display_text()
 		ui_image_draw_scale(vendor, wmargin, y , width, height);
 		x = swidth / 2 + wmargin;
 	} else {		/* Portrait orientation. */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Display splash on the top third of the screen,
 		 * text area below it */
 		height = sheight / 3;
@@ -127,6 +150,7 @@ static EFI_STATUS installer_display_text()
 }
 
 static EFI_STATUS clear_text() {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (swidth > sheight)	/* Landscape orientation. */
 		return ui_clear_area(swidth / 2, hmargin,
 				     swidth / 2, sheight - (2 * hmargin));
@@ -139,10 +163,12 @@ static EFI_STATUS clear_text() {
 
 EFI_STATUS ux_prompt_user_confirm()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	ui_events_t event;
 
 	if (is_running_on_kvm()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		info(L"installer runs on KVM, skip user confirm");
 		return EFI_SUCCESS;
 	}
@@ -158,6 +184,7 @@ EFI_STATUS ux_prompt_user_confirm()
 	event = ui_wait_for_input(TIMEOUT_SECS);
 	debug(L"key = %d", event);
 	if(event != EV_UP) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		info(L"Installing is stopped by user or timeout(30s)");
 		goto out;
 	}

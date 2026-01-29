@@ -34,38 +34,46 @@
 #include "ui.h"
 
 int avb_memcmp(const void* src1, const void* src2, size_t n) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return (int)CompareMem((VOID*)src1, (VOID*)src2, (UINTN)n);
 }
 
 int avb_strcmp(const char* s1, const char* s2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return (int)strcmpa((CHAR8*)s1, (CHAR8*)s2);
 }
 
 void* avb_memcpy(void* dest, const void* src, size_t n) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   CopyMem(dest, (VOID*)src, (UINTN)n);
   return dest;
 }
 
 void* avb_memset(void* dest, const int c, size_t n) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   SetMem(dest, (UINTN)n, (UINT8)c);
   return dest;
 }
 
 void avb_print(const char* message) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   CHAR16* p = NULL;
 
   p = stra_to_str((const CHAR8 *)message);
   if (p != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     log(L"%s", p);
     FreePool(p);
   }
 }
 
 void avb_printv(const char* message, ...) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   va_list ap;
 
   va_start(ap, message);
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     avb_print(message);
     message = va_arg(ap, const char*);
   } while (message != NULL);
@@ -73,10 +81,12 @@ void avb_printv(const char* message, ...) {
 }
 
 void avb_abort(void) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_print("\nABORTING...\n");
   uefi_call_wrapper(BS->Stall, 1, 5 * 1000 * 1000);
   uefi_call_wrapper(BS->Exit, 4, NULL, EFI_NOT_FOUND, 0, NULL);
   while (true) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ;
   }
 }
@@ -84,19 +94,24 @@ void avb_abort(void) {
 #ifdef USE_UI
 void avb_print_ui(const char* message)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   CHAR16* p = stra_to_str(message);
   if (p != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ui_error(p);
     FreePool(p);
   }
 }
 
 void avb_printv_ui(const char* message, ...) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   va_list ap;
 
   if (ui_is_ready()) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     va_start(ap, message);
     do {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       avb_print_ui(message);
       message = va_arg(ap, const char*);
     } while (message != NULL);
@@ -106,12 +121,14 @@ void avb_printv_ui(const char* message, ...) {
 #endif
 
 void* avb_malloc_(size_t size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS err;
   void* x;
 
   err = uefi_call_wrapper(
       BS->AllocatePool, 3, EfiBootServicesData, (UINTN)size, &x);
   if (EFI_ERROR(err)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return NULL;
   }
 
@@ -119,20 +136,24 @@ void* avb_malloc_(size_t size) {
 }
 
 void avb_free(void* ptr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS err;
   err = uefi_call_wrapper(BS->FreePool, 1, ptr);
 
   if (EFI_ERROR(err)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Print(L"Warning: Bad avb_free: %r\n", err);
     uefi_call_wrapper(BS->Stall, 1, 3 * 1000 * 1000);
   }
 }
 
 size_t avb_strlen(const char* str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return strlena((CHAR8*)str);
 }
 
 uint32_t avb_div_by_10(uint64_t* dividend) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t rem = (uint32_t)(*dividend % 10);
   *dividend /= 10;
   return rem;

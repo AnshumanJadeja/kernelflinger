@@ -2,6 +2,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include "efilinux.h"
+#include "log.h"
 
 /**
  * memory_map - Allocate and fill out an array of memory descriptors
@@ -19,6 +20,7 @@ EFI_STATUS
 memory_map(EFI_MEMORY_DESCRIPTOR **map_buf, UINTN *map_size,
            UINTN *map_key, UINTN *desc_size, UINT32 *desc_version)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS err;
 
         *map_size = sizeof(**map_buf) * 31;
@@ -36,6 +38,7 @@ get_map:
         err = allocate_pool(EfiLoaderData, *map_size,
                             (void **)map_buf);
         if (err != EFI_SUCCESS) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Failed to allocate pool for memory map");
                 goto failed;
         }
@@ -43,7 +46,9 @@ get_map:
         err = get_memory_map(map_size, *map_buf, map_key,
                              desc_size, desc_version);
         if (err != EFI_SUCCESS) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (err == EFI_BUFFER_TOO_SMALL) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /*
                          * 'map_size' has been updated to reflect the
                          * required size of a map buffer.
@@ -73,6 +78,7 @@ failed:
  */
 EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN low)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN map_size, map_key, desc_size;
         EFI_MEMORY_DESCRIPTOR *map_buf;
         UINTN d, map_end;
@@ -89,6 +95,7 @@ EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN 
         map_end = (UINTN)map_buf + map_size;
 
         for (; d < map_end; d += desc_size) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_MEMORY_DESCRIPTOR *desc;
                 EFI_PHYSICAL_ADDRESS start, end, aligned;
 
@@ -104,9 +111,11 @@ EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN 
 
                 /* Low-memory is super-precious! */
                 if (!low) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         if (end <= 1 << 20)
                                 continue;
                         if (start < 1 << 20) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 size -= (1 << 20) - start;
                                 start = (1 << 20);
                         }
@@ -117,9 +126,11 @@ EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN 
                 aligned = (start + align -1) & ~(align -1);
 
                 if ((aligned + size) <= end) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         err = allocate_pages(AllocateAddress, EfiLoaderData,
                                              nr_pages, &aligned);
                         if (err == EFI_SUCCESS) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 *addr = aligned;
                                 break;
                         }
@@ -131,6 +142,7 @@ EFI_STATUS emalloc(UINTN size, UINTN align, EFI_PHYSICAL_ADDRESS *addr, BOOLEAN 
 
 fail:
         if (map_buf) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 free_pool(map_buf);
         }
         return err;
@@ -144,6 +156,7 @@ fail:
  */
 void efree(EFI_PHYSICAL_ADDRESS memory, UINTN size)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN nr_pages = EFI_SIZE_TO_PAGES(size);
 
         free_pages(memory, nr_pages);

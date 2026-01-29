@@ -39,9 +39,11 @@
 #include <upng.h>
 
 #include "res/img_res.h"
+#include "log.h"
 
 ui_image_t *ui_image_get(const char *name)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned int i;
 	EFI_STATUS ret;
 	ui_image_t *img = NULL;
@@ -54,6 +56,7 @@ ui_image_t *ui_image_get(const char *name)
 
 	img = &ui_images[i];
 	if (!img->blt) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = upng_load(img->data, img->size,
 				&img->blt, &img->width, &img->height);
 		if (EFI_ERROR(ret))
@@ -66,6 +69,7 @@ ui_image_t *ui_image_get(const char *name)
 
 EFI_STATUS ui_image_draw(ui_image_t *image, UINTN x, UINTN y)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = ui_draw_blt(image->blt, x, y, image->width, image->height);
@@ -77,6 +81,7 @@ EFI_STATUS ui_image_draw(ui_image_t *image, UINTN x, UINTN y)
 
 EFI_STATUS ui_image_draw_scale(ui_image_t *image, UINTN x, UINTN y, UINTN width, UINTN height)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	ui_image_t to_draw;
 	UINTN new_width, new_height;
@@ -92,6 +97,7 @@ EFI_STATUS ui_image_draw_scale(ui_image_t *image, UINTN x, UINTN y, UINTN width,
 		goto out;
 	to_draw.blt = AllocatePool(ui_get_blt_size(new_width, new_height));
 	if (!to_draw.blt) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		efi_perror(ret, L"Failed to allocate buffer");
 		goto out;

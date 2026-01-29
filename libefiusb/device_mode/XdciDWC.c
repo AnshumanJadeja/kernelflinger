@@ -18,6 +18,7 @@
 #include "UsbDeviceDxe.h"
 #include "XdciInterface.h"
 #include "XdciDWC.h"
+#include "log.h"
 
 UINT32
 UsbRegRead (
@@ -25,6 +26,7 @@ UsbRegRead (
   IN UINT32    Offset
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
   return *addr;
 }
@@ -36,6 +38,7 @@ UsbRegWrite (
   IN UINT32    val
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   volatile UINT32 *addr = (volatile UINT32 *)((UINTN)Base + (UINTN)Offset);
   *addr = val;
 }
@@ -60,6 +63,7 @@ DwcXdciGetPhysicalEpNum (
   IN USB_EP_DIR    EndpointDir
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return EndpointDir? ((EndpointNum << 1) | EndpointDir) : (EndpointNum << 1);
 }
 
@@ -81,17 +85,21 @@ DwcXdciCoreGetCtrlMps (
   IN UINT32              *mps
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if (CoreHandle == NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreGetCtrlMps: INVALID handle\n"));
       return EFI_DEVICE_ERROR;
   }
 
   if (mps == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreGetCtrlMps: INVALID parameter\n"));
     return EFI_INVALID_PARAMETER;
   }
 
   switch (CoreHandle->ActualSpeed) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case USB_SPEED_HIGH:
       *mps = DWC_XDCI_HS_CTRL_EP_MPS;
       break;
@@ -135,9 +143,11 @@ DwcXdciCoreInitEpCmdParams (
   IN DWC_XDCI_ENDPOINT_CMD_PARAMS    *EpCmdParams
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS  status = EFI_SUCCESS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreInitEpCmdParams: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -148,16 +158,19 @@ DwcXdciCoreInitEpCmdParams (
   EpCmdParams->Param0 = EpCmdParams->Param1 = EpCmdParams->Param2 = 0;
 
   switch (EpCmd) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case EPCMD_SET_EP_CONFIG:
       //
       // Issue DEPCFG command for EP
       // Issue a DEPCFG (Command 1) command for endpoint
       //
       if (EpInfo->MaxStreams) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EpCmdParams->Param1 = DWC_XDCI_PARAM1_SET_EP_CFG_STRM_CAP_MASK;
       }
 
       if (EpInfo->Interval) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EpCmdParams->Param1 |= ((EpInfo->Interval-1) << DWC_XDCI_PARAM1_SET_EP_CFG_BINTM1_BIT_POS);
       }
 
@@ -196,6 +209,7 @@ DwcXdciCoreInitEpCmdParams (
       // Program FIFOnum for non-EP0 EPs
       //
       if (EpInfo->EpNum && EpInfo->EpDir) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EpCmdParams->Param0 |= (EpInfo->EpNum << DWC_XDCI_PARAM0_SET_EP_CFG_FIFO_NUM_BIT_POS);
       }
 
@@ -271,10 +285,12 @@ DwcXdciCoreIssueEpCmd (
   IN DWC_XDCI_ENDPOINT_CMD_PARAMS    *EpCmdParams
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32 BaseAddr;
   UINT32 MaxDelayIter = 5000;//DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreIssueEpCmd: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -315,6 +331,7 @@ DwcXdciCoreIssueEpCmd (
   // Wait until command completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_EPCMD_REG(EpNum)) & DWC_XDCI_EPCMD_CMD_ACTIVE_MASK))
       break;
     else
@@ -322,6 +339,7 @@ DwcXdciCoreIssueEpCmd (
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreIssueEpCmd. ERROR: Failed to issue Command\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -342,10 +360,12 @@ DwcXdciCoreFlushAllFifos (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreFlushAllFifos: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -365,6 +385,7 @@ DwcXdciCoreFlushAllFifos (
   // Wait until command completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_DGCMD_REG) & DWC_XDCI_DGCMD_CMD_ACTIVE_MASK))
       break;
     else
@@ -372,6 +393,7 @@ DwcXdciCoreFlushAllFifos (
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Failed to issue Command\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -394,10 +416,12 @@ DwcXdciCoreFlushEpTxFifo (
   __attribute__((unused)) UINT32 EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreFlushEpTxFifo: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -427,6 +451,7 @@ DwcXdciCoreFlushEpTxFifo (
   // Wait until command completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead(BaseAddr, DWC_XDCI_DGCMD_REG) & DWC_XDCI_DGCMD_CMD_ACTIVE_MASK))
       break;
     else
@@ -434,6 +459,7 @@ DwcXdciCoreFlushEpTxFifo (
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Failed to issue Command\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -454,6 +480,7 @@ DwcXdciCorePrepareOneTrb (
   IN UINT32                  size
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DEBUG ((DEBUG_INFO, "Trb is 0x%x, BufferPtr is 0x%x, size is 0x%x\n", Trb, BufferPtr, size));
 
   Trb->BuffPtrLow = (UINT32)(UINTN)BufferPtr;
@@ -495,6 +522,7 @@ DwcXdciCoreInitTrb (
   IN UINT32                  size
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define ONE_TRB_SIZE      (DWC_XDCI_TRB_BUFF_SIZE_MASK & 0x00F00000)
   UINT8                   *TrbBuffer;
   UINT32                  TrbCtrlLast;
@@ -502,11 +530,13 @@ DwcXdciCoreInitTrb (
   UINT32                  TrbIndex;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreInitTrb: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (Trb == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreInitTrb: INVALID handle\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -517,6 +547,7 @@ DwcXdciCoreInitTrb (
    // TODO: update for 64-bit addresses
    //
   if (size <= DWC_XDCI_TRB_BUFF_SIZE_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Can transfer in one TRB
     //
@@ -533,6 +564,7 @@ DwcXdciCoreInitTrb (
   TrbBuffer = BufferPtr;
   TrbIndex = 0;
   while (size > ONE_TRB_SIZE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     TrbCtrlChain = 1;
     TrbCtrlLast = 0;
     DwcXdciCorePrepareOneTrb (Trb, TrbCtrl, TrbCtrlLast, TrbCtrlChain, TrbBuffer, ONE_TRB_SIZE);
@@ -563,16 +595,19 @@ DwcXdciCoreStartEp0SetupXfer (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   EFI_STATUS                      status = EFI_DEVICE_ERROR;
   DWC_XDCI_TRB                    *Trb;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreStartEp0SetupXfer: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (CoreHandle->EpHandles[0].State == USB_EP_STATE_SETUP) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "EP0 was already in SETUP phase\n"));
     return EFI_SUCCESS;
   }
@@ -640,7 +675,9 @@ DwcXdciProcessDeviceStateChangeEvent (
   IN UINT32              Event
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessDeviceStateChangeEvent: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -650,6 +687,7 @@ DwcXdciProcessDeviceStateChangeEvent (
   CoreHandle->LinkState = ((Event & DWC_XDCI_EVENT_BUFF_DEV_LINK_STATE_MASK) >> DWC_XDCI_EVENT_BUFF_DEV_LINK_STATE_BIT_POS);
 
   if (CoreHandle->EventCallbacks.DevLinkStateCallback) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
     CoreHandle->EventCallbacks.CbEventParams.LinkState = CoreHandle->LinkState;
     CoreHandle->EventCallbacks.CbEventParams.Hird = CoreHandle->HirdVal;
@@ -675,12 +713,14 @@ DwcXdciEndXfer (
   IN UINT32              EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                      status;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   UINT32                          cmdParams;
   DWC_XDCI_TRB                    *TrbPtr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciEndXfer: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -696,6 +736,7 @@ DwcXdciEndXfer (
   cmdParams = ((CoreHandle->EpHandles[EpNum].CurrentXferRscIdx << DWC_XDCI_EPCMD_RES_IDX_BIT_POS) | DWC_XDCI_EPCMD_FORCE_RM_MASK);
 
   if (CoreHandle->EpHandles[EpNum].CurrentXferRscIdx == 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_SUCCESS;
   }
   //
@@ -709,6 +750,7 @@ DwcXdciEndXfer (
              );
 
   if (!status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EpHandles[EpNum].CurrentXferRscIdx = 0;
     TrbPtr = CoreHandle->Trbs + (EpNum * DWC_XDCI_TRB_NUM);
     ZeroMem (TrbPtr, DWC_XDCI_TRB_NUM * sizeof (DWC_XDCI_TRB));
@@ -730,9 +772,11 @@ DwcXdciProcessDeviceResetDet (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS  status = EFI_SUCCESS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_DEVICE_ERROR;
   }
 
@@ -741,6 +785,7 @@ DwcXdciProcessDeviceResetDet (
   //
   status = DwcXdciCoreFlushAllFifos(CoreHandle);
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciProcessDeviceResetDet: Failed to flush FIFOs\n"));
   }
 
@@ -750,6 +795,7 @@ DwcXdciProcessDeviceResetDet (
   status = DwcXdciCoreStartEp0SetupXfer(CoreHandle);
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciProcessDeviceResetDet: Failed to start SETUP phase for EP0\n"));
     return status;
   }
@@ -759,6 +805,7 @@ DwcXdciProcessDeviceResetDet (
   //  this event
   //
   if (CoreHandle->EventCallbacks.DevBusResetCallback) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
     status = CoreHandle->EventCallbacks.DevBusResetCallback (&CoreHandle->EventCallbacks.CbEventParams);
   }
@@ -780,11 +827,13 @@ DwcXdciProcessDeviceResetDone (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   UINT32                          BaseAddr;
   EFI_STATUS                      status = EFI_SUCCESS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessDeviceResetDone: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -811,6 +860,7 @@ DwcXdciProcessDeviceResetDone (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return status;
   }
 
@@ -825,6 +875,7 @@ DwcXdciProcessDeviceResetDone (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return status;
   }
 
@@ -853,6 +904,7 @@ DwcXdciProcessDeviceResetDone (
   // Put the other PHY into suspend
   //
   if (CoreHandle->ActualSpeed == USB_SPEED_SUPER) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Put HS PHY to suspend
     //
@@ -872,6 +924,7 @@ DwcXdciProcessDeviceResetDone (
       );
 
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Put SS PHY to suspend
     //
@@ -895,6 +948,7 @@ DwcXdciProcessDeviceResetDone (
   // Notify upper layer if callback is registered
   //
   if (CoreHandle->EventCallbacks.DevResetDoneCallback) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
     CoreHandle->EventCallbacks.CbEventParams.Speed = CoreHandle->ActualSpeed;
     CoreHandle->EventCallbacks.DevResetDoneCallback (&CoreHandle->EventCallbacks.CbEventParams);
@@ -921,9 +975,11 @@ DwcXdciProcessDeviceEvent (
   IN UINT32                   *ProcessedEventSize
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32 event;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessDeviceEvent: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -941,6 +997,7 @@ DwcXdciProcessDeviceEvent (
   *ProcessedEventSize = DWC_XDCI_DEV_EVENT_DEFAULT_SIZE_IN_BYTES;
 
   switch (event) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case DWC_XDCI_EVENT_BUFF_DEV_DISCONN_EVENT:
       DEBUG ((DEBUG_INFO, "Device DWC_XDCI_EVENT_BUFF_DEV_DISCONN_EVENT\n"));
       break;
@@ -1013,6 +1070,7 @@ DwcXdciProcessEpXferNotReady (
   __attribute__((unused)) UINT32 EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   //
   // TODO: Not doing on-demand transfers
   // Revisit if required for later use
@@ -1039,9 +1097,11 @@ DwcXdciProcessEp0XferNotReady (
   IN UINT32              epEventStatus
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_EP_STATE        epState = USB_EP_STATE_SETUP;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEp0XferNotReady: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -1049,15 +1109,20 @@ DwcXdciProcessEp0XferNotReady (
   // Is it data stage or status stage
   //
   if (epEventStatus & DWC_XDCI_EVENT_BUFF_EP_CTRL_DATA_REQ_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     epState = USB_EP_STATE_DATA;
   } else if (epEventStatus & DWC_XDCI_EVENT_BUFF_EP_CTRL_STATUS_REQ_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     epState = USB_EP_STATE_STATUS;
   }
 
   if ((EpNum == 0) && (epState == USB_EP_STATE_STATUS)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (epEventStatus & DWC_XDCI_EVENT_BUFF_EP_XFER_ACTIVE_MASK) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "XFER_ACTIVE\n"));
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "XFER_NOT_ACTIVE\n"));
     }
     DwcXdciEp0ReceiveStatusPkt (CoreHandle);
@@ -1068,6 +1133,7 @@ DwcXdciProcessEp0XferNotReady (
   // this event
   //
   if (CoreHandle->EventCallbacks.DevXferNrdyCallback) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
     CoreHandle->EventCallbacks.CbEventParams.EpState = epState;
     CoreHandle->EventCallbacks.DevXferNrdyCallback (&CoreHandle->EventCallbacks.CbEventParams);
@@ -1091,6 +1157,7 @@ DwcXdciProcessEp0XferPhaseDone (
   IN UINT32              EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DWC_XDCI_ENDPOINT    *epHandle;
   DWC_XDCI_TRB         *Trb;
   EFI_STATUS           status = EFI_SUCCESS;
@@ -1099,6 +1166,7 @@ DwcXdciProcessEp0XferPhaseDone (
   UINT32               TrbBufsize;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEp0XferPhaseDone: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -1108,6 +1176,7 @@ DwcXdciProcessEp0XferPhaseDone (
   DEBUG ((DEBUG_INFO, "(DwcXdciProcessEp0XferPhaseDone)EpNum is %d\n", EpNum));
 
   if (Trb->TrbCtrl & DWC_XDCI_TRB_CTRL_HWO_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciProcessEp0XferPhaseDone. HW owns TRB: %x!!!\n", (UINT32)(UINTN)Trb));
   }
 
@@ -1118,15 +1187,18 @@ DwcXdciProcessEp0XferPhaseDone (
   TrbBufsize = Trb->LenXferParams & DWC_XDCI_TRB_BUFF_SIZE_MASK;
 
   switch (TrbCtrl) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case DWC_XDCI_TRB_CTRL_TYPE_SETUP:
       DEBUG ((DEBUG_INFO, "SETUP\n"));
       if (CoreHandle->EventCallbacks.DevSetupPktReceivedCallback) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
         CoreHandle->EventCallbacks.CbEventParams.Buffer = CoreHandle->AlignedSetupBuffer;
         status = CoreHandle->EventCallbacks.DevSetupPktReceivedCallback (&CoreHandle->EventCallbacks.CbEventParams);
       }
 
       if (!(CoreHandle->AlignedSetupBuffer[0] & USB_SETUP_DATA_PHASE_DIRECTION_MASK)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         //
         // Keep a Buffer ready for setup phase
         //
@@ -1146,6 +1218,7 @@ DwcXdciProcessEp0XferPhaseDone (
       // if a callback function was registerd
       //
       if (CoreHandle->EventCallbacks.DevXferDoneCallback) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
         CoreHandle->EventCallbacks.CbEventParams.EpNum = (EpNum >> 1);
         CoreHandle->EventCallbacks.CbEventParams.EpDir = (EpNum & 1);
@@ -1159,6 +1232,7 @@ DwcXdciProcessEp0XferPhaseDone (
       status = DwcXdciCoreStartEp0SetupXfer(CoreHandle);
 
       if (status) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         DEBUG ((DEBUG_INFO, "DwcXdciProcessEp0XferPhaseDone: FAILED to queue SETUP\n"));
       }
       break;
@@ -1166,11 +1240,13 @@ DwcXdciProcessEp0XferPhaseDone (
     case DWC_XDCI_TRB_CTRL_TYPE_DATA:
       DEBUG ((DEBUG_INFO, "DATA\n"));
       if (TrbSts == DWC_XDCI_TRB_STATUS_SETUP_PENDING || TrbBufsize != 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         DEBUG ((DEBUG_INFO, "ERROR: Control transfert aborted by host: Setup pending\n"));
         DwcXdciCoreStartEp0SetupXfer (CoreHandle);
       }
 
       if (CoreHandle->EventCallbacks.DevXferDoneCallback) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
         CoreHandle->EventCallbacks.CbEventParams.EpNum = (EpNum >> 1);
         CoreHandle->EventCallbacks.CbEventParams.EpDir = (EpNum & 1);
@@ -1203,16 +1279,19 @@ DwcXdciProcessEpXferDone (
   IN UINT32              EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   DWC_XDCI_ENDPOINT    *epHandle;
   DWC_XDCI_TRB         *Trb;
   USB_XFER_REQUEST     *XferReq;
   UINT32               remainingLen;
 
   if (EpNum > DWC_XDCI_MAX_ENDPOINTS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EpNum = DWC_XDCI_MAX_ENDPOINTS;
   }
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEpXferDone: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -1228,6 +1307,7 @@ DwcXdciProcessEpXferDone (
   epHandle->CheckFlag = FALSE;
 
   if ((Trb == NULL) || (XferReq == NULL)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEpXferDone: INVALID parameter\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -1239,11 +1319,13 @@ DwcXdciProcessEpXferDone (
   remainingLen = (Trb->LenXferParams & DWC_XDCI_TRB_BUFF_SIZE_MASK);
 
   if (remainingLen > XferReq->XferLen) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Buffer overrun? This should never happen
     //
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEpXferDone: Possible Buffer overrun\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     XferReq->ActualXferLen -= remainingLen;
   }
 
@@ -1252,6 +1334,7 @@ DwcXdciProcessEpXferDone (
   // if there is a callback specifically for this request
   //
   if (XferReq->XferDone) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     XferReq->XferDone(CoreHandle->ParentHandle, XferReq);
   }
 
@@ -1259,6 +1342,7 @@ DwcXdciProcessEpXferDone (
   // Notify upper layer if a callback was registered
   //
   if (CoreHandle->EventCallbacks.DevXferDoneCallback) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     CoreHandle->EventCallbacks.CbEventParams.ParentHandle = CoreHandle->ParentHandle;
     CoreHandle->EventCallbacks.CbEventParams.EpNum = (EpNum >> 1);
     CoreHandle->EventCallbacks.CbEventParams.EpDir = (EpNum & 1);
@@ -1289,11 +1373,13 @@ DwcXdciProcessEpEvent (
   IN UINT32                   *ProcessedEventSize
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32          EpNum;
   UINT32          epEvent;
   UINT32          epEventStatus;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessEpEvent: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -1314,11 +1400,14 @@ DwcXdciProcessEpEvent (
   epEvent = ((epEvent & DWC_XDCI_EVENT_BUFF_EP_EVENT_MASK) >> DWC_XDCI_EVENT_BUFF_EP_EVENT_BIT_POS);
 
   switch (epEvent) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case DWC_XDCI_EVENT_BUFF_EP_XFER_CMPLT:
       DEBUG ((DEBUG_INFO, "XFER_CMPLT ep %d\n", EpNum));
       if (EpNum > 1) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         DwcXdciProcessEpXferDone (CoreHandle, EpNum);
       } else {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         DwcXdciProcessEp0XferPhaseDone (CoreHandle, EpNum);
       }
       break;
@@ -1330,11 +1419,13 @@ DwcXdciProcessEpEvent (
     case DWC_XDCI_EVENT_BUFF_EP_XFER_NOT_READY:
       DEBUG ((DEBUG_INFO, "NOT_READY ep %d\n", EpNum));
       if (EpNum > 1) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         //
         // Endpoint transfer is not ready
         //
         DwcXdciProcessEpXferNotReady (CoreHandle, EpNum);
       } else {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         DwcXdciProcessEp0XferNotReady (CoreHandle, EpNum, epEventStatus);
       }
       break;
@@ -1366,15 +1457,18 @@ DwcXdciProcessInterruptLineEvents (
   IN UINT32              *ProcessedEventCount
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32    ProcessedEventSize = 0;
   UINT32    currentEventAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessInterruptLineEvents: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (CoreHandle->CurrentEventBuffer == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciProcessInterruptLineEvents: INVALID event Buffer\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -1386,13 +1480,16 @@ DwcXdciProcessInterruptLineEvents (
   // in this run
   //
   while (eventCount) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (CoreHandle->CurrentEventBuffer->Event & DWC_XDCI_EVENT_DEV_MASK) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DwcXdciProcessDeviceEvent (
         CoreHandle,
         CoreHandle->CurrentEventBuffer,
         &ProcessedEventSize
         );
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DwcXdciProcessEpEvent (
         CoreHandle,
         CoreHandle->CurrentEventBuffer,
@@ -1404,9 +1501,11 @@ DwcXdciProcessInterruptLineEvents (
     if ((currentEventAddr + ProcessedEventSize) >=
         ((UINT32)(UINTN)(CoreHandle->AlignedEventBuffers) + (sizeof(DWC_XDCI_EVENT_BUFFER) * DWC_XDCI_MAX_EVENTS_PER_BUFFER))
        ) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       currentEventAddr = (UINT32)(UINTN)(CoreHandle->AlignedEventBuffers);
       DEBUG ((DEBUG_INFO, "DwcXdciProcessInterruptLineEvents: Event Buffer bound reached\n"));
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       currentEventAddr += ProcessedEventSize;
     }
 
@@ -1437,6 +1536,7 @@ DwcXdciCoreInit (
   IN VOID                     **CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                      status = EFI_DEVICE_ERROR;
   UINT32                          BaseAddr;
   XDCI_CORE_HANDLE                *LocalCoreHandle;
@@ -1447,10 +1547,12 @@ DwcXdciCoreInit (
   LocalCoreHandle = (XDCI_CORE_HANDLE *)AllocateZeroPool (sizeof(XDCI_CORE_HANDLE));
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_INVALID_PARAMETER;
   }
 
   if (LocalCoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to allocate handle for xDCI\n"));
     return EFI_OUT_OF_RESOURCES;
   }
@@ -1474,14 +1576,18 @@ DwcXdciCoreInit (
 
   // Wait until core soft reset completes
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_DCTL_REG) & DWC_XDCI_DCTL_CSFTRST_MASK)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       uefi_call_wrapper(BS->Stall, 1, DWC_XDCI_MAX_DELAY_ITERATIONS);
     }
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"Failed to reset device controller 0x%x",(UsbRegRead (BaseAddr, DWC_XDCI_DCTL_REG)));
     return EFI_DEVICE_ERROR;
   }
@@ -1554,6 +1660,7 @@ DwcXdciCoreInit (
           UsbRegRead (BaseAddr, DWC_XDCI_GRXFIFOSIZ_REG (0))));
 
   for (i = 0; i < DWC_XDCI_MAX_ENDPOINTS; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Default value of xDCI DWC_XDCI_GTXFIFOSIZ %d: %x\n",
             i, UsbRegRead (BaseAddr, DWC_XDCI_GTXFIFOSIZ_REG (i))));
   }
@@ -1584,6 +1691,7 @@ DwcXdciCoreInit (
                                              (sizeof (DWC_XDCI_EVENT_BUFFER) * DWC_XDCI_MAX_EVENTS_PER_BUFFER))));
 
   for (i = 0; i < LocalCoreHandle->MaxDevIntLines; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UsbRegWrite (
       BaseAddr,
       DWC_XDCI_GEVNTADR_REG (i),
@@ -1703,6 +1811,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to init params for START_NEW_CONFIG EP command on xDCI");
     return status;
   }
@@ -1718,6 +1827,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to issue START_NEW_CONFIG EP command on xDCI");
     return status;
   }
@@ -1734,6 +1844,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to init params for SET_EP_CONFIG command on xDCI for EP0");
     return status;
   }
@@ -1748,6 +1859,7 @@ DwcXdciCoreInit (
              &EpCmdParams);
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to issue SET_EP_CONFIG command on xDCI for EP0");
     return status;
   }
@@ -1764,6 +1876,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to init params for SET_EP_CONFIG command on xDCI for EP1");
     return status;
   }
@@ -1779,6 +1892,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to issue SET_EP_CONFIG command on xDCI for EP1");
     return status;
   }
@@ -1795,6 +1909,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to init params for EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP0");
     return status;
   }
@@ -1810,6 +1925,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to issue EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP0");
     return status;
   }
@@ -1826,6 +1942,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to init params for EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP1");
     return status;
   }
@@ -1841,6 +1958,7 @@ DwcXdciCoreInit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (status, L"DwcXdciCoreInit: Failed to issue EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP1");
     return status;
   }
@@ -1908,6 +2026,7 @@ DwcXdciCoreDeinit (
   __attribute__((unused)) UINT32 flags
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   FreePool (CoreHandle);
   return EFI_SUCCESS;
 }
@@ -1929,15 +2048,18 @@ DwcXdciCoreRegisterCallback (
   IN USB_DEVICE_CALLBACK_FUNC  CallbackFunc
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (LocalCoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreRegisterCallback: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   DEBUG ((DEBUG_INFO, "DwcXdciCoreRegisterCallback: event is %d\n", Event));
   switch (Event) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case USB_DEVICE_DISCONNECT_EVENT:
       LocalCoreHandle->EventCallbacks.DevDisconnectCallback = CallbackFunc;
       break;
@@ -2016,14 +2138,17 @@ DwcXdciCoreUnregisterCallback (
   IN USB_DEVICE_EVENT_ID    event
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (LocalCoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreUnregisterCallback: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   switch (event) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case USB_DEVICE_DISCONNECT_EVENT:
       LocalCoreHandle->EventCallbacks.DevDisconnectCallback = NULL;
       break;
@@ -2100,6 +2225,7 @@ DwcXdciCoreIsrRoutine (
   IN VOID     *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              BaseAddr;
   UINT32              eventCount;
@@ -2107,11 +2233,13 @@ DwcXdciCoreIsrRoutine (
   UINT32              i;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreIsrRoutine: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (LocalCoreHandle->InterrupProcessing == TRUE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "interrupProcessing.........\n"));
     return EFI_SUCCESS;
   }
@@ -2123,6 +2251,7 @@ DwcXdciCoreIsrRoutine (
   //
   LocalCoreHandle->InterrupProcessing = TRUE;
   for (i = 0; i < LocalCoreHandle->MaxDevIntLines; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Get the number of events HW has written for this
     //  interrupt line
@@ -2135,6 +2264,7 @@ DwcXdciCoreIsrRoutine (
     // Process interrupt line Buffer only if count is non-zero
     //
     if (eventCount) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       //
       // Process events in this Buffer
       //
@@ -2163,6 +2293,7 @@ DwcXdciCoreIsrRoutineTimerBased (
   IN VOID     *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              BaseAddr;
   UINT32              eventCount;
@@ -2171,11 +2302,13 @@ DwcXdciCoreIsrRoutineTimerBased (
   UINT32              ProcessedEventSize = 0;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreIsrRoutineTimerBased: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (LocalCoreHandle->CurrentEventBuffer == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreIsrRoutineTimerBased: INVALID event Buffer\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -2185,6 +2318,7 @@ DwcXdciCoreIsrRoutineTimerBased (
   eventCount = UsbRegRead (BaseAddr, DWC_XDCI_EVNTCOUNT_REG (0)) & DWC_XDCI_EVNTCOUNT_MASK;
 
   if (LocalCoreHandle->InterrupProcessing == TRUE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "interrupProcessing.........\n"));
     return EFI_SUCCESS;
   }
@@ -2195,12 +2329,14 @@ DwcXdciCoreIsrRoutineTimerBased (
   currentEventAddr = (UINT32)(UINTN)(LocalCoreHandle->CurrentEventBuffer);
 
   if (LocalCoreHandle->CurrentEventBuffer->Event & DWC_XDCI_EVENT_DEV_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DwcXdciProcessDeviceEvent (
       LocalCoreHandle,
       LocalCoreHandle->CurrentEventBuffer,
       &ProcessedEventSize
       );
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DwcXdciProcessEpEvent (
       LocalCoreHandle,
       LocalCoreHandle->CurrentEventBuffer,
@@ -2212,9 +2348,11 @@ DwcXdciCoreIsrRoutineTimerBased (
   if ((currentEventAddr + ProcessedEventSize) >=
       ((UINT32)(UINTN)(LocalCoreHandle->AlignedEventBuffers) + (sizeof(DWC_XDCI_EVENT_BUFFER) * DWC_XDCI_MAX_EVENTS_PER_BUFFER))
      ) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     currentEventAddr = (UINT32)(UINTN)(LocalCoreHandle->AlignedEventBuffers);
     DEBUG ((DEBUG_INFO, "DwcXdciProcessInterruptLineEvents: Event Buffer bound reached\n"));
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     currentEventAddr += ProcessedEventSize;
   }
 
@@ -2238,12 +2376,14 @@ DwcXdciCoreConnect (
   IN VOID     *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE    *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32              MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32              BaseAddr;
 
   EFI_STATUS ret = EFI_DEVICE_ERROR;
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (ret, L"DwcXdciCoreConnect: INVALID handle\n");
     return EFI_DEVICE_ERROR;
   }
@@ -2268,15 +2408,19 @@ DwcXdciCoreConnect (
 
   // Wait until core starts running
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_DSTS_REG) & DWC_XDCI_DSTS_DEV_CTRL_HALTED_MASK)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror (ret, L"Stall for core run");
       uefi_call_wrapper(BS->Stall, 1, DWC_XDCI_MAX_DELAY_ITERATIONS);
     }
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_DEVICE_ERROR;
   }
 
@@ -2296,6 +2440,7 @@ DwcXdciCoreDisconnect (
   IN VOID    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32            BaseAddr;
@@ -2304,6 +2449,7 @@ DwcXdciCoreDisconnect (
   UINT32            i;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreDisconnect: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2315,6 +2461,7 @@ DwcXdciCoreDisconnect (
 
   DEBUG ((DEBUG_INFO, "DwcXdciCoreDisconnect: eventCount=%d\n", eventCount));
   while (eventCount) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DwcXdciCoreIsrRoutine(LocalCoreHandle);
     eventCount = UsbRegRead (BaseAddr, DWC_XDCI_EVNTCOUNT_REG (0));
     eventCount &= DWC_XDCI_EVNTCOUNT_MASK;
@@ -2325,7 +2472,9 @@ DwcXdciCoreDisconnect (
   // Issue DEPENDXFER for active transfers
   //
   for (i = 0; i < DWC_XDCI_MAX_ENDPOINTS; i++){
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (LocalCoreHandle->EpHandles[i].CurrentXferRscIdx){
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DwcXdciEndXfer(LocalCoreHandle, i);
     }
   }
@@ -2341,16 +2490,20 @@ DwcXdciCoreDisconnect (
   // Wait until core is halted
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     dsts = UsbRegRead (BaseAddr, DWC_XDCI_DSTS_REG);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreDisconnect: waiting halt: DSTS=0x%x\n", dsts));
     if ((dsts & DWC_XDCI_DSTS_DEV_CTRL_HALTED_MASK) != 0){
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       uefi_call_wrapper(BS->Stall, 1, DWC_XDCI_MAX_DELAY_ITERATIONS);
     }
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreDisconnect: Failed to halt the device controller\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2373,14 +2526,17 @@ DwcXdciCoreGetSpeed (
   IN USB_SPEED    *Speed
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreGetSpeed: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (Speed == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreGetSpeed: INVALID parameter\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -2405,10 +2561,12 @@ DwcXdciCoreSetAddress (
   IN UINT32    address
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreSetAddress: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2449,11 +2607,13 @@ DwcXdciCoreSetConfig (
   __attribute__((unused)) UINT32 ConfigNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreSetConfig: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2471,6 +2631,7 @@ DwcXdciCoreSetConfig (
             );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreSetConfig: Failed to init params for EPCMD_START_NEW_CONFIG command\n"));
     return status;
   }
@@ -2486,6 +2647,7 @@ DwcXdciCoreSetConfig (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreSetConfig: Failed to issue EPCMD_START_NEW_CONFIG command\n"));
     return status;
   }
@@ -2508,10 +2670,12 @@ DwcXdciSetLinkState (
   IN USB_DEVICE_SS_LINK_STATE    state
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciSetLinkState: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2555,12 +2719,14 @@ DwcXdciInitEp (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciInitEp: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2571,6 +2737,7 @@ DwcXdciInitEp (
   EpNum = DwcXdciGetPhysicalEpNum (EpInfo->EpNum, EpInfo->EpDir);
 
   if (EpNum >= DWC_XDCI_MAX_ENDPOINTS * 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID EpNum\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2597,6 +2764,7 @@ DwcXdciInitEp (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciInitEp: Failed to init params for  EPCMD_SET_EP_CONFIG command\n"));
     return status;
   }
@@ -2612,6 +2780,7 @@ DwcXdciInitEp (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciInitEp: Failed to issue  EPCMD_SET_EP_CONFIG command\n"));
     return status;
   }
@@ -2628,6 +2797,7 @@ DwcXdciInitEp (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciInitEp: Failed to init params for  EPCMD_SET_EP_XFER_RES_CONFIG command\n"));
     return status;
   }
@@ -2643,6 +2813,7 @@ DwcXdciInitEp (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciInitEp: Failed to issue EPCMD_SET_EP_XFER_RES_CONFIG command\n"));
   }
 
@@ -2665,11 +2836,13 @@ DwcXdciEpEnable (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpEnable: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2709,11 +2882,13 @@ DwcXdciEpDisable (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpDisable: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2753,12 +2928,14 @@ DwcXdciEpStall (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpStall: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2769,6 +2946,7 @@ DwcXdciEpStall (
   EpNum = DwcXdciGetPhysicalEpNum (EpInfo->EpNum, EpInfo->EpDir);
 
   if (EpNum >= DWC_XDCI_MAX_ENDPOINTS * 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID EpNum\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2777,6 +2955,7 @@ DwcXdciEpStall (
   // Set Ep State Info
   //
   if (LocalCoreHandle->EpHandles[EpNum].State != USB_EP_STATE_STALLED) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     LocalCoreHandle->EpHandles[EpNum].OrgState = LocalCoreHandle->EpHandles[EpNum].State;
     LocalCoreHandle->EpHandles[EpNum].State = USB_EP_STATE_STALLED;
   }
@@ -2797,6 +2976,7 @@ DwcXdciEpStall (
             );
 
  if (status) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
    DEBUG ((DEBUG_INFO, "DwcXdciEpStall: Failed to issue EP stall command\n"));
  }
 
@@ -2819,12 +2999,14 @@ DwcXdciEpClearStall (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   EFI_STATUS                    status;
   UINT32                        EpNum;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2835,6 +3017,7 @@ DwcXdciEpClearStall (
   EpNum = DwcXdciGetPhysicalEpNum (EpInfo->EpNum, EpInfo->EpDir);
 
   if (EpNum >= DWC_XDCI_MAX_ENDPOINTS * 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID EpNum\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2861,6 +3044,7 @@ DwcXdciEpClearStall (
             );
 
  if (status) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
    DEBUG ((DEBUG_INFO, "DwcXdciEpStall: Failed to issue EP clea stall command\n"));
  }
 
@@ -2883,12 +3067,14 @@ DwcXdciEpSetNrdy (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE  *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   UINT32            EpNum;
   UINT32            BaseAddr;
   UINT32            MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpSetNrdy: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2927,6 +3113,7 @@ DwcXdciEpSetNrdy (
   // Wait until command completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_DGCMD_REG) & DWC_XDCI_DGCMD_CMD_ACTIVE_MASK))
       break;
     else
@@ -2934,6 +3121,7 @@ DwcXdciEpSetNrdy (
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Failed to issue Command\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2956,12 +3144,14 @@ DwcXdciEp0ReceiveSetupPkt (
   IN UINT8    *Buffer
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
   EFI_STATUS                      Status = EFI_DEVICE_ERROR;
   DWC_XDCI_TRB                    *Trb;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0ReceiveSetupPkt: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -2981,6 +3171,7 @@ DwcXdciEp0ReceiveSetupPkt (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0ReceiveSetupPkt: Init TRB Failed \n"));
     return Status;
   }
@@ -3007,6 +3198,7 @@ DwcXdciEp0ReceiveSetupPkt (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "\nDwcXdciEp0ReceiveSetupPkt: Failed to issue Start Transfer command"));
   }
 
@@ -3033,6 +3225,7 @@ DwcXdciEp0ReceiveStatusPkt (
   IN VOID    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_TRB                    *Trb;
   DWC_XDCI_TRB_CONTROL            TrbCtrl;
@@ -3041,6 +3234,7 @@ DwcXdciEp0ReceiveStatusPkt (
   UINT32                          BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0ReceiveStatusPkt: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3053,6 +3247,7 @@ DwcXdciEp0ReceiveStatusPkt (
   Trb = LocalCoreHandle->Trbs;
   DEBUG ((DEBUG_INFO, "(DwcXdciEp0ReceiveStatusPkt)\n"));
   if (Trb->TrbCtrl & DWC_XDCI_TRB_CTRL_HWO_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "statusPkt still not transferred.\n"));
     return EFI_SUCCESS;
   }
@@ -3077,6 +3272,7 @@ DwcXdciEp0ReceiveStatusPkt (
              );
 
   if (!Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // Issue a DEPSTRTXFER for EP0
     // Reset params
@@ -3099,6 +3295,7 @@ DwcXdciEp0ReceiveStatusPkt (
                );
 
     if (Status) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "DwcXdciEp0ReceiveStatusPkt: Failed to issue Start Transfer command for EP0\n"));
     }
     //
@@ -3132,6 +3329,7 @@ DwcXdciEp0SendStatusPkt (
   IN VOID    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE                *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_TRB                    *Trb;
   DWC_XDCI_ENDPOINT_CMD_PARAMS    EpCmdParams;
@@ -3139,6 +3337,7 @@ DwcXdciEp0SendStatusPkt (
   UINT32                          BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0SendStatusPkt: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3161,6 +3360,7 @@ DwcXdciEp0SendStatusPkt (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0SendStatusPkt: TRB failed during status phase\n"));
     return Status;
   }
@@ -3187,6 +3387,7 @@ DwcXdciEp0SendStatusPkt (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEp0SendStatusPkt: Failed to issue Start Transfer on EP0\n"));
   }
 
@@ -3216,6 +3417,7 @@ DwcXdciEpTxData (
   IN USB_XFER_REQUEST    *XferReq
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   DWC_XDCI_TRB                  *Trb;
@@ -3225,11 +3427,13 @@ DwcXdciEpTxData (
   UINT32                        BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpTxData: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (XferReq == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpTxData: INVALID transfer request\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -3245,6 +3449,7 @@ DwcXdciEpTxData (
              );
 
   if (EpNum >= DWC_XDCI_MAX_ENDPOINTS * 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID EpNum\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3259,13 +3464,16 @@ DwcXdciEpTxData (
     TrbCtrl = TRBCTL_CTRL_DATA_PHASE;
 
   if (Trb->TrbCtrl & DWC_XDCI_TRB_CTRL_HWO_MASK) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = DwcXdciEndXfer (LocalCoreHandle, EpNum);
     if (Status) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "DwcXdciEpTxData: Failed to end previous transfer\n"));
     }
 
     Status = DwcXdciCoreFlushEpTxFifo (LocalCoreHandle, EpNum);
     if (Status) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_INFO, "DwcXdciEpTxData: Failed to end previous transfer\n"));
     }
   }
@@ -3287,6 +3495,7 @@ DwcXdciEpTxData (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpTxData: TRB failed\n"));
     return Status;
   }
@@ -3337,6 +3546,7 @@ DwcXdciEpRxData (
   IN USB_XFER_REQUEST    *XferReq
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   XDCI_CORE_HANDLE              *LocalCoreHandle = (XDCI_CORE_HANDLE *)CoreHandle;
   DWC_XDCI_ENDPOINT_CMD_PARAMS  EpCmdParams;
   DWC_XDCI_TRB                  *Trb;
@@ -3346,11 +3556,13 @@ DwcXdciEpRxData (
   UINT32                        BaseAddr;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpRxData: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
 
   if (XferReq == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpRxData: INVALID transfer request\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -3363,6 +3575,7 @@ DwcXdciEpRxData (
   EpNum = DwcXdciGetPhysicalEpNum (XferReq->EpInfo.EpNum, XferReq->EpInfo.EpDir);
 
   if (EpNum >= DWC_XDCI_MAX_ENDPOINTS * 2) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpClearStall: INVALID EpNum\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3380,6 +3593,7 @@ DwcXdciEpRxData (
   // need to wait the previous request done.
   //
   if (LocalCoreHandle->EpHandles[EpNum].CheckFlag == TRUE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_NOT_READY;
   }
 
@@ -3405,6 +3619,7 @@ DwcXdciEpRxData (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpRxData: TRB failed\n"));
     return Status;
   }
@@ -3430,6 +3645,7 @@ DwcXdciEpRxData (
              );
 
   if (Status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpRxData: Failed to start transfer\n"));
   }
 
@@ -3450,12 +3666,14 @@ DwcXdciCoreFlushEpFifo (
   IN UINT32              EpNum
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32 BaseAddr;
   UINT32 MaxDelayIter = DWC_XDCI_MAX_DELAY_ITERATIONS;
   UINT32 fifoNum;
   UINT32 Param;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "ERROR: DwcXdciCoreFlushEpTxFifo: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3477,8 +3695,10 @@ DwcXdciCoreFlushEpFifo (
   Param &= ~(DWC_XDCI_DGCMD_PARAM_TX_FIFO_NUM_MASK | DWC_XDCI_DGCMD_PARAM_TX_FIFO_DIR_MASK);
 
   if ((EpNum & 0x01) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Param |= (fifoNum | DWC_XDCI_DGCMD_PARAM_TX_FIFO_DIR_MASK);
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Param |= fifoNum;
   }
 
@@ -3506,6 +3726,7 @@ DwcXdciCoreFlushEpFifo (
   // Wait until command completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead(BaseAddr, DWC_XDCI_DGCMD_REG) & DWC_XDCI_DGCMD_CMD_ACTIVE_MASK))
       break;
     else
@@ -3513,6 +3734,7 @@ DwcXdciCoreFlushEpFifo (
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Failed to issue Command\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3534,10 +3756,12 @@ DwcXdciEpCancelTransfer (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS  Status = EFI_DEVICE_ERROR;
   UINT32      EpNum;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpCancelTransfer: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3558,6 +3782,7 @@ usbProcessDeviceResetDet (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
    return DwcXdciProcessDeviceResetDet (CoreHandle);
 }
 
@@ -3566,6 +3791,7 @@ usbProcessDeviceResetDone (
   IN XDCI_CORE_HANDLE    *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return DwcXdciProcessDeviceResetDone (CoreHandle);
 }
 
@@ -3575,6 +3801,7 @@ UsbGetPhysicalEpNum (
   IN USB_EP_DIR    EndpointDir
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return DwcXdciGetPhysicalEpNum(
                             EndpointNum,
                             EndpointDir
@@ -3588,6 +3815,7 @@ UsbXdciCoreReinit (
   IN VOID                     *CoreHandle
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                      status = EFI_DEVICE_ERROR;
   UINT32                          BaseAddr;
   XDCI_CORE_HANDLE                *LocalCoreHandle;
@@ -3598,10 +3826,12 @@ UsbXdciCoreReinit (
   LocalCoreHandle = CoreHandle;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_INVALID_PARAMETER;
   }
 
   if (LocalCoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to allocate handle for xDCI\n"));
     return EFI_OUT_OF_RESOURCES;
   }
@@ -3619,14 +3849,18 @@ UsbXdciCoreReinit (
   // Wait until core soft reset completes
   //
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!(UsbRegRead (BaseAddr, DWC_XDCI_DCTL_REG) & DWC_XDCI_DCTL_CSFTRST_MASK)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       uefi_call_wrapper(BS->Stall, 1, DWC_XDCI_MAX_DELAY_ITERATIONS);
     }
   } while (--MaxDelayIter);
 
   if (!MaxDelayIter) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Failed to reset device controller\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -3677,6 +3911,7 @@ UsbXdciCoreReinit (
           UsbRegRead (BaseAddr, DWC_XDCI_GRXFIFOSIZ_REG (0))));
 
   for (i = 0; i < DWC_XDCI_MAX_ENDPOINTS; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "Default value of xDCI DWC_XDCI_GTXFIFOSIZ %d: %x\n",
             i, UsbRegRead (BaseAddr, DWC_XDCI_GTXFIFOSIZ_REG (i))));
   }
@@ -3707,6 +3942,7 @@ UsbXdciCoreReinit (
                                              (sizeof (DWC_XDCI_EVENT_BUFFER) * DWC_XDCI_MAX_EVENTS_PER_BUFFER))));
 
   for (i = 0; i < LocalCoreHandle->MaxDevIntLines; i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UsbRegWrite (
       BaseAddr,
       DWC_XDCI_GEVNTADR_REG (i),
@@ -3826,6 +4062,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to init params for START_NEW_CONFIG EP command on xDCI\n"));
     return status;
   }
@@ -3841,6 +4078,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to issue START_NEW_CONFIG EP command on xDCI\n"));
     return status;
   }
@@ -3857,6 +4095,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to init params for SET_EP_CONFIG command on xDCI for EP0\n"));
     return status;
   }
@@ -3871,6 +4110,7 @@ UsbXdciCoreReinit (
              &EpCmdParams);
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to issue SET_EP_CONFIG command on xDCI for EP0\n"));
     return status;
   }
@@ -3887,6 +4127,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to init params for SET_EP_CONFIG command on xDCI for EP1\n"));
     return status;
   }
@@ -3902,6 +4143,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to issue SET_EP_CONFIG command on xDCI for EP1\n"));
     return status;
   }
@@ -3918,6 +4160,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to init params for EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP0\n"));
     return status;
   }
@@ -3933,6 +4176,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to issue EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP0\n"));
     return status;
   }
@@ -3949,6 +4193,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to init params for EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP1\n"));
     return status;
   }
@@ -3964,6 +4209,7 @@ UsbXdciCoreReinit (
              );
 
   if (status) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciCoreInit: Failed to issue EPCMD_SET_EP_XFER_RES_CONFIG command on xDCI for EP1\n"));
     return status;
   }
@@ -4029,10 +4275,12 @@ UsbXdciCoreFlushEpFifo (
   IN USB_EP_INFO    *EpInfo
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS  Status = EFI_DEVICE_ERROR;
   UINT32      EpNum;
 
   if (CoreHandle == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_INFO, "DwcXdciEpCancelTransfer: INVALID handle\n"));
     return EFI_DEVICE_ERROR;
   }

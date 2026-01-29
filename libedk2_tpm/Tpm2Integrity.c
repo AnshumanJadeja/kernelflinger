@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -109,6 +110,7 @@ Tpm2PcrExtend (
   IN      TPML_DIGEST_VALUES        *Digests
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_EXTEND_COMMAND           Cmd;
   TPM2_PCR_EXTEND_RESPONSE          Res;
@@ -141,10 +143,12 @@ Tpm2PcrExtend (
 
   //Digest
   for (Index = 0; Index < Digests->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(Digests->digests[Index].hashAlg));
     Buffer += sizeof(UINT16);
     DigestSize = GetHashSizeFromAlgo (Digests->digests[Index].hashAlg);
     if (DigestSize == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "Unknown hash algorithm %d\r\n", Digests->digests[Index].hashAlg));
       return EFI_DEVICE_ERROR;
     }
@@ -162,10 +166,12 @@ Tpm2PcrExtend (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrExtend: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -175,6 +181,7 @@ Tpm2PcrExtend (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrExtend: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -183,6 +190,7 @@ Tpm2PcrExtend (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrExtend: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -219,6 +227,7 @@ Tpm2PcrEvent (
      OUT  TPML_DIGEST_VALUES        *Digests
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_EVENT_COMMAND            Cmd;
   TPM2_PCR_EVENT_RESPONSE           Res;
@@ -257,10 +266,12 @@ Tpm2PcrEvent (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrEvent: Failed ExecuteCommand: Buffer Too Small\r\n"));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -270,6 +281,7 @@ Tpm2PcrEvent (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrEvent: Response size too large! %d\r\n", RespSize));
     return EFI_BUFFER_TOO_SMALL;
   }
@@ -278,6 +290,7 @@ Tpm2PcrEvent (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrEvent: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }
@@ -289,16 +302,19 @@ Tpm2PcrEvent (
 
   Digests->count = SwapBytes32 (ReadUnaligned32 ((UINT32 *)Buffer));
   if (Digests->count > HASH_COUNT) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2PcrEvent - Digests->count error %x\n", Digests->count));
     return EFI_DEVICE_ERROR;
   }
 
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < Digests->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Digests->digests[Index].hashAlg = SwapBytes16 (ReadUnaligned16 ((UINT16 *)Buffer));
     Buffer += sizeof(UINT16);
     DigestSize = GetHashSizeFromAlgo (Digests->digests[Index].hashAlg);
     if (DigestSize == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "Unknown hash algorithm %d\r\n", Digests->digests[Index].hashAlg));
       return EFI_DEVICE_ERROR;
     }
@@ -333,6 +349,7 @@ Tpm2PcrRead (
      OUT  TPML_DIGEST               *PcrValues
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_READ_COMMAND             SendBuffer;
   TPM2_PCR_READ_RESPONSE            RecvBuffer;
@@ -350,6 +367,7 @@ Tpm2PcrRead (
 
   SendBuffer.PcrSelectionIn.count = SwapBytes32(PcrSelectionIn->count);
   for (Index = 0; Index < PcrSelectionIn->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     SendBuffer.PcrSelectionIn.pcrSelections[Index].hash = SwapBytes16(PcrSelectionIn->pcrSelections[Index].hash);
     SendBuffer.PcrSelectionIn.pcrSelections[Index].sizeofSelect = PcrSelectionIn->pcrSelections[Index].sizeofSelect;
     CopyMem (&SendBuffer.PcrSelectionIn.pcrSelections[Index].pcrSelect, &PcrSelectionIn->pcrSelections[Index].pcrSelect, SendBuffer.PcrSelectionIn.pcrSelections[Index].sizeofSelect);
@@ -364,14 +382,17 @@ Tpm2PcrRead (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrRead - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrRead - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     return EFI_NOT_FOUND;
   }
@@ -384,6 +405,7 @@ Tpm2PcrRead (
   // PcrUpdateCounter
   //
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER) + sizeof(RecvBuffer.PcrUpdateCounter)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrRead - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
@@ -393,23 +415,28 @@ Tpm2PcrRead (
   // PcrSelectionOut
   //
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER) + sizeof(RecvBuffer.PcrUpdateCounter) + sizeof(RecvBuffer.PcrSelectionOut.count)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrRead - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   PcrSelectionOut->count = SwapBytes32(RecvBuffer.PcrSelectionOut.count);
   if (PcrSelectionOut->count > HASH_COUNT) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2PcrRead - PcrSelectionOut->count error %x\n", PcrSelectionOut->count));
     return EFI_DEVICE_ERROR;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER) + sizeof(RecvBuffer.PcrUpdateCounter) + sizeof(RecvBuffer.PcrSelectionOut.count) + sizeof(RecvBuffer.PcrSelectionOut.pcrSelections[0]) * PcrSelectionOut->count) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrRead - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   for (Index = 0; Index < PcrSelectionOut->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrSelectionOut->pcrSelections[Index].hash = SwapBytes16(RecvBuffer.PcrSelectionOut.pcrSelections[Index].hash);
     PcrSelectionOut->pcrSelections[Index].sizeofSelect = RecvBuffer.PcrSelectionOut.pcrSelections[Index].sizeofSelect;
     if (PcrSelectionOut->pcrSelections[Index].sizeofSelect > PCR_SELECT_MAX) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return EFI_DEVICE_ERROR;
     }
     CopyMem (&PcrSelectionOut->pcrSelections[Index].pcrSelect, &RecvBuffer.PcrSelectionOut.pcrSelections[Index].pcrSelect, PcrSelectionOut->pcrSelections[Index].sizeofSelect);
@@ -424,13 +451,16 @@ Tpm2PcrRead (
   // The number of digests in list is not greater than 8 per TPML_DIGEST definition
   //
   if (PcrValues->count > 8) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2PcrRead - PcrValues->count error %x\n", PcrValues->count));
     return EFI_DEVICE_ERROR;
   }
   Digests = PcrValuesOut->digests;
   for (Index = 0; Index < PcrValues->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrValues->digests[Index].size = SwapBytes16(Digests->size);
     if (PcrValues->digests[Index].size > sizeof(TPMU_HA)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((DEBUG_ERROR, "Tpm2PcrRead - Digest.size error %x\n", PcrValues->digests[Index].size));
       return EFI_DEVICE_ERROR;
     }
@@ -445,6 +475,7 @@ Tpm2PcrRead (
   This command is used to set the desired PCR allocation of PCR and algorithms.
 
   @param[in]  AuthHandle         TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  AuthSession        Auth Session context
   @param[in]  PcrAllocation      The requested allocation
   @param[out] AllocationSuccess  YES if the allocation succeeded
@@ -467,6 +498,7 @@ Tpm2PcrAllocate (
   OUT UINT32                    *SizeAvailable
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                  Status;
   TPM2_PCR_ALLOCATE_COMMAND   Cmd;
   TPM2_PCR_ALLOCATE_RESPONSE  Res;
@@ -500,6 +532,7 @@ Tpm2PcrAllocate (
   WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(PcrAllocation->count));
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < PcrAllocation->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(PcrAllocation->pcrSelections[Index].hash));
     Buffer += sizeof(UINT16);
     *(UINT8 *)Buffer = PcrAllocation->pcrSelections[Index].sizeofSelect;
@@ -524,10 +557,12 @@ Tpm2PcrAllocate (
              ResultBuf
              );
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrAllocate: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -538,6 +573,7 @@ Tpm2PcrAllocate (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PcrAllocate: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -547,6 +583,7 @@ Tpm2PcrAllocate (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG((EFI_D_ERROR,"Tpm2PcrAllocate: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -586,6 +623,7 @@ Tpm2PcrAllocateBanks (
   IN UINT32                    PCRBanks
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPMS_AUTH_COMMAND         *AuthSession;
   TPMS_AUTH_COMMAND         LocalAuthSession;
@@ -596,8 +634,10 @@ Tpm2PcrAllocateBanks (
   UINT32                    SizeAvailable;
 
   if (PlatformAuth == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     AuthSession = NULL;
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     AuthSession = &LocalAuthSession;
     ZeroMem (&LocalAuthSession, sizeof(LocalAuthSession));
     LocalAuthSession.sessionHandle = TPM_RS_PW;
@@ -610,13 +650,16 @@ Tpm2PcrAllocateBanks (
   //
   ZeroMem (&PcrAllocation, sizeof(PcrAllocation));
   if ((HASH_ALG_SHA1 & SupportedPCRBanks) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrAllocation.pcrSelections[PcrAllocation.count].hash = TPM_ALG_SHA1;
     PcrAllocation.pcrSelections[PcrAllocation.count].sizeofSelect = PCR_SELECT_MAX;
     if ((HASH_ALG_SHA1 & PCRBanks) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0xFF;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0x00;
@@ -624,13 +667,16 @@ Tpm2PcrAllocateBanks (
     PcrAllocation.count++;
   }
   if ((HASH_ALG_SHA256 & SupportedPCRBanks) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrAllocation.pcrSelections[PcrAllocation.count].hash = TPM_ALG_SHA256;
     PcrAllocation.pcrSelections[PcrAllocation.count].sizeofSelect = PCR_SELECT_MAX;
     if ((HASH_ALG_SHA256 & PCRBanks) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0xFF;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0x00;
@@ -638,13 +684,16 @@ Tpm2PcrAllocateBanks (
     PcrAllocation.count++;
   }
   if ((HASH_ALG_SHA384 & SupportedPCRBanks) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrAllocation.pcrSelections[PcrAllocation.count].hash = TPM_ALG_SHA384;
     PcrAllocation.pcrSelections[PcrAllocation.count].sizeofSelect = PCR_SELECT_MAX;
     if ((HASH_ALG_SHA384 & PCRBanks) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0xFF;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0x00;
@@ -652,13 +701,16 @@ Tpm2PcrAllocateBanks (
     PcrAllocation.count++;
   }
   if ((HASH_ALG_SHA512 & SupportedPCRBanks) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrAllocation.pcrSelections[PcrAllocation.count].hash = TPM_ALG_SHA512;
     PcrAllocation.pcrSelections[PcrAllocation.count].sizeofSelect = PCR_SELECT_MAX;
     if ((HASH_ALG_SHA512 & PCRBanks) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0xFF;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0x00;
@@ -666,13 +718,16 @@ Tpm2PcrAllocateBanks (
     PcrAllocation.count++;
   }
   if ((HASH_ALG_SM3_256 & SupportedPCRBanks) != 0) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     PcrAllocation.pcrSelections[PcrAllocation.count].hash = TPM_ALG_SM3_256;
     PcrAllocation.pcrSelections[PcrAllocation.count].sizeofSelect = PCR_SELECT_MAX;
     if ((HASH_ALG_SM3_256 & PCRBanks) != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0xFF;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0xFF;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[0] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[1] = 0x00;
       PcrAllocation.pcrSelections[PcrAllocation.count].pcrSelect[2] = 0x00;
@@ -690,6 +745,7 @@ Tpm2PcrAllocateBanks (
              );
   DEBUG ((EFI_D_INFO, "Tpm2PcrAllocateBanks call Tpm2PcrAllocate - %r\n", Status));
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
@@ -722,6 +778,7 @@ Tpm2PolicyPCR (
   IN TPML_PCR_SELECTION       *Pcrs
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                   Status;
   TPM2_PCR_POLICYPCR_COMMAND   SendBuffer;
   TPM2_PCR_POLICYPCR_RESPONSE  RecvBuffer;
@@ -738,6 +795,7 @@ Tpm2PolicyPCR (
   Buffer = (UINT8 *)&SendBuffer.PcrDigest;
 
   if(PcrDigest->size > sizeof(TPMU_HA)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - PcrDigest buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
@@ -747,17 +805,20 @@ Tpm2PolicyPCR (
   Buffer += PcrDigest->size;
 
   if(Pcrs->count > HASH_COUNT) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelections buffer overflow\n"));
     return EFI_INVALID_PARAMETER;
   }
   WriteUnaligned32 ((UINT32 *)Buffer, SwapBytes32(Pcrs->count));
   Buffer += sizeof(UINT32);
   for (Index = 0; Index < Pcrs->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(Pcrs->pcrSelections[Index].hash));
     Buffer += sizeof(UINT16);
     *(UINT8 *)Buffer = Pcrs->pcrSelections[Index].sizeofSelect;
     Buffer++;
     if(Pcrs->pcrSelections[Index].sizeofSelect > PCR_SELECT_MAX) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - pcrSelect buffer overflow\n"));
       return EFI_INVALID_PARAMETER;
     }
@@ -770,15 +831,18 @@ Tpm2PolicyPCR (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - Tpm2SubmitCommand failed\n"));
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2PolicyPCR - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     return EFI_DEVICE_ERROR;
   }

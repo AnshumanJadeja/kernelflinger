@@ -47,6 +47,7 @@
 #define AVB_COMPILATION
 #include "avb_sha.h"
 #include "slot.h"
+#include "log.h"
 
 extern char _binary_avb_pk_start;
 extern char _binary_avb_pk_end;
@@ -60,11 +61,14 @@ static EFI_STATUS android_query_image_and_size_from_avb_result(
                 OUT size_t *image_size
                 )
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     AvbPartitionData *pdata = NULL;
 
     for (size_t n = 0; n < slot_data->num_loaded_partitions; ++n) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         pdata = &slot_data->loaded_partitions[n];
         if (!strcmp(pdata->partition_name, label)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             *image = pdata->data;
             *image_size = pdata->data_size;
             return EFI_SUCCESS;
@@ -77,6 +81,7 @@ static EFI_STATUS android_query_image_and_size_from_avb_result(
 
 static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *image_buf)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     AvbFooter footer;
     const AvbFooter *img_footer;
     const uint8_t* desc_partition_name = NULL;
@@ -103,6 +108,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
     img_footer = (const AvbFooter *)&footer;
     if (!avb_footer_validate_and_byteswap(img_footer, &footer)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         error(L"%a: No footer detected.\n", __FUNCTION__);
         return AVB_SLOT_VERIFY_RESULT_ERROR_OOM;
     }
@@ -117,10 +123,12 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
     aret = AVB_SLOT_VERIFY_RESULT_OK;
     do
     {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         AvbVBMetaVerifyResult vret;
 
         ret = read_partition_by_label(label, vbmeta_offset, vbmeta_size, (void *)vbmeta);
         if (EFI_ERROR(ret)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: read vbmeta failed, off=0x%X, size=0x%X.\n", label, vbmeta_offset, vbmeta_size);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_OOM;
             break;
@@ -132,6 +140,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
             &out_public_key_data,
             &out_public_key_length);
         if (vret != AVB_SLOT_VERIFY_RESULT_OK) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: invalid vbmeta, error=%a.\n", label, avb_vbmeta_verify_result_to_string(vret));
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_OOM;
             break;
@@ -139,6 +148,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
         if(out_public_key_length > avb_pk_size
             || memcmp(out_public_key_data, avb_pk, out_public_key_length)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: Invalid public key!!!!", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
@@ -146,6 +156,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
         descriptors = avb_descriptor_get_all(vbmeta, vbmeta_size, &num_descriptors);
         if(num_descriptors != 1) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: descriptor num %d != 1\n", label, num_descriptors);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
@@ -153,12 +164,14 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
         descriptor = descriptors[0];
         if (!avb_descriptor_validate_and_byteswap(descriptor, &desc)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: Descriptor is invalid\n", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
         }
 
         if(desc.tag != AVB_DESCRIPTOR_TAG_HASH) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: unsupported descriptor tag(%d)\n", label, desc.tag);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
@@ -166,6 +179,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
         if (!avb_hash_descriptor_validate_and_byteswap(
                 (const AvbHashDescriptor*)descriptor, &hash_desc)) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: invalid metadata!\n", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
@@ -175,6 +189,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
         desc_salt = desc_partition_name + hash_desc.partition_name_len;
         desc_digest = desc_salt + hash_desc.salt_len;
         if (avb_strcmp((const char*)hash_desc.hash_algorithm, "sha256") == 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             AvbSHA256Ctx sha256_ctx;
             avb_sha256_init(&sha256_ctx);
             avb_sha256_update(&sha256_ctx, desc_salt, hash_desc.salt_len);
@@ -182,6 +197,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
             digest = avb_sha256_final(&sha256_ctx);
             digest_len = AVB_SHA256_DIGEST_SIZE;
         } else if (avb_strcmp((const char*)hash_desc.hash_algorithm, "sha512") == 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             AvbSHA512Ctx sha512_ctx;
             avb_sha512_init(&sha512_ctx);
             avb_sha512_update(&sha512_ctx, desc_salt, hash_desc.salt_len);
@@ -189,18 +205,21 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
             digest = avb_sha512_final(&sha512_ctx);
             digest_len = AVB_SHA512_DIGEST_SIZE;
         } else {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: Unsupported hash algorithm.\n", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
         }
 
         if (digest_len != hash_desc.digest_len) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: Digest in descriptor not of expected size.\n", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_INVALID_METADATA;
             break;
         }
 
         if (avb_safe_memcmp(digest, desc_digest, digest_len) != 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"%s: Hash of data does not match digest in descriptor.\n", label);
             aret = AVB_SLOT_VERIFY_RESULT_ERROR_VERIFICATION;
             break;
@@ -215,6 +234,7 @@ static AvbSlotVerifyResult avb_verify_image(const CHAR16 *label, const uint8_t *
 
 EFI_STATUS load_tos_image(OUT VOID **tosimage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT8 verify_state = BOOT_STATE_GREEN;
         UINT8 verify_state_new;
@@ -235,6 +255,7 @@ EFI_STATUS load_tos_image(OUT VOID **tosimage)
 
         ret = android_image_load_partition_avb("tos", tosimage, &verify_state_new, &slot_data);  // Do not try to switch slot if failed
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"TOS image loading failed");
                 return ret;
         }
@@ -261,6 +282,7 @@ EFI_STATUS load_tos_image(OUT VOID **tosimage)
 
 static VOID activate_vtd(VOID)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define VMCALL_ACTIVATE_VTD 0x56544400ULL        // "VTD"
         asm volatile ("vmcall" : : "a"(VMCALL_ACTIVATE_VTD));
 }
@@ -270,5 +292,6 @@ static VOID activate_vtd(VOID)
  */
 VOID trusty_late_init(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         activate_vtd();
 }

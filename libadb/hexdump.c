@@ -35,9 +35,11 @@
 #include <pae.h>
 
 #include "hexdump.h"
+#include "log.h"
 
 static EFI_STATUS hexdump_main(INTN argc, const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_PHYSICAL_ADDRESS address, real;
 	UINT64 length;
@@ -56,6 +58,7 @@ static EFI_STATUS hexdump_main(INTN argc, const char **argv)
 
 #ifndef __LP64__
 	if (address > UINT32_MAX) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = ss_pae_map(&address, length);
 		if (EFI_ERROR(ret))
 			return ret;
@@ -72,6 +75,7 @@ static EFI_STATUS hexdump_main(INTN argc, const char **argv)
 }
 
 shcmd_t hexdump_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "hexdump",
 	.summary = "Hexdump a memory region",
 	.help = "Usage: hexdump ADDRESS LENGTH",

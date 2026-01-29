@@ -45,14 +45,19 @@
 #include "security.h"
 #if defined(USE_ACPIO) || defined(USE_ACPI)
 #include "acpi.h"
+#include "log.h"
 #endif
 
 static struct algorithm {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const CHAR8 *name;
 	const EVP_MD *(*get_md)(void);
 } const ALGORITHMS[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ (CHAR8*)"sha1", EVP_sha1 }, /* default algorithm */
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ (CHAR8*)"md5", EVP_md5 }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static const EVP_MD *selected_md;
@@ -67,11 +72,13 @@ static UINT64 iasoffset = 0;
 
 EFI_STATUS set_hash_algorithm(const CHAR8 *algo)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	unsigned int i;
 
 	/* Use default algorithm */
 	if (!algo) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		selected_md = ALGORITHMS[0].get_md();
 		goto out;
 	}
@@ -91,6 +98,7 @@ out:
 
 static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EVP_MD_CTX mdctx;
 
 	if (!selected_md)
@@ -105,11 +113,13 @@ static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 
 static EFI_STATUS report_hash(const CHAR16 *base, const CHAR16 *name, CHAR8 *hash)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR8 hashstr[hash_len * 2 + 1];
 
 	ret = bytes_to_hex_stra(hash, hash_len, hashstr, sizeof(hashstr));
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to convert bytes to hexadecimal string");
 		return ret;
 	}
@@ -129,6 +139,7 @@ static INTN subdir;
 
 static EFI_STATUS hash_file(EFI_FILE *dir, EFI_FILE_INFO *fi)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_FILE *file;
 	void *data;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -136,6 +147,7 @@ static EFI_STATUS hash_file(EFI_FILE *dir, EFI_FILE_INFO *fi)
 	UINTN size;
 
 	if (!fi->Size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		hash_buffer(NULL, 0, hash);
 		return report_hash(path, fi->FileName, hash);
 	}
@@ -170,6 +182,7 @@ close:
  */
  static void initpath(void)
  {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	path = AllocateZeroPool(DIR_BUFFER_SIZE);
 	if (!path)
 		return;
@@ -178,6 +191,7 @@ close:
 
 static void freepath(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!path)
 		return;
 
@@ -188,6 +202,7 @@ static void freepath(void)
 
 static void pushdir(CHAR16 *dir)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!path)
@@ -208,9 +223,11 @@ static void pushdir(CHAR16 *dir)
 
 static void popdir(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!path)
 		return;
 	if (subdir > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*subname[subdir - 1] = L'\0';
 		debug(L"Return to %s", path);
 		return;
@@ -220,6 +237,7 @@ static void popdir(void)
 
 static EFI_STATUS get_esp_hash(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io;
 	EFI_FILE *dirs[MAX_DIR];
@@ -229,6 +247,7 @@ static EFI_STATUS get_esp_hash(void)
 
 	ret = get_esp_fs(&io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition ESP");
 		return ret;
 	}
@@ -236,21 +255,26 @@ static EFI_STATUS get_esp_hash(void)
 	subdir = 0;
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &dirs[subdir]);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open root directory");
 		return ret;
 	}
 	initpath();
 	do {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		size = sizeof(buf);
 		if (subdir >= 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = uefi_call_wrapper(dirs[subdir]->Read, 3, dirs[subdir], &size, fi);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Cannot read directory entry");
 				/* continue to walk the ESP partition */
 				size = 0;
 			}
 		}
 		if (!size && subdir >= 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			/* size is 0 means there are no more files/dir in current directory
 			 * so if we are in a subdir, go back 1 level */
 			uefi_call_wrapper(dirs[subdir]->Close, 1, dirs[subdir]);
@@ -259,11 +283,13 @@ static EFI_STATUS get_esp_hash(void)
 			continue;
 		}
 		if (fi->Attribute & EFI_FILE_DIRECTORY) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			EFI_FILE *parent;
 
 			if (!StrCmp(fi->FileName, L".") || !StrCmp(fi->FileName, L".."))
 				continue;
 			if (subdir == MAX_DIR - 1) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"too much subdir, ignoring %s", fi->FileName);
 				continue;
 			}
@@ -272,14 +298,17 @@ static EFI_STATUS get_esp_hash(void)
 			subdir++;
 			ret = uefi_call_wrapper(parent->Open, 5, parent, &dirs[subdir], fi->FileName, EFI_FILE_MODE_READ, 0);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Cannot open directory %s", fi->FileName);
 				/* continue to walk the ESP partition */
 				popdir();
 				subdir--;
 			}
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = hash_file(dirs[subdir], fi);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				freepath();
 				return ret;
 			}
@@ -290,6 +319,7 @@ static EFI_STATUS get_esp_hash(void)
 
 EFI_STATUS get_bootloader_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID type;
 
@@ -403,6 +433,7 @@ static EFI_STATUS hash_partition(struct gpt_partition_interface *gparti, UINT64 
 	EVP_DigestInit_ex(&mdctx, selected_md, NULL);
 
 	for (offset = 0; offset < len; offset += CHUNK) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		chunklen = MIN(len - offset, CHUNK);
 		ret = read_partition(gparti, offset, chunklen, buffer);
 		if (EFI_ERROR(ret))
@@ -441,6 +472,7 @@ struct ias_img_hdr {
 static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 				    UINT64 *len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct ias_img_hdr hdr;
 	unsigned char tos_magic[ARRAY_SIZE(MULTIBOOT_MAGIC)];
@@ -456,6 +488,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 				gparti->bio->Media->MediaId, part_off + iasoffset,
 				sizeof(hdr), &hdr);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read the ias image header");
 		return ret;
 	}
@@ -464,14 +497,17 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 
 	/* Verify ias image magic. */
 	if (memcmp(IAS_IMAGE_MAGIC, hdr.magic, sizeof(hdr.magic))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Bad ias magic");
 		return EFI_COMPROMISED_DATA;
 	}
 
 	if (iasoffset == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* SBL multiboot image add cmdline file before evmm payload. */
 		files_num = hdr.data_off - sizeof(hdr);
 		if (files_num != 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			void *files_num_data;
 
 			files_num_data = AllocatePool(files_num);
@@ -482,6 +518,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 				gparti->bio->Media->MediaId, part_off + iasoffset + sizeof(hdr),
 				files_num, files_num_data);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to multi files");
 				FreePool(files_num_data);
 				return ret;
@@ -494,6 +531,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 			UINT32 *file_len = (UINT32 *)(files_num_data);
 
 			for (i = 0; i < (files_num/4); i++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				UINT32 skip_files_len = 0;
 
 				for (j = 0; j < i; j++)
@@ -502,6 +540,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 				data_off = hdr.data_off + skip_files_len;
 				debug(L"Checking multiboot with offset=%d, len=%d", data_off, data_len);
 				if (data_len > part_len) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					error(L"Get error file length");
 					FreePool(files_num_data);
 					return EFI_COMPROMISED_DATA;
@@ -510,6 +549,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 					gparti->bio->Media->MediaId, part_off + data_off,
 					sizeof(tos_magic), &tos_magic);
 				if (EFI_ERROR(ret)) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					efi_perror(ret, L"Failed to read the multiboot magic");
 					FreePool(files_num_data);
 					return ret;
@@ -517,6 +557,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 
 				/* Verify multiboot-tos magic. */
 				if (!memcmp(MULTIBOOT_MAGIC, tos_magic, sizeof(MULTIBOOT_MAGIC))) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					find_mulitboot = TRUE;
 					debug(L"Found the multiboot in the %dth file", (i+1));
 					break;
@@ -524,20 +565,24 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 			}
 			FreePool(files_num_data);
 			if (!find_mulitboot) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"Bad multiboot magic");
 				return EFI_COMPROMISED_DATA;
 			}
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = uefi_call_wrapper(gparti->dio->ReadDisk, 5, gparti->dio,
 					gparti->bio->Media->MediaId, part_off + data_off,
 					sizeof(tos_magic), &tos_magic);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to read the multiboot magic");
 				return ret;
 			}
 
 			/* Verify multiboot-tos magic. */
 			if (memcmp(MULTIBOOT_MAGIC, tos_magic, sizeof(MULTIBOOT_MAGIC))) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				error(L"Bad multiboot magic");
 				return EFI_COMPROMISED_DATA;
 			}
@@ -547,6 +592,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 	*len = ALIGN((data_off + data_len + IAS_CRC_SIZE), IAS_ALIGN);
 	*len += IAS_RSA_SIGNATURE_SIZE + IAS_RSA_PUBLIC_KEY_SIZE + iasoffset;
 	if (*len > part_len) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Ias-multiboot image is bigger than the partition");
 		return EFI_COMPROMISED_DATA;
 	}
@@ -557,6 +603,7 @@ static EFI_STATUS get_iasimage_len(struct gpt_partition_interface *gparti,
 #ifdef USE_MULTIBOOT
 EFI_STATUS get_ias_image_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -564,6 +611,7 @@ EFI_STATUS get_ias_image_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
@@ -582,6 +630,7 @@ EFI_STATUS get_ias_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_boot_image_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -589,15 +638,18 @@ EFI_STATUS get_boot_image_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
 
 	len = get_partition_size(&gparti);
 	if (!StrnCmp(label, L"boot_", 5)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (len >= BOARD_BOOTIMAGE_PARTITION_SIZE)
 			len = BOARD_BOOTIMAGE_PARTITION_SIZE;
 		else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"%s image is larger than partition size", label);
 			return EFI_INVALID_PARAMETER;
 		}
@@ -612,6 +664,7 @@ EFI_STATUS get_boot_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_vbmeta_image_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	UINT64 len;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -625,6 +678,7 @@ EFI_STATUS get_vbmeta_image_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
@@ -638,6 +692,7 @@ EFI_STATUS get_vbmeta_image_hash(const CHAR16 *label)
 
 static EFI_STATUS get_ext4_len(struct gpt_partition_interface *gparti, UINT64 *len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT64 block_size;
 	UINT64 len_blocks;
 	struct ext4_super_block sb;
@@ -651,6 +706,7 @@ static EFI_STATUS get_ext4_len(struct gpt_partition_interface *gparti, UINT64 *l
 		return EFI_INVALID_PARAMETER;
 
 	if ((sb.s_state & EXT4_VALID_FS) != EXT4_VALID_FS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Ext4 invalid FS [%02x]", sb.s_state);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -663,6 +719,7 @@ static EFI_STATUS get_ext4_len(struct gpt_partition_interface *gparti, UINT64 *l
 
 static EFI_STATUS get_squashfs_len(struct gpt_partition_interface *gparti, UINT64 *len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct squashfs_super_block sb;
 	UINT64 padding = SQUASHFS_PADDING;
 	EFI_STATUS ret;
@@ -692,6 +749,7 @@ static EFI_STATUS get_squashfs_len(struct gpt_partition_interface *gparti, UINT6
 #ifdef DYNAMIC_PARTITIONS
 EFI_STATUS get_super_image_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gpart;
 	EFI_STATUS ret;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -699,6 +757,7 @@ EFI_STATUS get_super_image_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Partition %s not found", label);
 		return ret;
 	}
@@ -706,6 +765,7 @@ EFI_STATUS get_super_image_hash(const CHAR16 *label)
 	len = get_partition_size(&gpart);
 	ret = hash_partition(&gpart, len, hash);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return ret;
 	}
 
@@ -715,13 +775,19 @@ EFI_STATUS get_super_image_hash(const CHAR16 *label)
 
 EFI_STATUS get_fs_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static struct supported_fs {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		const char *name;
 		EFI_STATUS (*get_len)(struct gpt_partition_interface *gparti, UINT64 *len);
 	} SUPPORTED_FS[] = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ "Ext4", get_ext4_len },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ "SquashFS", get_squashfs_len },
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{ "Ias", get_iasimage_len }
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	};
 	struct gpt_partition_interface gparti;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -731,11 +797,13 @@ EFI_STATUS get_fs_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"partition %s not found", label);
 		return ret;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(SUPPORTED_FS); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Checking %d of %a", i, SUPPORTED_FS[i].name);
 		ret = SUPPORTED_FS[i].get_len(&gparti, &fs_len);
 		if (EFI_ERROR(ret))
@@ -744,6 +812,7 @@ EFI_STATUS get_fs_hash(const CHAR16 *label)
 		break;
 	}
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"%s partition does not contain a supported filesystem", label);
 		return ret;
 	}
@@ -761,6 +830,7 @@ EFI_STATUS get_fs_hash(const CHAR16 *label)
 #if defined(USE_ACPIO) || defined(USE_ACPI)
 EFI_STATUS get_acpi_hash(const CHAR16 *label)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	CHAR8 hash[EVP_MAX_MD_SIZE];
@@ -768,18 +838,21 @@ EFI_STATUS get_acpi_hash(const CHAR16 *label)
 
 	ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Partition %s not found", label);
 		return ret;
 	}
 
 	ret = acpi_image_get_length(label, &acpi_info);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Partition %s can't get size", label);
 		return ret;
 	}
 
 	ret = hash_partition(&gpart, (*acpi_info).img_size, hash);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(acpi_info);
 		return ret;
 	}

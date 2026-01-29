@@ -17,6 +17,7 @@
 #include "elf32_ld.h"
 #include "elf64_ld.h"
 #include "elf_ld.h"
+#include "log.h"
 
 //#define local_print(fmt, ...)
 #define local_print(fmt, ...) debug(fmt, ##__VA_ARGS__);
@@ -24,10 +25,13 @@
 void *image_offset(module_file_info_t *file_info,
 				uint64_t src_offset, uint64_t bytes_to_read)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if ((src_offset + bytes_to_read) > file_info->loadtime_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return NULL; /* read no more than size */
 	}
 	if ((src_offset + bytes_to_read) <= src_offset) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return NULL; /* overflow or bytes_to_read == 0 */
 	}
 
@@ -37,15 +41,18 @@ void *image_offset(module_file_info_t *file_info,
 BOOLEAN image_copy(void *dest, module_file_info_t *file_info,
 				uint64_t src_offset, uint64_t bytes_to_copy)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *src;
 	src = image_offset(file_info, src_offset, bytes_to_copy);
 	if (!src) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return FALSE;
 	}
 	if (((uint64_t)(UINTN)dest < file_info->runtime_addr) ||
 		(((uint64_t)(UINTN)dest + bytes_to_copy) >
 		 (file_info->runtime_addr + file_info->runtime_image_size))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return FALSE;
 	}
 
@@ -78,6 +85,7 @@ BOOLEAN relocate_elf_image(	IN uint64_t ld_addr,
 				IN uint64_t rt_size,
 				OUT uint64_t *p_entry)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint8_t *p_buffer;
 	module_file_info_t file_info;
 
@@ -89,19 +97,24 @@ BOOLEAN relocate_elf_image(	IN uint64_t ld_addr,
 	p_buffer = (uint8_t *)image_offset(&file_info, 0,
 			sizeof(elf64_ehdr_t));
 	if (!p_buffer){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		local_print(L"failed to read file's header\n");
 		return FALSE;
 	}
 	if (!elf_header_is_valid((elf64_ehdr_t *)p_buffer)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		local_print(L"not an elf binary\n");
 		return FALSE;
 	}
 
 	if (is_elf64((elf64_ehdr_t *)p_buffer)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return elf64_load_executable(&file_info, p_entry);
 	} else if (is_elf32((elf32_ehdr_t *)p_buffer)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return elf32_load_executable(&file_info, p_entry);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		local_print(L"not an elf32 or elf64 binary\n");
 		return FALSE;
 	}

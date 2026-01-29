@@ -49,6 +49,7 @@
 #include "uefi_utils.h"
 
 #include "ivshmem.h"
+#include "log.h"
 
 extern UINT64 g_ivshmem_rot_addr;
 
@@ -84,11 +85,13 @@ EFI_STATUS raw_pub_key_sha256(IN const UINT8 *pub_key,
             IN UINTN pub_key_len,
             OUT UINT8 **hash_p)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         int ret;
         static UINT8 hash[SHA256_DIGEST_LENGTH];
 
         ret = EVP_Digest(pub_key, pub_key_len, hash, NULL, EVP_sha256(), NULL);
         if (ret == 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             error(L"Failed to hash the RoT bitstream");
             return EFI_INVALID_PARAMETER;
         }
@@ -99,6 +102,7 @@ EFI_STATUS raw_pub_key_sha256(IN const UINT8 *pub_key,
 
 EFI_STATUS set_os_secure_boot(BOOLEAN secure)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         UINT8 value = secure ? 1 : 0;
 
@@ -111,6 +115,7 @@ EFI_STATUS set_os_secure_boot(BOOLEAN secure)
 EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                         IN VBDATA *vb_data)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
         enum device_state state;
         struct boot_img_hdr *boot_image_header;
@@ -126,6 +131,7 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
         rot_data.version = ROT_DATA_STRUCT_VERSION2;
         state = get_current_state();
         switch (state) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 case UNLOCKED:
                         rot_data.deviceLocked = 0;
                         break;
@@ -140,6 +146,7 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
 
         temp_version.value = boot_image_header->os_version;
         if (boot_image_header->header_version >= BOOT_HEADER_V3) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 struct boot_img_hdr_v3 *boot_hdr = (struct boot_img_hdr_v3 *)bootimage;
                 temp_version.value = boot_hdr->os_version;
         }
@@ -150,14 +157,18 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
         rot_data.keySize = SHA256_DIGEST_LENGTH;
 
         if (vb_data) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = rot_pub_key_sha256(vb_data, &temp_hash);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Failed to compute key hash");
                         return ret;
                 }
                 if (state == LOCKED) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         CopyMem(rot_data.keyHash256, temp_hash, rot_data.keySize);
                 } else {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         memset_s(rot_data.keyHash256, SHA256_DIGEST_LENGTH, 0, SHA256_DIGEST_LENGTH);
                         barrier();
                 }
@@ -167,6 +178,7 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                 avb_vbmeta_image_header_to_host_byte_order((const AvbVBMetaImageHeader*)vbmeta_data, &h);
 
                 switch (h.algorithm_type) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         /* Explicit fallthrough. */
                         case AVB_ALGORITHM_TYPE_NONE:
                         case AVB_ALGORITHM_TYPE_SHA256_RSA2048:
@@ -191,6 +203,7 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                 }
 
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 memset_s(rot_data.keyHash256, SHA256_DIGEST_LENGTH, 0, SHA256_DIGEST_LENGTH);
                 memset_s(rot_data.vbmetaDigest, AVB_SHA512_DIGEST_SIZE, 0, AVB_SHA512_DIGEST_SIZE);
                 barrier();
@@ -201,6 +214,7 @@ EFI_STATUS update_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
 EFI_STATUS ivsh_send_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
                         IN VBDATA *vb_data)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EFI_STATUS ret = EFI_SUCCESS;
 
     if (!g_ivshmem_rot_addr)
@@ -209,6 +223,7 @@ EFI_STATUS ivsh_send_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
     debug(L"use tee ROT\n");
     ret = update_rot_data(bootimage, boot_state, vb_data);
     if (EFI_ERROR(ret)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         efi_perror(ret, L"Unable to update the root of trust data");
         return ret;
     }
@@ -225,6 +240,7 @@ EFI_STATUS ivsh_send_rot_data(IN VOID *bootimage, IN UINT8 boot_state,
 /* initialize the struct rot_data for startup_information */
 EFI_STATUS init_rot_data(UINT32 boot_state)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* Initialize the rot data structure */
     rot_data.version = ROT_DATA_STRUCT_VERSION2;
     rot_data.deviceLocked = 1;
@@ -248,10 +264,12 @@ struct rot_data_t* get_rot_data()
 
 CHAR8* strrpl(CHAR8 *in, const char src, const char dst)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (NULL == in)
         return in;
     CHAR8 *p = in;
     while(*p != '\0'){
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if(*p == src)
             *p = dst;
         p++;
@@ -261,6 +279,7 @@ CHAR8* strrpl(CHAR8 *in, const char src, const char dst)
 
 static EFI_STATUS set_attestation_ids(UINT8 *src)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     const char *delim = "=";
     CHAR8 *savedPtr2;
     const char d1 = ',';
@@ -276,18 +295,23 @@ static EFI_STATUS set_attestation_ids(UINT8 *src)
     temp = strrpl(savedPtr2, d1, d2);//Converts comma to space in the string
     size = (strlen(temp) < ATTESTATION_ID_MAX_LENGTH) ? strlen(temp) : ATTESTATION_ID_MAX_LENGTH;
     if (strncmp(token, "androidboot.brand", strlen("androidboot.brand")) == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         attestation_ids.brandSize = size;
         CopyMem(attestation_ids.brand, temp, size);
     } else if (strncmp(token, "androidboot.device", strlen("androidboot.device")) == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         attestation_ids.deviceSize = size;
         CopyMem(attestation_ids.device, temp, size);
     } else if (strncmp(token, "androidboot.model", strlen("androidboot.model")) == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         attestation_ids.modelSize = size;
         CopyMem(attestation_ids.model, temp, size);
     } else if (strncmp(token, "androidboot.manufacturer", strlen("androidboot.manufacturer")) == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         attestation_ids.manufacturerSize = size;
         CopyMem(attestation_ids.manufacturer, temp, size);
     } else if (strncmp(token, "androidboot.name", strlen("androidboot.name")) == 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         attestation_ids.nameSize = size;
         CopyMem(attestation_ids.name, temp, size);
     } else
@@ -299,6 +323,7 @@ static EFI_STATUS set_attestation_ids(UINT8 *src)
 /* Update the struct attestation_ids for startup_information */
 EFI_STATUS update_attestation_ids(IN VOID *vendorbootimage)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EFI_STATUS ret = EFI_SUCCESS;
     struct vendor_boot_img_hdr_v4 *vendor_hdr;
     UINT32 page_size;
@@ -330,6 +355,7 @@ EFI_STATUS update_attestation_ids(IN VOID *vendorbootimage)
     configChar[vendor_hdr->bootconfig_size] = '\0';
     token = (CHAR8 *)strtok_r((char *)configChar, delim, (char **)&savedPtr);
     while (token != NULL) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         set_attestation_ids(token);
         token = (CHAR8 *)strtok_r(NULL, delim, (char **)&savedPtr);
     }
@@ -346,6 +372,7 @@ EFI_STATUS update_attestation_ids(IN VOID *vendorbootimage)
 /* initialize the struct attestation_ids for startup_information */
 EFI_STATUS init_attestation_ids()
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     /* Initialize the attestation ids structure */
     attestation_ids.brandSize = 0;
     memset_s(attestation_ids.brand, ATTESTATION_ID_MAX_LENGTH, 0, ATTESTATION_ID_MAX_LENGTH);

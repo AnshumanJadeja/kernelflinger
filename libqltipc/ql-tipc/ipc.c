@@ -24,10 +24,12 @@
 
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
+#include "log.h"
 
 #define LOCAL_LOG 0
 
 static int sync_ipc_on_connect_complete(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(chan);
 
     chan->complete = 1;
@@ -35,6 +37,7 @@ static int sync_ipc_on_connect_complete(struct trusty_ipc_chan* chan) {
 }
 
 static int sync_ipc_on_message(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(chan);
 
     chan->complete = 1;
@@ -42,6 +45,7 @@ static int sync_ipc_on_message(struct trusty_ipc_chan* chan) {
 }
 
 static int sync_ipc_on_disconnect(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(chan);
 
     chan->complete = TRUSTY_ERR_CHANNEL_CLOSED;
@@ -49,10 +53,12 @@ static int sync_ipc_on_disconnect(struct trusty_ipc_chan* chan) {
 }
 
 static int wait_for_complete(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
 
     chan->complete = 0;
     for (;;) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         rc = trusty_ipc_poll_for_event(chan->dev);
         if (rc < 0)
             return rc;
@@ -68,22 +74,26 @@ static int wait_for_complete(struct trusty_ipc_chan* chan) {
 }
 
 static int wait_for_connect(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_debug("%s: chan %x: waiting for connect\n", __func__,
                  (int)chan->handle);
     return wait_for_complete(chan);
 }
 
 static int wait_for_send(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_debug("%s: chan %d: waiting for send\n", __func__, chan->handle);
     return wait_for_complete(chan);
 }
 
 static int wait_for_reply(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_debug("%s: chan %d: waiting for reply\n", __func__, chan->handle);
     return wait_for_complete(chan);
 }
 
 static struct trusty_ipc_ops sync_ipc_ops = {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         .on_connect_complete = sync_ipc_on_connect_complete,
         .on_message = sync_ipc_on_message,
         .on_disconnect = sync_ipc_on_disconnect,
@@ -105,6 +115,7 @@ void trusty_ipc_chan_init(struct trusty_ipc_chan* chan,
 int trusty_ipc_connect(struct trusty_ipc_chan* chan,
                        const char* port,
                        bool wait) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
 
     trusty_assert(chan);
@@ -114,6 +125,7 @@ int trusty_ipc_connect(struct trusty_ipc_chan* chan,
 
     rc = trusty_ipc_dev_connect(chan->dev, port, (uint64_t)(uintptr_t)chan);
     if (rc < 0) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: init connection failed (%d)\n", __func__, rc);
         return rc;
     }
@@ -122,8 +134,10 @@ int trusty_ipc_connect(struct trusty_ipc_chan* chan,
 
     /* got valid channel */
     if (wait) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         rc = wait_for_connect(chan);
         if (rc < 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             trusty_error("%s: wait for connect failed (%d)\n", __func__, rc);
             trusty_ipc_close(chan);
         }
@@ -133,6 +147,7 @@ int trusty_ipc_connect(struct trusty_ipc_chan* chan,
 }
 
 int trusty_ipc_close(struct trusty_ipc_chan* chan) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
 
     trusty_assert(chan);
@@ -147,6 +162,7 @@ int trusty_ipc_send(struct trusty_ipc_chan* chan,
                     const struct trusty_ipc_iovec* iovs,
                     size_t iovs_cnt,
                     bool wait) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
 
     trusty_assert(chan);
@@ -156,9 +172,12 @@ int trusty_ipc_send(struct trusty_ipc_chan* chan,
 Again:
     rc = trusty_ipc_dev_send(chan->dev, chan->handle, iovs, iovs_cnt);
     if (rc == TRUSTY_ERR_SEND_BLOCKED) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (wait) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             rc = wait_for_send(chan);
             if (rc < 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 trusty_error("%s: wait to send failed (%d)\n", __func__, rc);
                 return rc;
             }
@@ -172,14 +191,17 @@ int trusty_ipc_recv(struct trusty_ipc_chan* chan,
                     const struct trusty_ipc_iovec* iovs,
                     size_t iovs_cnt,
                     bool wait) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     trusty_assert(chan);
     trusty_assert(chan->dev);
     trusty_assert(chan->handle);
 
     if (wait) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         rc = wait_for_reply(chan);
         if (rc < 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             trusty_error("%s: wait to reply failed (%d)\n", __func__, rc);
             return rc;
         }
@@ -193,6 +215,7 @@ int trusty_ipc_recv(struct trusty_ipc_chan* chan,
 }
 
 int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     struct trusty_ipc_event evt;
     struct trusty_ipc_chan* chan;
@@ -201,12 +224,14 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     rc = trusty_ipc_dev_get_event(ipc_dev, 0, &evt);
     if (rc) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_error("%s: get event failed (%d)\n", __func__, rc);
         return rc;
     }
 
     /* check if we have an event */
     if (!evt.event) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_debug("%s: no event\n", __func__);
         return TRUSTY_EVENT_NONE;
     }
@@ -216,9 +241,11 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     /* check if we have raw event handler */
     if (chan->ops->on_raw_event) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* invoke it first */
         rc = chan->ops->on_raw_event(chan, &evt);
         if (rc < 0) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             trusty_error("%s: chan %d: raw event cb returned (%d)\n", __func__,
                          chan->handle, rc);
             return rc;
@@ -228,6 +255,7 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
     }
 
     if (evt.event & IPC_HANDLE_POLL_ERROR) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* something is very wrong */
         trusty_error("%s: chan %d: chan in error state\n", __func__,
                      chan->handle);
@@ -236,9 +264,12 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     /* send unblocked should be handled first as it is edge truggered event */
     if (evt.event & IPC_HANDLE_POLL_SEND_UNBLOCKED) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (chan->ops->on_send_unblocked) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             rc = chan->ops->on_send_unblocked(chan);
             if (rc < 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 trusty_error("%s: chan %d: send unblocked cb returned (%d)\n",
                              __func__, chan->handle, rc);
                 return rc;
@@ -250,9 +281,12 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     /* check for connection complete */
     if (evt.event & IPC_HANDLE_POLL_READY) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (chan->ops->on_connect_complete) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             rc = chan->ops->on_connect_complete(chan);
             if (rc < 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 trusty_error("%s: chan %d: ready cb returned (%d)\n", __func__,
                              chan->handle, rc);
                 return rc;
@@ -264,9 +298,12 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     /* check for incomming messages */
     if (evt.event & IPC_HANDLE_POLL_MSG) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (chan->ops->on_message) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             rc = chan->ops->on_message(chan);
             if (rc < 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 trusty_error("%s: chan %d: msg cb returned (%d)\n", __func__,
                              chan->handle, rc);
                 return rc;
@@ -278,9 +315,12 @@ int trusty_ipc_poll_for_event(struct trusty_ipc_dev* ipc_dev) {
 
     /* check for hangups */
     if (evt.event & IPC_HANDLE_POLL_HUP) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (chan->ops->on_disconnect) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             rc = chan->ops->on_disconnect(chan);
             if (rc < 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 trusty_error("%s: chan %d: hup cb returned (%d)\n", __func__,
                              chan->handle, rc);
                 return rc;

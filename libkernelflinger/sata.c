@@ -34,6 +34,7 @@
 #include "protocol/AtaPassThru.h"
 #include "protocol/Atapi.h"
 #include "storage.h"
+#include "log.h"
 
 #define TRIM_SUPPORTED_BIT		0x01
 #define BIT5				0x20
@@ -68,14 +69,17 @@ static EFI_STATUS sata_identify_data(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 				     SATA_DEVICE_PATH *sata_dp,
 				     ATA_IDENTIFY_DATA *identify_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_ATA_STATUS_BLOCK asb;
 	EFI_ATA_COMMAND_BLOCK acb = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.AtaCommand = ATA_CMD_IDENTIFY_DRIVE,
 		.AtaDeviceHead = (UINT8) (BIT7 | BIT6 | BIT5 |
 					  (sata_dp->PortMultiplierPortNumber << PORT_MULTIPLIER_POS))
 	};
 	EFI_ATA_PASS_THRU_COMMAND_PACKET ata_packet = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.Asb = &asb,
 		.Acb = &acb,
 		.Timeout = ATA_TIMEOUT_NS,
@@ -97,8 +101,10 @@ static EFI_STATUS sata_identify_data(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 
 static BOOLEAN is_dsm_trim_supported( UINT16 *max_dsm_block_nb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!(identify_data.is_data_set_cmd_supported & TRIM_SUPPORTED_BIT)
 	    || identify_data.max_no_of_512byte_blocks_per_data_set_cmd == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"This SATA device does support DATA SET MANAGEMENT command");
 		return FALSE;
 	}
@@ -110,6 +116,7 @@ static BOOLEAN is_dsm_trim_supported( UINT16 *max_dsm_block_nb)
 /* Deterministic Read Zero after TRIM */
 static BOOLEAN is_rzat_supported(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	debug(L"This SATA device additional supprote 0x%x", identify_data.additional_supported);
 	if ((identify_data.additional_supported & DETERMINISTIC_READ_AFTER_TRIM_SUPPORTED)
 	    && (identify_data.additional_supported & READ_ZERO_AFTER_TRIM_SUPPORTED))
@@ -126,15 +133,18 @@ static EFI_STATUS ata_dsm_trim(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 			       SATA_DEVICE_PATH *sata_dp, EFI_LBA start, EFI_LBA end,
 			       UINT16 max_dsm_block_nb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_ATA_STATUS_BLOCK asb;
 	EFI_ATA_COMMAND_BLOCK acb = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.AtaCommand = ATA_CMD_DSM,
 		.AtaFeatures = ATA_CMD_DSM_TRIM_FEATURE,
 		.AtaDeviceHead = (UINT8) (BIT7 | BIT6 | BIT5 |
 					  (sata_dp->PortMultiplierPortNumber << PORT_MULTIPLIER_POS))
 	};
 	EFI_ATA_PASS_THRU_COMMAND_PACKET ata_packet = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.Asb = &asb,
 		.Acb = &acb,
 		.Timeout = ATA_TIMEOUT_NS,
@@ -155,17 +165,20 @@ static EFI_STATUS ata_dsm_trim(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 	ret = alloc_aligned((VOID **)&buf, (VOID **)&range,
 			    nr_blocks * BLOCK_SIZE, ata->Mode->IoAlign);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to allocate DSM LBA Range buffer");
 		return ret;
 	}
 
 	for (i = 0; start <= end; start += MAX_SECTOR_PER_RANGE, i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*((UINT64 *)&range[i]) = start;
 		left = end - start + 1;
 		range[i].len = left < MAX_SECTOR_PER_RANGE ? left : MAX_SECTOR_PER_RANGE;
 	}
 
 	for (i = 0; i < nr_blocks; i += max_dsm_block_nb) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ata_packet.OutDataBuffer = ((UINT8 *)range) + i * BLOCK_SIZE;
 
 		count = min(nr_blocks - i, max_dsm_block_nb);
@@ -178,6 +191,7 @@ static EFI_STATUS ata_dsm_trim(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 					sata_dp->PortMultiplierPortNumber,
 					&ata_packet, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"DATA SET MANAGEMENT command failed");
 			goto out;
 		}
@@ -193,6 +207,7 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 				SATA_DEVICE_PATH *sata_dp,
 				EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_ATA_STATUS_BLOCK asb;
 	VOID *emptyblock;
@@ -214,6 +229,7 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 			    (sata_dp->PortMultiplierPortNumber << PORT_MULTIPLIER_POS));
 
 	EFI_ATA_PASS_THRU_COMMAND_PACKET ata_packet = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.Asb = &asb,
 		.Acb = &acb,
 		.Timeout = ATA_TIMEOUT_NS,
@@ -229,6 +245,7 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 	uint32_t print_sec = boottime_in_msec() / 1000;
 	uint32_t print_prev = 0;
 	while (start < end) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		acb.AtaSectorNumber = start;
 		acb.AtaCylinderLow = (start >> 8);
 		acb.AtaCylinderHigh = (start >> 16);
@@ -244,10 +261,12 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 		 *   transmitted is determined by ata_packet.OutTransferLength
 		 */
 		if (start + blocks >= end) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			acb.AtaSectorCount = (UINT8)(end - start + 1);
 			acb.AtaSectorCountExp = (UINT8)((end - start + 1) >> 8);
 			ata_packet.OutTransferLength = (end - start + 1);
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			acb.AtaSectorCount = (UINT8)blocks;
 			acb.AtaSectorCountExp = (UINT8)(blocks >> 8);
 			ata_packet.OutTransferLength = blocks;
@@ -258,17 +277,22 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 					sata_dp->PortMultiplierPortNumber,
 					&ata_packet, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (ret == EFI_BAD_BUFFER_SIZE) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				/* when EFI_BAD_BUFFER_SIZE is returned
 				 * but InTransferLength is not updated,
 				 * try to probe a reasonable transfer size
 				 */
 				if (ata_packet.InTransferLength == 0) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					blocks = blocks >> 2;
 					if (blocks)
 						continue;
 				} else {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					if (retry_count == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						efi_perror(ret, L"ATA controller can't give a reasonable transfer length");
 						break;
 					}
@@ -298,6 +322,7 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 				    __attribute__((unused)) EFI_BLOCK_IO *bio,
 				    EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID AtaPassThruProtocolGuid = EFI_ATA_PASS_THRU_PROTOCOL_GUID;
 	EFI_DEVICE_PATH *dp;
@@ -308,6 +333,7 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 
 	dp = DevicePathFromHandle(handle);
 	if (!dp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path from handle");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -316,12 +342,14 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 	ret = uefi_call_wrapper(BS->LocateDevicePath, 3, &AtaPassThruProtocolGuid,
 				(EFI_DEVICE_PATH **)&sata_dp, &ata_handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to locate ATA root device");
 		return ret;
 	}
 
 	sata_dp = get_sata_device_path(dp);
 	if (!sata_dp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get ATA device path");
 		return EFI_NOT_FOUND;
 	}
@@ -329,6 +357,7 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, ata_handle,
 				&AtaPassThruProtocolGuid, (void *)&ata);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"failed to get ATA protocol");
 		return ret;
 	}
@@ -343,8 +372,10 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 		return ret;
 
 	if (is_rzat_supported()){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return EFI_SUCCESS;
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Deterministic Read Zero after TRIM unsupported");
 
 		ret = ata_fill_zero(ata, sata_dp, start, end);
@@ -358,11 +389,13 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 static EFI_STATUS sata_check_logical_unit(__attribute__((unused)) EFI_DEVICE_PATH *p,
 					  logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_sata(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_sata_device_path(p) != NULL;
 }
 

@@ -15,6 +15,7 @@
 
 #include <IndustryStandard/TpmTis.h>
 #include "lib.h"
+#include "log.h"
 
 #define TIS_TIMEOUT_MAX             (90000 * 1000)  // 90s
 
@@ -36,6 +37,7 @@ TisPcPresenceCheck (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             RegRead;
 
   RegRead = MmioRead8 ((UINTN)&TisReg->Access);
@@ -61,12 +63,15 @@ TisPcWaitRegisterBits (
   IN      UINT32                    TimeOut
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             RegRead;
   UINT32                            WaitTime;
 
   for (WaitTime = 0; WaitTime < TimeOut; WaitTime += 100) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     RegRead = MmioRead8 ((UINTN)Register);
     if ((RegRead & BitSet) == BitSet && (RegRead & BitClear) == 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return EFI_SUCCESS;
     }
     pause_us(100);
@@ -91,16 +96,19 @@ TisPcReadBurstCount (
   OUT  UINT16                    *BurstCount
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32                            WaitTime;
   UINT8                             DataByte0;
   UINT8                             DataByte1;
 
   if (BurstCount == NULL || TisReg == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_INVALID_PARAMETER;
   }
 
   WaitTime = 0;
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     //
     // TIS_PC_REGISTERS_PTR->burstCount is UINT16, but it is not 2bytes aligned,
     // so it needs to use MmioRead8 to read two times
@@ -109,6 +117,7 @@ TisPcReadBurstCount (
     DataByte1   = MmioRead8 ((UINTN)&TisReg->BurstCount + 1);
     *BurstCount = (UINT16) ((DataByte1 << 8) + DataByte0);
     if (*BurstCount != 0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return EFI_SUCCESS;
     }
     pause_us(100);
@@ -133,9 +142,11 @@ TisPcPrepareCommand (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
 
   if (TisReg == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_INVALID_PARAMETER;
   }
 
@@ -165,13 +176,16 @@ TisPcRequestUseTpm (
   IN      TIS_PC_REGISTERS_PTR      TisReg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
 
   if (TisReg == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_INVALID_PARAMETER;
   }
 
   if (!TisPcPresenceCheck (TisReg)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_NOT_FOUND;
   }
 
@@ -209,6 +223,7 @@ Tpm2TisTpmCommand (
   IN OUT UINT32                     *SizeOut
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   UINT16                            BurstCount;
   UINT32                            Index;
@@ -220,6 +235,7 @@ Tpm2TisTpmCommand (
 
   Status = TisPcPrepareCommand (TisReg);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2 is not ready for command!\n"));
     return EFI_DEVICE_ERROR;
   }
@@ -228,12 +244,15 @@ Tpm2TisTpmCommand (
   //
   Index = 0;
   while (Index < SizeIn) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = TisPcReadBurstCount (TisReg, &BurstCount);
     if (EFI_ERROR (Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = EFI_DEVICE_ERROR;
       goto Exit;
     }
     for (; BurstCount > 0 && Index < SizeIn; BurstCount--) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       MmioWrite8 ((UINTN)&TisReg->DataFifo, * (BufferIn + Index));
       Index++;
     }
@@ -248,6 +267,7 @@ Tpm2TisTpmCommand (
              TIS_TIMEOUT_C
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Tpm2 The send buffer too small!\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Exit;
@@ -267,6 +287,7 @@ Tpm2TisTpmCommand (
              TIS_TIMEOUT_MAX
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "Wait for Tpm2 response data time out!!\n"));
     Status = EFI_DEVICE_ERROR;
     goto Exit;
@@ -277,15 +298,19 @@ Tpm2TisTpmCommand (
   Index = 0;
   BurstCount = 0;
   while (Index < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = TisPcReadBurstCount (TisReg, &BurstCount);
     if (EFI_ERROR (Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = EFI_DEVICE_ERROR;
       goto Exit;
     }
     for (; BurstCount > 0; BurstCount--) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       * (BufferOut + Index) = MmioRead8 ((UINTN)&TisReg->DataFifo);
       Index++;
       if (Index == sizeof (TPM2_RESPONSE_HEADER)) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         break;
       }
     }
@@ -296,6 +321,7 @@ Tpm2TisTpmCommand (
   CopyMem (&Data16, BufferOut, sizeof (UINT16));
   // TPM2 should not use this RSP_COMMAND
   if (SwapBytes16 (Data16) == TPM_ST_RSP_COMMAND) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((DEBUG_ERROR, "TPM2: TPM_ST_RSP error - %x\n", TPM_ST_RSP_COMMAND));
     Status = EFI_UNSUPPORTED;
     goto Exit;
@@ -304,6 +330,7 @@ Tpm2TisTpmCommand (
   CopyMem (&Data32, (BufferOut + 2), sizeof (UINT32));
   TpmOutSize  = SwapBytes32 (Data32);
   if (*SizeOut < TpmOutSize) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_BUFFER_TOO_SMALL;
     goto Exit;
   }
@@ -312,16 +339,20 @@ Tpm2TisTpmCommand (
   // Continue reading the remaining data
   //
   while ( Index < TpmOutSize ) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     for (; BurstCount > 0; BurstCount--) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       * (BufferOut + Index) = MmioRead8 ((UINTN)&TisReg->DataFifo);
       Index++;
       if (Index == TpmOutSize) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         Status = EFI_SUCCESS;
         goto Exit;
       }
     }
     Status = TisPcReadBurstCount (TisReg, &BurstCount);
     if (EFI_ERROR (Status)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       Status = EFI_DEVICE_ERROR;
       goto Exit;
     }
@@ -352,6 +383,7 @@ DTpm2TisSubmitCommand (
   IN UINT8             *OutputParameterBlock
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return Tpm2TisTpmCommand (
            (TIS_PC_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress),
            InputParameterBlock,
@@ -374,5 +406,6 @@ DTpm2TisRequestUseTpm (
   VOID
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return TisPcRequestUseTpm ((TIS_PC_REGISTERS_PTR) (UINTN) PcdGet64 (PcdTpmBaseAddress));
 }

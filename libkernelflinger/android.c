@@ -64,6 +64,7 @@
 
 #include "uefi_utils.h"
 #include "libxbc.h"
+#include "log.h"
 
 #define OS_INITIATED L"os_initiated"
 
@@ -220,6 +221,7 @@ struct boot_params {
  * Volume 3 - Chapter 3.4.5 "Segment Descriptors".
  */
 struct segment_descriptor {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT16 limit0;
         UINT16 base0;
         UINT8 base1;
@@ -256,6 +258,7 @@ typedef void(*kernel_func)(void *, struct boot_params *);
 
 static EFI_STATUS setup_gdt(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 
         if (!is_UEFI())
@@ -319,15 +322,18 @@ static void setup_e820_map(struct boot_params *boot_params,
                            UINTN nr_entries,
                            UINTN entry_sz)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct e820_entry *e820_map = boot_params->e820_map;
         UINTN i, n_page = 0;
 
         for (i = 0; i < nr_entries; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_MEMORY_DESCRIPTOR *d;
                 unsigned int cur_type = 0;
 
                 d = (EFI_MEMORY_DESCRIPTOR *)((unsigned long)mem_entries + (i * entry_sz));
                 switch (d->Type) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 case EfiReservedMemoryType:
                 case EfiRuntimeServicesCode:
                 case EfiRuntimeServicesData:
@@ -364,6 +370,7 @@ static void setup_e820_map(struct boot_params *boot_params,
                 if (n_page &&
                     e820_map[n_page - 1].type == cur_type &&
                     (e820_map[n_page - 1].addr + e820_map[n_page - 1].size) == d->PhysicalStart) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         e820_map[n_page - 1].size += d->NumberOfPages << EFI_PAGE_SHIFT;
                         continue;
                 }
@@ -381,6 +388,7 @@ static void setup_e820_map(struct boot_params *boot_params,
  * (allocation, print, ...) in this function.  */
 static EFI_STATUS setup_memory_map(struct boot_params *boot_params, UINTN *key)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINTN nr_entries, entry_sz;
         EFI_MEMORY_DESCRIPTOR *mem_entries;
@@ -390,6 +398,7 @@ static EFI_STATUS setup_memory_map(struct boot_params *boot_params, UINTN *key)
         /* This function can be called several times. The previous
          * memory map buffer must be freed. */
         if (efi->efi_memmap) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 UINTN prev_memmap = efi->efi_memmap;
 #ifdef  __LP64__
                 prev_memmap = prev_memmap |
@@ -403,6 +412,7 @@ static EFI_STATUS setup_memory_map(struct boot_params *boot_params, UINTN *key)
                 return EFI_OUT_OF_RESOURCES;
 
         if (is_UEFI()) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi->efi_systab = (UINT32)(UINTN)ST;
                 efi->efi_memdesc_size = entry_sz;
                 efi->efi_memdesc_version = entry_ver;
@@ -416,6 +426,7 @@ static EFI_STATUS setup_memory_map(struct boot_params *boot_params, UINTN *key)
                 ret = memcpy_s(&efi->efi_loader_signature, sizeof(efi->efi_loader_signature),
                                EFI_LOADER_SIGNATURE, sizeof(efi->efi_loader_signature));
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(mem_entries);
                         return ret;
                 }
@@ -442,6 +453,7 @@ static inline EFI_STATUS handover_jump(EFI_HANDLE image,
 
         ret = setup_gdt();
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to setup GDT");
                 return ret;
         }
@@ -454,8 +466,10 @@ static inline EFI_STATUS handover_jump(EFI_HANDLE image,
          * succeed.
          */
         for (i = 0; i < 10; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = setup_memory_map(boot_params, &map_key);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Failed to setup memory map");
                         return ret;
                 }
@@ -472,6 +486,7 @@ static inline EFI_STATUS handover_jump(EFI_HANDLE image,
                  * delay in few MTL Boards. This change needs to be reworked.
                  */
                 do{
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 j+=1;
                 }while(j<2000);
         }
@@ -509,6 +524,7 @@ boot:
 
 UINT32 pagealign(struct boot_img_hdr *hdr, UINT32 blob_size)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT32 page_mask = hdr->page_size - 1;
         return (blob_size + page_mask) & (~page_mask);
 }
@@ -516,6 +532,7 @@ UINT32 pagealign(struct boot_img_hdr *hdr, UINT32 blob_size)
 
 UINTN bootimage_size(struct boot_img_hdr *aosp_header)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN size;
 
         size = pagealign(aosp_header, aosp_header->kernel_size) +
@@ -548,6 +565,7 @@ struct boot_img_hdr *get_bootimage_header(VOID *bootimage_blob)
 
 static struct boot_params *get_boot_param_hdr (VOID *bootimage)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int hdr_size;
     struct boot_img_hdr *hdr;
 
@@ -562,6 +580,7 @@ static struct boot_params *get_boot_param_hdr (VOID *bootimage)
 
 static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *vendorbootimage, UINT8 *androidcmd)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct boot_img_hdr *aosp_header;
         struct boot_params *bp;
         UINT32 roffset, rsize;
@@ -572,10 +591,12 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
         bp = get_boot_param_hdr(bootimage);
 
         if (aosp_header->header_version < BOOT_HEADER_V3) {
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             roffset = aosp_header->page_size + pagealign(aosp_header,
                             aosp_header->kernel_size);
             rsize = aosp_header->ramdisk_size;
             if (!rsize) {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     debug(L"boot image has no ramdisk");
                     return EFI_SUCCESS; // no ramdisk, so nothing to do
             }
@@ -587,18 +608,21 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
                    return ret;
 
             if ((UINTN)ramdisk_addr > bp->hdr.ramdisk_max) {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     error(L"Ramdisk address is too high!");
                     efree(ramdisk_addr, rsize);
                     return EFI_OUT_OF_RESOURCES;
             }
             ret = memcpy_s((VOID *)(UINTN)ramdisk_addr, rsize, bootimage + roffset, rsize);
         } else if (aosp_header->header_version == BOOT_HEADER_V3) { // boot image v3
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             struct vendor_boot_img_hdr_v3 *vendor_hdr = (struct vendor_boot_img_hdr_v3 *)vendorbootimage;
             struct boot_img_hdr_v3 *boot_hdr = (struct boot_img_hdr_v3 *)bootimage;
 
             roffset = BOOT_IMG_HEADER_SIZE_V3 + ALIGN(boot_hdr->kernel_size, BOOT_IMG_HEADER_SIZE_V3);
             rsize = boot_hdr->ramdisk_size + vendor_hdr->vendor_ramdisk_size;
             if (!rsize) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"boot image has no ramdisk");
                 return EFI_SUCCESS; // no ramdisk, so nothing to do
             }
@@ -609,6 +633,7 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
                 return ret;
 
             if ((UINTN)ramdisk_addr > bp->hdr.ramdisk_max) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Ramdisk address is too high!");
                 ret = EFI_OUT_OF_RESOURCES;
                 goto out;
@@ -625,6 +650,7 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
             if (EFI_ERROR(ret))
                     goto out;
         } else { // boot image v4
+              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
             struct vendor_boot_img_hdr_v4 *vendor_hdr = (struct vendor_boot_img_hdr_v4 *)vendorbootimage;
             struct boot_img_hdr_v4 *boot_hdr = (struct boot_img_hdr_v4 *)bootimage;
 
@@ -651,6 +677,7 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
                         + androidcmd_size
                         + BOOTCONFIG_TRAILER_SIZE;
             if (!rsize) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 debug(L"boot image has no ramdisk");
                 return EFI_SUCCESS; // no ramdisk, so nothing to do
             }
@@ -661,6 +688,7 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
                 return ret;
 
             if ((UINTN)ramdisk_addr > bp->hdr.ramdisk_max) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Ramdisk address is too high!");
                 ret = EFI_OUT_OF_RESOURCES;
                 goto out;
@@ -686,17 +714,21 @@ static EFI_STATUS setup_ramdisk(UINT8 *bootimage, UINT8 *initbootimage, UINT8 *v
                     goto out;
 
             if (androidcmd != NULL) {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     int iret;
                     iret = addBootConfigParameters(androidcmd, androidcmd_size,
                                     (UINTN)ramdisk_addr + rboffset, vendor_hdr->bootconfig_size);
                     if (iret < 0) {
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             ret = EFI_INVALID_PARAMETER;
                             goto out;
                     }
             } else {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     int iret;
                     iret = addBootConfigTrailer((UINTN)ramdisk_addr + rboffset, vendor_hdr->bootconfig_size);
                     if (iret < 0) {
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             ret = EFI_INVALID_PARAMETER;
                             goto out;
                     }
@@ -715,6 +747,7 @@ out:
 EFI_STATUS setup_acpi_table(VOID *bootimage,
                             __attribute__((__unused__)) enum boot_target target)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
         struct boot_img_hdr *aosp_header;
 
@@ -723,10 +756,12 @@ EFI_STATUS setup_acpi_table(VOID *bootimage,
 
 #ifdef USE_ACPIO
         if (aosp_header->header_version >= 1 && aosp_header->header_version < BOOT_HEADER_V3) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 VOID *acpio;
                 acpio = bootimage + aosp_header->recovery_acpio_offset;
                 ret = install_acpi_table_from_recovery_acpio(acpio);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Install from recovery_acpio failed");
                         return ret;
                 }
@@ -735,6 +770,7 @@ EFI_STATUS setup_acpi_table(VOID *bootimage,
 #ifdef USE_FIRSTSTAGE_MOUNT
         ret = install_firststage_mount_aml(target);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Install builtin early mount table failed");
         }
 #endif
@@ -744,6 +780,7 @@ EFI_STATUS setup_acpi_table(VOID *bootimage,
 
 static CHAR16 *get_serial_port(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR8 *data;
         UINTN size;
         CHAR16 *val, *pos;
@@ -755,6 +792,7 @@ static CHAR16 *get_serial_port(void)
                 goto error;
 
         if (size < 3) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(data);
                 goto error;
         }
@@ -763,6 +801,7 @@ static CHAR16 *get_serial_port(void)
          * string, newer ones as 8-bit. Do a little inspection to
          * see which is the case, and upconvert as necessary */
         if (data[0] && data[1]) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* 16 bit string with 8bit data would have at least one 0*/
                 data[size - 1] = '\0';
                 val = stra_to_str(data);
@@ -770,11 +809,14 @@ static CHAR16 *get_serial_port(void)
                 if (!val)
                         goto error;
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (size % 2 == 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         data[size - 1] = '\0';
                         data[size - 2] = '\0';
                         val = (CHAR16 *)data;
                 } else {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(data);
                         goto error;
                 }
@@ -784,10 +826,12 @@ static CHAR16 *get_serial_port(void)
 
         /* Only [0-9a-zA-Z,] acceptable. Any funny business, give up */
         while (*pos) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if ( ! ( (*pos >= L'0' && *pos <= L'9') ||
                          (*pos >= L'a' && *pos <= L'z') ||
                          (*pos >= L'A' && *pos <= L'Z') ||
                          *pos == L',')) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(val);
                         goto error;
                 }
@@ -801,10 +845,12 @@ error:
 
 static CHAR16 *get_wake_reason(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         enum wake_sources wake_source;
 
         wake_source = rsci_get_wake_source();
         switch(wake_source) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         case WAKE_BATTERY_INSERTED:
                 return L"battery_inserted";
         case WAKE_USB_CHARGER_INSERTED:
@@ -827,10 +873,12 @@ static CHAR16 *get_wake_reason(void)
 
 static CHAR16 *get_reset_reason(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         enum reset_sources reset_source;
 
         reset_source = rsci_get_reset_source();
         switch (reset_source) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef IGNORE_NOT_APPLICABLE_RESET
         case RESET_NOT_APPLICABLE:
                 return L"not_applicable";
@@ -866,10 +914,12 @@ static CHAR16 *get_reset_reason(void)
 
 static CHAR16 *get_vm_reboot_reason(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *bootreason, *pos;
 	UINT8 reboot_code;
 
 	if (!is_running_on_acrn()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return NULL;
 	}
 
@@ -878,8 +928,10 @@ static CHAR16 *get_vm_reboot_reason(void)
 
 	debug(L"cf9 value = %x", reboot_code);
 	if (reboot_code == 0x06) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		bootreason = L"warm";
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		bootreason = L"cold";
 	}
 
@@ -888,6 +940,7 @@ static CHAR16 *get_vm_reboot_reason(void)
 
 static CHAR16 *get_boot_reason(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *bootreason, *pos;
 
         bootreason = get_wake_reason();
@@ -901,6 +954,7 @@ static CHAR16 *get_boot_reason(void)
         /* in case of an OS initiated reboot => get reason from efi var */
         bootreason = get_reboot_reason();
         if (!bootreason) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Error while trying to read the reboot reason");
                 bootreason = L"unknown";
                 goto done;
@@ -908,10 +962,12 @@ static CHAR16 *get_boot_reason(void)
 
         pos = bootreason;
         while (*pos) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* Only allow alphanumeric characters */
                 if (!((*pos >= L'0' && *pos <= L'9') ||
                             (*pos >= L'a' && *pos <= L'z') ||
                             *pos == L'_')) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         error(L"Error, reboot reason contains non-alphanumeric characters");
                         bootreason = L"unknown";
                         goto done;
@@ -928,6 +984,7 @@ done:
 
 const char *get_boot_reason_string(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *reason16;
 	char *reason8;
 	EFI_STATUS ret;
@@ -944,6 +1001,7 @@ const char *get_boot_reason_string(void)
 
 	ret = str_to_stra(reason8, reason16, len + 1);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(reason8);
 		error(L"Non-ascii characters found");
 		return "unknown";
@@ -954,6 +1012,7 @@ const char *get_boot_reason_string(void)
 
 EFI_STATUS prepend_command_line(CHAR16 **cmdline, CHAR16 *fmt, ...)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *old;
         va_list args;
         CHAR16 *string;
@@ -981,6 +1040,7 @@ EFI_STATUS prepend_command_line(CHAR16 **cmdline, CHAR16 *fmt, ...)
 static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
                                 IN enum boot_target boot_target)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         CHAR16 *cmdline16 = NULL;
 #ifndef USER
@@ -989,6 +1049,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
         BOOLEAN needs_pause = FALSE;
 
         if (boot_target == NORMAL_BOOT || boot_target == MEMORY) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 cmdline16 = get_efi_variable_str8(&loader_guid, CMDLINE_REPLACE_VAR);
                 cmdline_append = get_efi_variable_str8(&loader_guid, CMDLINE_APPEND_VAR);
                 cmdline_prepend = get_efi_variable_str8(&loader_guid, CMDLINE_PREPEND_VAR);
@@ -998,7 +1059,9 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
 #endif
 
         if (!cmdline16) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (aosp_header->header_version < BOOT_HEADER_V3) {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     CHAR8 full_cmdline[BOOT_ARGS_SIZE + BOOT_EXTRA_ARGS_SIZE];
                     int offset = BOOT_ARGS_SIZE;
 
@@ -1010,6 +1073,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
 
                     /* if there is extra cmdline arguments */
                     if (aosp_header->extra_cmdline[0]) {
+                              debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                             /* legacy boot.img format cmdline is NUL terminated */
                             if (!aosp_header->cmdline[BOOT_ARGS_SIZE - 1])
                                     offset--;
@@ -1020,6 +1084,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
                     }
                     cmdline16 = stra_to_str(full_cmdline);
                 } else {
+                      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                     struct boot_img_hdr_v3 *v3 = (struct boot_img_hdr_v3 *)aosp_header;
                     cmdline16 = stra_to_str(v3->cmdline);
                 }
@@ -1028,6 +1093,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
                         goto failed;
 #ifndef USER
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Boot image command line overridden with '%s'", cmdline16);
                 needs_pause = TRUE;
 #endif
@@ -1035,6 +1101,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
 
 #ifndef USER
         if (cmdline_prepend) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_STATUS ret;
 
                 error(L"Prepending '%s' to command line", cmdline_prepend);
@@ -1047,6 +1114,7 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
         }
 
         if (cmdline_append) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_STATUS ret;
 
                 error(L"Appending '%s' to command line", cmdline_append);
@@ -1054,9 +1122,11 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
 
                 ret = prepend_command_line(&cmdline_append, L"%s", cmdline16);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         error(L"couldn't prepend to command line");
                         FreePool(cmdline_append);
                 } else {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(cmdline16);
                         cmdline16 = cmdline_append;
                 }
@@ -1071,9 +1141,11 @@ static CHAR16 *get_command_line(IN struct boot_img_hdr *aosp_header,
 failed:
 #ifndef USER
         if (cmdline_append) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(cmdline_append);
         }
         if (cmdline_prepend) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(cmdline_prepend);
         }
 #endif
@@ -1082,6 +1154,7 @@ failed:
 
 EFI_STATUS get_bootimage_2nd(VOID *bootimage, VOID **second, UINT32 *size)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct boot_img_hdr *bh;
         UINT32 offset;
 
@@ -1104,6 +1177,7 @@ EFI_STATUS get_bootimage_2nd(VOID *bootimage, VOID **second, UINT32 *size)
 EFI_STATUS get_bootimage_blob(VOID *bootimage, enum blobtype btype, VOID **blob,
                               UINT32 *blobsize)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         VOID *second;
         UINT32 second_size;
         struct blobstore *bs;
@@ -1133,6 +1207,7 @@ EFI_STATUS get_bootimage_blob(VOID *bootimage, enum blobtype btype, VOID **blob,
  * trusted */
 static EFI_STATUS parse_bootvars_line(char *line, VOID *ctx)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 **cmdline16 = (CHAR16 **)ctx;
 
         if (strlen((CHAR8 *)line) == 0 || line[0] == '#')
@@ -1143,6 +1218,7 @@ static EFI_STATUS parse_bootvars_line(char *line, VOID *ctx)
 
 static EFI_STATUS add_bootvars(VOID *bootimage, CHAR16 **cmdline16)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         VOID *bootvars;
         UINT32 bvsize;
         EFI_STATUS ret;
@@ -1150,7 +1226,9 @@ static EFI_STATUS add_bootvars(VOID *bootimage, CHAR16 **cmdline16)
         ret = get_bootimage_blob(bootimage, BLOB_TYPE_BOOTVARS, &bootvars,
                                  &bvsize);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (ret == EFI_UNSUPPORTED || ret == EFI_NOT_FOUND) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         debug(L"Not setting bootvars: %r", ret);
                         return EFI_SUCCESS;
                 }
@@ -1169,6 +1247,7 @@ static EFI_STATUS classify_cmd_parameters(
                 OUT UINT8 *kernelcmd
                 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 cnt;
 	bool end = false;
 	CHAR8 *tempChar;
@@ -1183,21 +1262,28 @@ static EFI_STATUS classify_cmd_parameters(
 		tempChar += 1;
 
 	while (*tempChar != '\0') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cnt = 0;
 		if (strncmp(tempChar, "androidboot", strlen("androidboot")) == 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			cnt = strlen("androidboot");
 			while (true) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				if (tempChar[cnt] == '\0') {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					memcpy_s(androidcmd_tmp, cnt, tempChar, cnt);
 					androidcmd_tmp += cnt;
 					end = true;
 					break;
 				} else if (tempChar[cnt] == ' ') {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					if (tempChar[cnt - 1] == '=') {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						memcpy_s(androidcmd_tmp, cnt, tempChar, cnt);
 						memcpy_s(androidcmd_tmp + cnt, 7, "unknown", 7);
 						androidcmd_tmp += cnt + 7;
 					} else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						memcpy_s(androidcmd_tmp, cnt, tempChar, cnt);
 						androidcmd_tmp += cnt;
 					}
@@ -1209,13 +1295,17 @@ static EFI_STATUS classify_cmd_parameters(
 				cnt ++;
 			}
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			while (true) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				if (tempChar[cnt] == '\0') {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					memcpy_s(kernelcmd_tmp, cnt, tempChar, cnt);
 					kernelcmd_tmp += cnt;
 					end = true;
 					break;
 				} else if (tempChar[cnt] == ' ') {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					memcpy_s(kernelcmd_tmp, cnt+1, tempChar, cnt+1);
 					tempChar += cnt+1;
 					kernelcmd_tmp += cnt+1;
@@ -1267,6 +1357,7 @@ static inline void outl(UINT32 val, UINT32 port)
 
 static inline UINT32 inl(UINT32 port)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 val;
 
 	__asm__ __volatile__("inl %w1, %0" : "=a"(val) : "Nd"(port));
@@ -1275,12 +1366,14 @@ static inline UINT32 inl(UINT32 port)
 
 static UINT32 pci_read_config32(pci_dev_t dev, UINT16 reg)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	outl(0x80000000 | dev.bdf << 8 | (reg & ~3), 0xcf8);
 	return inl(0xcfc + (reg & 3));
 }
 
 static void pci_read_config(pci_dev_t dev, void *buf, UINT16 count)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < count; i += sizeof(UINT32))
@@ -1289,12 +1382,14 @@ static void pci_read_config(pci_dev_t dev, void *buf, UINT16 count)
 
 static INT32 bridge_diskbus(UINT32 bus_num)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 	pci_dev_t dev;
 	pci_header_t header;
 	UINT32 dev_bus;
 
 	for (i = 0, dev.bdf = 0; i <= ((bus_num<<8)|0xff); i++, dev.bdf = i) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		UINT32 val = pci_read_config32(dev, 0);
 
 		if (val == 0xffffffff || val == 0x00000000 ||
@@ -1305,6 +1400,7 @@ static INT32 bridge_diskbus(UINT32 bus_num)
 
 		//PCI BRIDGE
 		if (header.class.base == 0x6 && header.class.sub == 0x4) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"%02x:%02x.%d \n", dev.bus, dev.device, dev.function);
 
 			dev_bus = pci_read_config32(dev, 0x18);
@@ -1320,16 +1416,19 @@ static INT32 bridge_diskbus(UINT32 bus_num)
 
 UINT32 __attribute__((weak)) get_bootdev_diskbus()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return 0;
 
 }
 
 static INT32 diskbus_to_bdf(UINT32 diskbus)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT32 storage_bus_num;
 
         storage_bus_num = diskbus >> 16;
         if (storage_bus_num == 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 return (diskbus >> 8);
         }
 
@@ -1341,18 +1440,23 @@ extern UINT64 efiwrapper_tsc();
 #endif
 
 static CHAR8* find_console_prefix_end(CHAR8 *console) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         while (*console && (*console < '0' || *console > '9') && *console != ',' && *console != ' ' && *console != '\0') {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 console++;
         }
         return console;
 }
 
 static BOOLEAN is_same_console_type(CHAR8 *sos_console, CHAR8 *kernel_console) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR8 *sos_prefix_end = find_console_prefix_end(sos_console);
         CHAR8 *kernel_prefix_end = find_console_prefix_end(kernel_console);
 
         while (sos_console < sos_prefix_end && kernel_console < kernel_prefix_end) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 if (*sos_console != *kernel_console) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(kernel_console);
                         return FALSE;
                 }
@@ -1376,6 +1480,7 @@ static EFI_STATUS setup_command_line(
                 OUT UINT8 **androidcmd
                 )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *cmdline16 = NULL;
 	char   *serialno = NULL;
 	CHAR16 *serialport = NULL;
@@ -1390,6 +1495,7 @@ static EFI_STATUS setup_command_line(
 	struct boot_params *buf;
 	struct boot_img_hdr *aosp_header;
 	CHAR8 time_str8[128] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *time_str16 = NULL;
 	EFI_GUID *swap_guid = NULL;
 	CHAR8 *abl_cmd_line = NULL;
@@ -1408,6 +1514,7 @@ static EFI_STATUS setup_command_line(
 	if (is_uefi)
 		swap_guid = (EFI_GUID *)parameter;
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		abl_cmd_line = (CHAR8 *)parameter;
 		if (abl_cmd_line != NULL)
 			abl_cmd_len = strlen(abl_cmd_line);
@@ -1416,11 +1523,13 @@ static EFI_STATUS setup_command_line(
 	aosp_header = (struct boot_img_hdr *)bootimage;
 	cmdline16 = get_command_line(aosp_header, boot_target);
 	if (!cmdline16) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
 	}
 
 	if (aosp_header->header_version >= BOOT_HEADER_V3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		struct vendor_boot_img_hdr_v3 *v3 = (struct vendor_boot_img_hdr_v3 *)vendorbootimage;
 		ret = prepend_command_line(&cmdline16, L"%a", v3->cmdline);
 	}
@@ -1428,6 +1537,7 @@ static EFI_STATUS setup_command_line(
 	/* Append serial number from DMI */
 	serialno = get_serial_number();
 	if (serialno) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16,
 				L"androidboot.serialno=%a g_ffs.iSerialNumber=%a",
 				serialno, serialno);
@@ -1436,6 +1546,7 @@ static EFI_STATUS setup_command_line(
 	}
 
 	if (boot_target == CHARGER) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16,
 				L"androidboot.mode=charger");
 		if (EFI_ERROR(ret))
@@ -1445,13 +1556,16 @@ static EFI_STATUS setup_command_line(
 	if (is_uefi)
 		bootreason = get_boot_reason();
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		bootreason = get_reboot_reason();
 		if (!bootreason) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			bootreason = get_vm_reboot_reason();
 		}
 	}
 
 	if (!bootreason) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
 	}
@@ -1465,6 +1579,7 @@ static EFI_STATUS setup_command_line(
 		goto out;
 
 	if (swap_guid) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16, L"resume=PARTUUID=%g",
 				swap_guid);
 		if (EFI_ERROR(ret))
@@ -1473,6 +1588,7 @@ static EFI_STATUS setup_command_line(
 
 	serialport = get_serial_port();
 	if (serialport) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16, L"console=%s", serialport);
 		if (EFI_ERROR(ret))
 			goto out;
@@ -1483,6 +1599,7 @@ static EFI_STATUS setup_command_line(
         cmd_for_kernel = get_cmd_for_kernel();
         tmp = (char *)cmd_for_kernel;
         while ((tmp = strchr(tmp, '\\')) != NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 *tmp = ' ';
                 tmp++;
         }
@@ -1491,6 +1608,7 @@ static EFI_STATUS setup_command_line(
 
 #ifndef USER
         if (get_disable_watchdog()) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = prepend_command_line(&cmdline16, CONVERT_TO_WIDE(TCO_OPT_DISABLED));
                 if (EFI_ERROR(ret))
                         goto out;
@@ -1499,6 +1617,7 @@ static EFI_STATUS setup_command_line(
 
         PCI_DEVICE_PATH *boot_device = get_boot_device();
         if (boot_device) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 CHAR16 *diskbus = NULL;
                 CHAR16* diskbus2 = NULL;
 #ifdef AUTO_DISKBUS
@@ -1509,6 +1628,7 @@ static EFI_STATUS setup_command_line(
 
                 bdf = diskbus_to_bdf(get_bootdev_diskbus());
                 if (bdf < 0) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         error(L"No pci bridge found");
                         ret = EFI_INVALID_PARAMETER;
                         goto out;
@@ -1519,11 +1639,13 @@ static EFI_STATUS setup_command_line(
 
                 secondary_diskbus_arg = ewarg_getval("secondary_diskbus");
                 if (secondary_diskbus_arg) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         INT32 bdf2;
 
                         secondary_diskbus = (UINT32)strtoull(secondary_diskbus_arg, NULL, 16);
                         bdf2 = diskbus_to_bdf(secondary_diskbus);
                         if (bdf2 < 0) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 error(L"No pci bridge found");
                                 ret = EFI_INVALID_PARAMETER;
                                 goto out;
@@ -1532,6 +1654,7 @@ static EFI_STATUS setup_command_line(
                         diskbus2 = PoolPrint(L"%02x.%x", (bdf2 >> 3) & 0x1f, bdf2 & 0x7);
                         debug(L"pci secondary boot device: device = %x func = %x", (bdf2 >> 3) & 0x1f, bdf2 & 0x7);
                 } else {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         debug(L"no pci secondary boot device specified");
                 }
 #else
@@ -1547,13 +1670,16 @@ static EFI_STATUS setup_command_line(
 			StrToLower(diskbus2);
 
 		if (diskbus2 && aosp_header->header_version < 2) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			warning(L"androidboot.diskbus only support 1 device, secondary_diskbus ignored");
 			ret = prepend_command_line(&cmdline16, L"androidboot.diskbus=%s", diskbus);
 		} else if (diskbus2) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = prepend_command_line(&cmdline16,
 					L"androidboot.boot_devices=pci0000:00/0000:00:%s,pci0000:00/0000:00:%s pci=noaer",
 					diskbus, diskbus2);
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = prepend_command_line(&cmdline16,
 					L"androidboot.boot_devices=pci0000:00/0000:00:%s pci=noaer",
 					diskbus);
@@ -1576,6 +1702,7 @@ static EFI_STATUS setup_command_line(
 	//containing the recovery’s ramdisk. command line "androidboot.force_normal_boot=1" is
 	//mandatory for normal boot.
 	if(boot_target == NORMAL_BOOT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16, L"androidboot.force_normal_boot=1");
 		if (EFI_ERROR(ret))
 			goto out;
@@ -1601,6 +1728,7 @@ static EFI_STATUS setup_command_line(
 		goto out;
 
 	if (aosp_header->header_version < BOOT_HEADER_V3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = add_bootvars(bootimage, &cmdline16);
 		if (EFI_ERROR(ret))
 			goto out;
@@ -1617,6 +1745,7 @@ static EFI_STATUS setup_command_line(
 	if (tsc_mhz == 0)
 		tsc_mhz = get_cpu_freq();
 	if (tsc_mhz != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		tick = efiwrapper_tsc();
 		bt_us = tick  / tsc_mhz;
 		bt_ms = (UINT32)(bt_us / 1000);
@@ -1638,6 +1767,7 @@ static EFI_STATUS setup_command_line(
 	construct_stages_boottime(time_str8, sizeof(time_str8));
 	time_str16 = stra_to_str(time_str8);
 	if (time_str16) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = prepend_command_line(&cmdline16, L"androidboot.boottime=%s", time_str16);
 		if (EFI_ERROR(ret))
 			goto out;
@@ -1648,29 +1778,35 @@ static EFI_STATUS setup_command_line(
 
 	cmdlen = StrLen(cmdline16);
 	if (is_uefi) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cmdsize = cmdlen + 1 + vb_cmdlen + 1;
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cmdsize = cmdlen + vb_cmdlen + abl_cmd_len + 256;
 	}
 
 	cmd_conf = AllocatePool(cmdsize);
 	if (cmd_conf == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
 	}
 
 	ret = str_to_stra(cmd_conf, cmdline16, cmdlen + 1);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Non-ascii characters in command line");
 		goto out;
 	}
 
         if (vb_cmdlen > 0) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 char *vb_cmdline;
                 vb_cmdline = get_vb_cmdline(vb_data);
                 cmd_conf[cmdlen] = ' ';
                 ret = memcpy_s(cmd_conf + cmdlen + 1, vb_cmdlen, vb_cmdline, vb_cmdlen);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         goto out;
                 }
                 cmdlen += vb_cmdlen + 1;
@@ -1680,18 +1816,23 @@ static EFI_STATUS setup_command_line(
         /* Append command line from ABL */
         if (abl_cmd_len > 0)
         {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 CHAR8 *abl_console = strcasestr(abl_cmd_line, "console=");
                 if (abl_console) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         abl_console += 8;
 
                         CHAR8 *kernel_console = strcasestr(cmd_conf, "console=");
                         if (kernel_console) {
+                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                 kernel_console += 8;
 
                                 if (is_same_console_type(abl_console, kernel_console)) {
+                                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                         // Remove kernel cmdline's console if abl cmdline contains same type of console
                                         CHAR8 *kernel_console_end = strchr(kernel_console, ' ');
                                         if (!kernel_console_end) {
+                                                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                                                 kernel_console_end = kernel_console + strlen(kernel_console);
                                         }
                                         
@@ -1707,6 +1848,7 @@ static EFI_STATUS setup_command_line(
                 cmd_conf[cmdlen] = ' ';
                 ret = memcpy_s(cmd_conf + cmdlen + 1, abl_cmd_len + 1, abl_cmd_line, abl_cmd_len + 1);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         goto out;
                 }
                 cmdlen += abl_cmd_len + 1;
@@ -1714,6 +1856,7 @@ static EFI_STATUS setup_command_line(
         }
 
 	if (is_uefi) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Documentation/x86/boot.txt: "The kernel command line can be located
 		 * anywhere between the end of the setup heap and 0xA0000" */
 		cmdline_addr = 0xA0000;
@@ -1722,11 +1865,14 @@ static EFI_STATUS setup_command_line(
 				EFI_SIZE_TO_PAGES(cmdsize),
 				&cmdline_addr);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			goto out;
 		}
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cmdline_addr = (EFI_PHYSICAL_ADDRESS)((UINTN)AllocatePool(cmdsize));
 		if (cmdline_addr == 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_OUT_OF_RESOURCES;
 			goto out;
 		}
@@ -1735,14 +1881,18 @@ static EFI_STATUS setup_command_line(
 	cmdline = (CHAR8 *)(UINTN)cmdline_addr;
 
 	if (aosp_header->header_version <= BOOT_HEADER_V3) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = memcpy_s(cmdline, cmdsize, cmd_conf, cmdsize);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (androidcmd == NULL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_INVALID_PARAMETER;
 			goto out;
 		}
 		*androidcmd= AllocatePool(cmdsize);
 		if (*androidcmd == NULL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_OUT_OF_RESOURCES;
 			goto out;
 		}
@@ -1751,6 +1901,7 @@ static EFI_STATUS setup_command_line(
 	}
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		free_pages(cmdline_addr, EFI_SIZE_TO_PAGES(cmdsize));
 		goto out;
 	}
@@ -1768,9 +1919,12 @@ out:
 	if (time_str16)
 		FreePool(time_str16);
 	if (EFI_ERROR(ret) && cmdline_addr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (is_uefi) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			free_pages(cmdline_addr, EFI_SIZE_TO_PAGES(cmdsize));
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			FreePool((void *)(UINTN)cmdline_addr);
 		}
 	}
@@ -1782,11 +1936,13 @@ extern EFI_GUID GraphicsOutputProtocol;
 
 static void setup_screen_info_from_gop(struct screen_info *pinfo)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
 	EFI_STATUS ret;
 
 	ret = LibLocateProtocol(&GraphicsOutputProtocol, (void **)&gop);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Unable to locate graphics output protocol: %r", ret);
 		return;
 	}
@@ -1801,6 +1957,7 @@ static void setup_screen_info_from_gop(struct screen_info *pinfo)
 
 static EFI_STATUS handover_kernel(CHAR8 *bootimage, EFI_HANDLE parent_image)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_PHYSICAL_ADDRESS kernel_start;
         EFI_PHYSICAL_ADDRESS boot_addr;
         struct boot_params *boot_params;
@@ -1831,6 +1988,7 @@ static EFI_STATUS handover_kernel(CHAR8 *bootimage, EFI_HANDLE parent_image)
         ret = allocate_pages(AllocateAddress, EfiLoaderData,
                              EFI_SIZE_TO_PAGES(init_size), &kernel_start);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /*
                  * We failed to allocate the preferred address, so
                  * just allocate some memory and hope for the best.
@@ -1858,6 +2016,7 @@ static EFI_STATUS handover_kernel(CHAR8 *bootimage, EFI_HANDLE parent_image)
 
 #ifdef USE_WATCHDOG
         if (!watchdog_disabled_from_cmdline((CHAR8 *)(UINTN)buf->hdr.cmd_line_ptr)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = start_watchdog(TCO_DEFAULT_TIMEOUT);
                 if (EFI_ERROR(ret))
                         efi_perror(ret, L"Failed to start watchdog");
@@ -1902,7 +2061,9 @@ out:
 
 static EFI_STATUS android_install_acpi_table(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const char *acpi_part_names[] = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_ACPI
                 "acpi",
 #endif
@@ -1913,8 +2074,10 @@ static EFI_STATUS android_install_acpi_table(VOID)
         EFI_STATUS ret = EFI_SUCCESS;
 
         for (int i = 0; acpi_part_names[i] != NULL; i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = install_acpi_table_from_partitions(NULL, acpi_part_names[i]);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"Failed to install acpi table from %a image",
                                    acpi_part_names[i]);
                         return ret;
@@ -1927,6 +2090,7 @@ EFI_STATUS android_image_load_partition(
                 IN const CHAR16 *label,
                 OUT VOID **bootimage_p)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINT32 MediaId;
         UINT32 img_size;
         VOID *bootimage;
@@ -1938,6 +2102,7 @@ EFI_STATUS android_image_load_partition(
         *bootimage_p = NULL;
         ret = gpt_get_partition_by_label(label, &gpart, LOGICAL_UNIT_USER);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Partition %s not found", label);
                 return ret;
         }
@@ -1949,10 +2114,12 @@ EFI_STATUS android_image_load_partition(
                                 vm_offset + partition_start,
                                 sizeof(aosp_header), &aosp_header);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"ReadDisk (header)");
                 return ret;
         }
         if (memcmp(aosp_header.magic, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"This partition does not appear to contain an Android boot image");
                 return EFI_INVALID_PARAMETER;
         }
@@ -1966,6 +2133,7 @@ EFI_STATUS android_image_load_partition(
         ret = uefi_call_wrapper(gpart.dio->ReadDisk, 5, gpart.dio, MediaId, partition_start + vm_offset,
                                 img_size, bootimage);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"ReadDisk");
                 FreePool(bootimage);
                 return ret;
@@ -1985,6 +2153,7 @@ EFI_STATUS android_image_load_file(
                 IN BOOLEAN delete,
                 OUT VOID **bootimage_p)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret, ret2;
         VOID *bootimage = NULL;
         EFI_DEVICE_PATH *path;
@@ -2000,6 +2169,7 @@ EFI_STATUS android_image_load_file(
         debug(L"Locating boot image from file %s", loader);
         path = FileDevicePath(device, loader);
         if (!path) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Error getting device path.");
                 uefi_call_wrapper(BS->Stall, 1, 3 * 1000 * 1000);
                 return EFI_INVALID_PARAMETER;
@@ -2009,12 +2179,14 @@ EFI_STATUS android_image_load_file(
         ret = uefi_call_wrapper(BS->HandleProtocol, 3, device,
                         &SimpleFileSystemProtocol, (void **)&drive);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"HandleProtocol (SimpleFileSystemProtocol)");
                 FreePool(path);
                 return ret;
         }
         ret = uefi_call_wrapper(drive->OpenVolume, 2, drive, &root);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"OpenVolume");
                 FreePool(path);
                 return ret;
@@ -2025,12 +2197,14 @@ EFI_STATUS android_image_load_file(
         ret = uefi_call_wrapper(root->Open, 5, root, &imagefile, loader,
                         EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Open");
                 FreePool(path);
                 return ret;
         }
         fileinfo = AllocatePool(buffersize);
         if (!fileinfo) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(path);
                 return EFI_OUT_OF_RESOURCES;
         }
@@ -2038,11 +2212,13 @@ EFI_STATUS android_image_load_file(
         ret = uefi_call_wrapper(imagefile->GetInfo, 4, imagefile,
                         &EfiFileInfoId, &buffersize, fileinfo);
         if (ret == EFI_BUFFER_TOO_SMALL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* buffersize updated with the required space for
                  * the request */
                 FreePool(fileinfo);
                 fileinfo = AllocatePool(buffersize);
                 if (!fileinfo) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         FreePool(path);
                         return EFI_OUT_OF_RESOURCES;
                 }
@@ -2051,6 +2227,7 @@ EFI_STATUS android_image_load_file(
                         &EfiFileInfoId, &buffersize, fileinfo);
         }
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"GetInfo");
                 goto out;
         }
@@ -2059,6 +2236,7 @@ EFI_STATUS android_image_load_file(
         /* Add BOOT_SIGNATURE_MAX_SIZE just in case the image is unsigned */
         bootimage = AllocatePool(buffersize + BOOT_SIGNATURE_MAX_SIZE);
         if (!bootimage) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = EFI_OUT_OF_RESOURCES;
                 goto out;
         }
@@ -2067,6 +2245,7 @@ EFI_STATUS android_image_load_file(
         ret = uefi_call_wrapper(imagefile->Read, 3, imagefile,
                         &buffersize, bootimage);
         if (ret == EFI_BUFFER_TOO_SMALL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* buffersize updated with the required space for
                  * the request. By the way it doesn't make any
                  * sense to me why this is needed since we supposedly
@@ -2075,6 +2254,7 @@ EFI_STATUS android_image_load_file(
                 FreePool(bootimage);
                 bootimage = AllocatePool(buffersize);
                 if (!bootimage) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         ret = EFI_OUT_OF_RESOURCES;
                         goto out;
                 }
@@ -2082,6 +2262,7 @@ EFI_STATUS android_image_load_file(
                         &buffersize, bootimage);
         }
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Read");
                 goto out;
         }
@@ -2090,6 +2271,7 @@ EFI_STATUS android_image_load_file(
 
         aosp_header = (struct boot_img_hdr *)bootimage;
         if (memcmp(aosp_header->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"File does not appear to contain an Android boot image");
                 ret = EFI_INVALID_PARAMETER;
                 goto out;
@@ -2099,15 +2281,19 @@ EFI_STATUS android_image_load_file(
 
 out:
         if (delete) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 //this should close handle and flush FS
                 ret2 = uefi_call_wrapper(imagefile->Delete, 1, imagefile);
                 if (EFI_ERROR(ret2)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret2, L"Couldn't delete source file");
                         goto out_free;
                 }
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret2 = uefi_call_wrapper(imagefile->Close, 1, imagefile);
                 if (EFI_ERROR(ret2)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret2, L"Couldn't close source file");
                         goto out_free;
                 }
@@ -2117,8 +2303,10 @@ out_free:
         FreePool(path);
         FreePool(fileinfo);
         if (ret == EFI_SUCCESS) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 *bootimage_p = bootimage;
         } else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 FreePool(bootimage);
         }
         return ret;
@@ -2136,6 +2324,7 @@ EFI_STATUS android_image_start_buffer(
                 IN VBDATA *vb_data,
                 IN __attribute__((unused)) const CHAR8 *abl_cmd_line)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct boot_img_hdr *aosp_header;
         struct boot_params *buf;
         void *parameter = NULL;
@@ -2147,10 +2336,12 @@ EFI_STATUS android_image_start_buffer(
 
         aosp_header = (struct boot_img_hdr *)bootimage;
         if (memcmp(aosp_header->magic, BOOT_MAGIC, BOOT_MAGIC_SIZE)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"buffer does not appear to contain an Android boot image");
                 return EFI_INVALID_PARAMETER;
         }
         if (aosp_header->header_version >= BOOT_HEADER_V3 && vendorbootimage == NULL) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"vendor boot image is necessary for boot image version >= 3");
                 return EFI_INVALID_PARAMETER;
         }
@@ -2158,22 +2349,26 @@ EFI_STATUS android_image_start_buffer(
 
         /* Check boot sector signature */
         if (buf->hdr.signature != 0xAA55) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"bzImage kernel corrupt");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (buf->hdr.header != SETUP_HDR) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Setup code version is invalid");
                 return EFI_INVALID_PARAMETER;
         }
 
         if (buf->hdr.version < 0x20c) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 /* Protocol 2.12, kernel 3.8 required */
                 error(L"Kernel header version %x too old", buf->hdr.version);
                 return EFI_INVALID_PARAMETER;
         }
 
         if (!buf->hdr.relocatable_kernel) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 error(L"Expected relocatable kernel\n");
                 return EFI_INVALID_PARAMETER;
         }
@@ -2194,6 +2389,7 @@ EFI_STATUS android_image_start_buffer(
 
 
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"setup_command_line");
                 if (androidcmd != NULL)
                         FreePool(androidcmd);
@@ -2203,8 +2399,10 @@ EFI_STATUS android_image_start_buffer(
         use_ramdisk = !recovery_in_boot_partition() || boot_target == RECOVERY || boot_target == MEMORY;
 #endif
         if (use_ramdisk) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 ret = setup_ramdisk(bootimage, initbootimage, vendorbootimage, androidcmd);
                 if (EFI_ERROR(ret)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         efi_perror(ret, L"setup_ramdisk");
                         if (androidcmd != NULL)
                                 FreePool(androidcmd);
@@ -2232,6 +2430,7 @@ out_cmdline:
 #if DEBUG_MESSAGES
 VOID dump_bcb(IN struct bootloader_message *bcb)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (bcb)
                 debug(L"BCB: cmd '%a' status '%a'", bcb->command, bcb->status);
 }
@@ -2243,6 +2442,7 @@ EFI_STATUS read_bcb(
                 IN const CHAR16 *label,
                 OUT struct bootloader_message *bcb)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         struct gpt_partition_interface gpart;
         UINT64 partition_start;
@@ -2258,6 +2458,7 @@ EFI_STATUS read_bcb(
                                 gpart.bio->Media->MediaId,
                                 vm_offset + partition_start, sizeof(*bcb), bcb);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"ReadDisk (bcb)");
                 return ret;
         }
@@ -2274,6 +2475,7 @@ EFI_STATUS write_bcb(
                 IN const CHAR16 *label,
                 IN struct bootloader_message *bcb)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         struct gpt_partition_interface gpart;
         UINT64 partition_start;
@@ -2289,6 +2491,7 @@ EFI_STATUS write_bcb(
                                 gpart.bio->Media->MediaId,
 				vm_offset + partition_start, sizeof(*bcb), bcb);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"WriteDisk (bcb)");
                 return ret;
         }
@@ -2300,6 +2503,7 @@ EFI_STATUS write_bcb(
 
 EFI_STATUS android_clear_memory()
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
         UINTN nr_entries, key, entry_sz;
         CHAR8 *mem_entries;
@@ -2313,6 +2517,7 @@ EFI_STATUS android_clear_memory()
         OldTpl = uefi_call_wrapper(BS->RaiseTPL, 1, TPL_NOTIFY);
         mem_entries = (CHAR8 *)LibMemoryMap(&nr_entries, &key, &entry_sz, &entry_ver);
         if (!mem_entries) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 uefi_call_wrapper(BS->RestoreTPL, 1, OldTpl);
                 return EFI_OUT_OF_RESOURCES;
         }
@@ -2327,6 +2532,7 @@ EFI_STATUS android_clear_memory()
 #endif
 
         for (i = 0; i < nr_entries; mem_entries += entry_sz, i++) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 EFI_MEMORY_DESCRIPTOR *entry;
                 EFI_PHYSICAL_ADDRESS start;
                 UINT64 map_sz, len;
@@ -2340,6 +2546,7 @@ EFI_STATUS android_clear_memory()
                 map_sz = entry->NumberOfPages * EFI_PAGE_SIZE;
 
                 for (; map_sz > 0; map_sz -= len, start += len) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         len = map_sz;
 #ifdef __LP64__
                         buf = (void *)start;
@@ -2366,6 +2573,7 @@ err:
 
 BOOLEAN recovery_in_boot_partition(void)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         struct gpt_partition_interface gpart;
 

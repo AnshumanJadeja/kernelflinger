@@ -33,6 +33,7 @@
 #include <lib.h>
 
 #include "ioport.h"
+#include "log.h"
 
 static const char * const usage = "Usage:\n"
 	"  inb|inw|inl IOPORT\n"
@@ -40,6 +41,7 @@ static const char * const usage = "Usage:\n"
 
 static inline UINT16 inw(int port)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT16 val;
 	__asm__ __volatile__("inw %w1, %w0" : "=a"(val) : "Nd"(port));
 	return val;
@@ -47,10 +49,12 @@ static inline UINT16 inw(int port)
 
 static inline void outw(UINT16 val, int port)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	__asm__ __volatile__("outw %w0, %w1" : : "a"(val), "Nd"(port));
 }
 
 static const CHAR16 *VALUE_FORMAT[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	['b'] = L"0x%02x\n",
 	['w'] = L"0x%04x\n",
 	['l'] = L"0x%08x\n"
@@ -58,6 +62,7 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS ioport_main(INTN argc, const char **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 ioport, data = 0;
 
@@ -70,8 +75,10 @@ static EFI_STATUS ioport_main(INTN argc, const char **argv)
 		return EFI_INVALID_PARAMETER;
 
 	switch (argv[0][0]) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case 'i':
 		switch (argv[0][2]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case 'b':
 			data = inb(ioport);
 			break;
@@ -91,6 +98,7 @@ static EFI_STATUS ioport_main(INTN argc, const char **argv)
 			return EFI_INVALID_PARAMETER;
 
 		switch (argv[0][3]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		case 'b':
 			outb(data, ioport);
 			break;
@@ -108,30 +116,35 @@ static EFI_STATUS ioport_main(INTN argc, const char **argv)
 }
 
 shcmd_t inb_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "inb",
 	.summary = "Perform a byte size read operation on the given I/O port",
 	.help = usage,
 	.main = ioport_main
 };
 shcmd_t inw_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "inw",
 	.summary = "Perform a word size (16 bits) read operation on the given I/O port",
 	.help = usage,
 	.main = ioport_main
 };
 shcmd_t inl_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "inl",
 	.summary = "Perform a long size (32 bits) read operation on the given I/O port",
 	.help = usage,
 	.main = ioport_main
 };
 shcmd_t outb_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "outb",
 	.summary = "Perform a byte size write operation on the given I/O port",
 	.help = usage,
 	.main = ioport_main
 };
 shcmd_t outw_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "outw",
 	.summary = "Perform a word size (16 bits) write operation on the given I/O port",
 	.help = usage,
@@ -139,6 +152,7 @@ shcmd_t outw_shcmd = {
 };
 
 shcmd_t outl_shcmd = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "outl",
 	.summary = "Perform a long size (32 bits) write operation on the given I/O port",
 	.help = usage,

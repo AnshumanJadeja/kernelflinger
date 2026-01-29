@@ -23,36 +23,45 @@
  */
 
 #include "uefi_avb_util.h"
+#include "log.h"
 
 bool uefi_avb_utf8_to_ucs2(const uint8_t* utf8_data,
                            size_t utf8_num_bytes,
                            uint16_t* ucs2_data,
                            size_t ucs2_data_capacity_num_bytes,
                            size_t* out_ucs2_data_num_bytes) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t i8 = 0;
   uint32_t i2 = 0;
 
   do {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (i2 >= ucs2_data_capacity_num_bytes) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       break;
     }
 
     // cannot represent this character, too long
     if ((utf8_data[i8] & 0xF8) == 0xF0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       return false;
     } else if ((utf8_data[i8] & 0xF0) == 0xE0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       ucs2_data[i2] = (uint16_t)((uint16_t)utf8_data[i8] << 12) |
                       (uint16_t)(((uint16_t)utf8_data[i8 + 1] << 6) & 0x0FC0) |
                       (uint16_t)((uint16_t)utf8_data[i8 + 2] & 0x003F);
       i8 += 3;
     } else if ((utf8_data[i8] & 0xE0) == 0XC0) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       ucs2_data[i2] = (uint16_t)(((uint16_t)utf8_data[i8] << 6) & 0x07C0) |
                       (uint16_t)((uint16_t)utf8_data[i8 + 1] & 0x003F);
       i8 += 2;
     } else if (!(utf8_data[i8] >> 7)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       ucs2_data[i2] = (uint16_t)((uint16_t)utf8_data[i8] & 0x00FF);
       i8++;
     } else {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       // invalid utf-8
       return false;
     }
@@ -60,6 +69,7 @@ bool uefi_avb_utf8_to_ucs2(const uint8_t* utf8_data,
   } while (i8 < utf8_num_bytes);
 
   if (out_ucs2_data_num_bytes != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *out_ucs2_data_num_bytes = i2 * 2;
   }
   return true;

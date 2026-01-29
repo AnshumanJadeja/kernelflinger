@@ -41,6 +41,7 @@
 #include "unittest.h"
 #include "blobstore.h"
 #include "watchdog.h"
+#include "log.h"
 
 /*
  * This is the hardware second timeout value
@@ -49,6 +50,7 @@
 
 static VOID test_watchdog(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT32 timeout = 30;
 
@@ -56,8 +58,10 @@ static VOID test_watchdog(VOID)
         if (EFI_ERROR(ret))
                 Print(L"Coudln't start watchdog, ");
         else {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 Print(L"Watchdog should reset at the end of the countdown\n");
                 for (timeout += TCO_SECOND_TIMEOUT; timeout != 0; timeout--) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         pause(1);
                         Print(L"%d seconds left...\n", timeout);
                 }
@@ -69,14 +73,17 @@ static VOID test_watchdog(VOID)
 
 static VOID test_keys(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const UINTN wait_s = 10;
         UINTN i;
         ui_events_t event;
 
         Print(L"Reading keys for the next %d seconds...\n", wait_s);
         for (i = 0; i <= wait_s * 1000; i += 1) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 event = ui_read_input();
                 if (event == EV_NONE) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         uefi_call_wrapper(BS->Stall, 1, 1000);
                         continue;
                 }
@@ -86,9 +93,11 @@ static VOID test_keys(VOID)
 
 #ifdef USE_UI
 static UINT8 fake_hash[] = {0x12, 0x34, 0x56, 0x78, 0x90, 0xAB};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 static VOID test_ux(VOID)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* TODO: some method of programmatically verifying that these work */
         ux_prompt_user(RED_STATE_CODE, TRUE, BOOT_STATE_RED, NULL, 0);
         ux_prompt_user(RED_STATE_CODE, FALSE, BOOT_STATE_RED, NULL, 0);
@@ -108,24 +117,31 @@ static VOID test_ux(VOID)
 #endif
 
 static struct test_suite {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         CHAR16 *name;
         VOID (*fun)(VOID);
 } TEST_SUITES[] = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_UI
         { L"ux", test_ux },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
         { L"keys", test_keys },
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         { L"watchdog", test_watchdog }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 VOID unittest_main(CHAR16 *testname)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         BOOLEAN found = FALSE;
         UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TEST_SUITES); i++)
                 if (!testname || !StrCmp(L"all", testname) ||
                     !StrCmp(TEST_SUITES[i].name, testname)) {
+                          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                         found = TRUE;
                         Print(L"'%s' test suite begins\n", TEST_SUITES[i].name);
                         TEST_SUITES[i].fun();

@@ -33,6 +33,7 @@
 #include <openssl/obj_mac.h>
 
 #include "lib.h"
+#include "log.h"
 
 #define IASS_MAGIC		0x53534149 /* "IASS" */
 #define IASS_VERSION		1
@@ -96,6 +97,7 @@ EFI_STATUS decode_boot_signature(const unsigned char *data, long size,
 	memset_s(bs, sizeof(*bs), 0, sizeof(*bs));
 
 	switch (sig->digest_algorithm) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case SHA256:
 		bs->id.nid = NID_sha256WithRSAEncryption;
 		break;

@@ -18,9 +18,11 @@
 #include "UsbDeviceDxe.h"
 #include "UsbDeviceMode.h"
 #include "XdciDWC.h"
+#include "log.h"
 
 static EFI_HANDLE xdci = 0;
 PCI_DEVICE_PATH xhci_path = {.Device = -1, .Function = -1};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 VOID
 EFIAPI
@@ -28,6 +30,7 @@ PlatformSpecificInit (
   VOID
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINTN                 XhciPciMmBase;
   EFI_PHYSICAL_ADDRESS  XhciMemBaseAddress;
 
@@ -56,12 +59,14 @@ UsbDeviceDxeExitBootService (
   VOID *Context
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_XDCI_DEV_CONTEXT  *UsbXdciDevContext;
 
   UsbXdciDevContext = (USB_XDCI_DEV_CONTEXT *) Context;
   DEBUG ((EFI_D_INFO, "UsbDeviceDxeExitBootService enter\n"));
 
   if (UsbXdciDevContext->XdciPollTimer != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uefi_call_wrapper(BS->SetTimer,
           3,
           UsbXdciDevContext->XdciPollTimer,
@@ -77,6 +82,7 @@ UsbDeviceDxeExitBootService (
 
 static EFI_STATUS find_usb_device_controller (EFI_HANDLE Controller)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS status = EFI_UNSUPPORTED;
   EFI_PCI_IO *pci;
   USB_CLASSC class_reg;
@@ -115,6 +121,7 @@ static EFI_STATUS find_usb_device_controller (EFI_HANDLE Controller)
       (class_reg.SubClassCode == PCI_CLASS_SERIAL_USB) &&
       ((class_reg.ProgInterface == PCI_IF_USBDEV) ||
       (class_reg.ProgInterface == 0x80))) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_SUCCESS;
   }
 
@@ -122,6 +129,7 @@ static EFI_STATUS find_usb_device_controller (EFI_HANDLE Controller)
   if ((class_reg.BaseCode == PCI_CLASS_SERIAL) &&
     (class_reg.SubClassCode == PCI_CLASS_SERIAL_USB) &&
     (class_reg.ProgInterface == PCI_IF_XHCI)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
     status = uefi_call_wrapper(pci->GetLocation,
              5,
@@ -141,6 +149,7 @@ EFI_GUID gEfiEventExitBootServicesGuid  =  EventExitBootServices;
 
 static EFI_STATUS usb_device_mode_start (EFI_HANDLE Controller, EFI_USB_DEVICE_MODE_PROTOCOL **usb_device)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS Status;
   USB_XDCI_DEV_CONTEXT *UsbXdciDevContext = NULL;
   EFI_PCI_IO *PciIo;
@@ -157,11 +166,13 @@ static EFI_STATUS usb_device_mode_start (EFI_HANDLE Controller, EFI_USB_DEVICE_M
            Controller,
            EFI_OPEN_PROTOCOL_GET_PROTOCOL);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto ErrorExit;
   }
 
   UsbXdciDevContext = AllocateZeroPool (sizeof (USB_XDCI_DEV_CONTEXT));
   if (UsbXdciDevContext == NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Status = EFI_OUT_OF_RESOURCES;
     goto ErrorExit;
   }
@@ -221,7 +232,9 @@ static EFI_STATUS usb_device_mode_start (EFI_HANDLE Controller, EFI_USB_DEVICE_M
 ErrorExit:
 
   if (UsbXdciDevContext != NULL) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (UsbXdciDevContext->XdciPollTimer != NULL) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       uefi_call_wrapper(BS->CloseEvent,
             1,
             UsbXdciDevContext->XdciPollTimer);
@@ -236,6 +249,7 @@ ErrorExit:
 
 static BOOLEAN usb_xdci_enabled(void)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS ret;
   UINTN NumberHandles, Index;
   EFI_HANDLE *Handles;
@@ -246,19 +260,23 @@ static BOOLEAN usb_xdci_enabled(void)
             &NumberHandles,
             &Handles);
   if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror(ret, L"LibLocateProtocol: Handle not found\n");
     return ret;
   }
 
   for (Index=0; Index < NumberHandles; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ret = find_usb_device_controller(Handles[Index]);
     if (!EFI_ERROR(ret)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       xdci = Handles[Index];
       break;
     }
   }
 
   if (Handles) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     FreePool (Handles);
   }
 
@@ -270,11 +288,14 @@ static BOOLEAN usb_xdci_enabled(void)
 
 EFI_STATUS init_usb_device_mode_protocol(EFI_USB_DEVICE_MODE_PROTOCOL **usb_device)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS ret = EFI_UNSUPPORTED;
 
   if (usb_xdci_enabled()) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     ret = usb_device_mode_start(xdci, usb_device);
   } else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     efi_perror(ret, L"XDCI is disabled, please enable it in BIOS");
   }
 

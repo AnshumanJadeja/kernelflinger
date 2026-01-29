@@ -37,6 +37,7 @@
 #include <smbios.h>
 
 #include "tcp.h"
+#include "log.h"
 
 /* TCP/IP structures  */
 static EFI_HANDLE tcp_handle;
@@ -75,6 +76,7 @@ static data_callback_t rx_callback;
 static data_callback_t tx_callback;
 
 static struct rx {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *buf;
 	UINT32 size;
 	UINT32 requested;
@@ -84,6 +86,7 @@ static struct rx {
 
 static EFI_STATUS request_data(token_t *token, UINT32 max_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size = min(max_size, (UINT32)RX_FRAG_SIZE);
 	EFI_TCP4_RECEIVE_DATA *data = token->token.Packet.RxData;
@@ -97,6 +100,7 @@ static EFI_STATUS request_data(token_t *token, UINT32 max_size)
 	ret = uefi_call_wrapper(tcp_connection->Receive, 2,
 				tcp_connection, &token->token);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx.receiving = FALSE;
 		ret = uefi_call_wrapper(tcp_connection->Close, 2,
 					tcp_connection, &close_token);
@@ -111,10 +115,12 @@ static EFI_STATUS request_data(token_t *token, UINT32 max_size)
 static void EFIAPI data_sent(__attribute__((__unused__)) EFI_EVENT evt,
 			     void *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	token_t *token = (token_t *)ctx;
 	EFI_TCP4_TRANSMIT_DATA *data = token->token.Packet.TxData;
 
 	if (token->requested != data->DataLength) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"TCP sent failed. %d bytes sent instead of %d",
 		      data->DataLength, token->requested);
 		return;
@@ -127,11 +133,13 @@ static void EFIAPI data_sent(__attribute__((__unused__)) EFI_EVENT evt,
 
 static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	token_t *token = (token_t *)ctx;
 	EFI_TCP4_RECEIVE_DATA *data = token->token.Packet.RxData;
 
 	if (token->token.CompletionToken.Status == EFI_CONNECTION_FIN) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx.receiving = FALSE;
 
 		if (!events_created)
@@ -146,6 +154,7 @@ static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void
 	}
 
 	if (EFI_ERROR(token->token.CompletionToken.Status)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx.receiving = FALSE;
 		ret = uefi_call_wrapper(tcp_connection->Close, 2,
 					tcp_connection, &close_token);
@@ -159,6 +168,7 @@ static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void
 				   data->FragmentTable[0].FragmentBuffer,
 				   data->FragmentTable[0].FragmentLength);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx.receiving = FALSE;
 		return;
 	}
@@ -170,6 +180,7 @@ static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void
 		request_data(token, rx.size - rx.received - rx.requested);
 
 	if (rx.received == rx.size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx.receiving = FALSE;
 		rx_callback(rx.buf, rx.received);
 	}
@@ -178,10 +189,12 @@ static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void
 static void EFIAPI connection_accepted(__attribute__((__unused__)) EFI_EVENT evt,
 				       void *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_TCP4_LISTEN_TOKEN *token = (EFI_TCP4_LISTEN_TOKEN *)ctx;
 	EFI_STATUS ret;
 
 	if (EFI_ERROR(token->CompletionToken.Status)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(token->CompletionToken.Status,
 			   L"connection_accepted with bad status");
 		return;
@@ -195,6 +208,7 @@ static void EFIAPI connection_accepted(__attribute__((__unused__)) EFI_EVENT evt
 				NULL,
 				EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open TCP connection");
 		return;
 	}
@@ -205,11 +219,13 @@ static void EFIAPI connection_accepted(__attribute__((__unused__)) EFI_EVENT evt
 static void EFIAPI connection_closed(__attribute__((__unused__)) EFI_EVENT evt,
 				     __attribute__((__unused__)) void *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(tcp_connection->Configure, 2,
 				tcp_connection, NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"TCP Configure failed");
 		return;
 	}
@@ -219,6 +235,7 @@ static void EFIAPI connection_closed(__attribute__((__unused__)) EFI_EVENT evt,
 	ret = uefi_call_wrapper(tcp_listener->Accept, 2,
 				tcp_listener, &accept_token);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"TCP Accept failed");
 		return;
 	}
@@ -226,9 +243,11 @@ static void EFIAPI connection_closed(__attribute__((__unused__)) EFI_EVENT evt,
 
 static void init_rx_tx_structures()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < MAX_TOKEN; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rx_data[i].UrgentFlag = FALSE;
 		rx_data[i].FragmentCount = 1;
 		rx_data[i].FragmentTable[0].FragmentBuffer = rx_frag_buf[i];
@@ -243,6 +262,7 @@ static void init_rx_tx_structures()
 
 static EFI_STATUS create_events()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i = 0, j = 0, k;
 
@@ -253,6 +273,7 @@ static EFI_STATUS create_events()
 				&accept_token,
 				&accept_token.CompletionToken.Event);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create TCP Accept event");
 		return ret;
 	}
@@ -264,11 +285,13 @@ static EFI_STATUS create_events()
 				&close_token,
 				&close_token.CompletionToken.Event);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create TCP Close event");
 		goto accept;
 	}
 
 	for (i = 0; i < MAX_TOKEN; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->CreateEvent, 5,
 					EVT_NOTIFY_SIGNAL,
 					TPL_CALLBACK,
@@ -276,12 +299,14 @@ static EFI_STATUS create_events()
 					&tx_token[i],
 					&tx_token[i].token.CompletionToken.Event);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to create TCP Transmit event");
 			goto close;
 		}
 	}
 
 	for (j = 0; j < MAX_TOKEN; j++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->CreateEvent, 5,
 					EVT_NOTIFY_SIGNAL,
 					TPL_CALLBACK,
@@ -289,6 +314,7 @@ static EFI_STATUS create_events()
 					&rx_token[j],
 					&rx_token[j].token.CompletionToken.Event);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to create TCP Receive event");
 			goto transmit;
 		}
@@ -315,6 +341,7 @@ transmit:
 
 void close_events()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -329,6 +356,7 @@ void close_events()
 		efi_perror(ret, L"Failed close TCP Accept event");
 
 	for (i = 0; i < MAX_TOKEN; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->CloseEvent, 1,
 					tx_token[i].token.CompletionToken.Event);
 		if (EFI_ERROR(ret))
@@ -336,6 +364,7 @@ void close_events()
 	}
 
 	for (i = 0; i < MAX_TOKEN; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->CloseEvent, 1,
 					rx_token[i].token.CompletionToken.Event);
 		if (EFI_ERROR(ret))
@@ -347,17 +376,23 @@ void close_events()
 
 static EFI_STATUS ip_configuration(UINT32 port, EFI_IPv4_ADDRESS *address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_IP4_MODE_DATA ip_data;
 	EFI_TCP4_CONFIG_DATA tcp_config = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.TypeOfService = 0x00,
 		.TimeToLive = 255,
 		.AccessPoint = {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			.UseDefaultAddress = TRUE,
 			.StationAddress = { {0, 0, 0, 0} }, /* ignored - use default */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			.SubnetMask = { {0, 0, 0, 0} },	    /* ignored - use default */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			.StationPort = port,
 			.RemoteAddress = { {0, 0, 0, 0} }, /* accept any */
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			.RemotePort = 0, /* accept any */
 			.ActiveFlag = FALSE
 		},
@@ -368,16 +403,20 @@ static EFI_STATUS ip_configuration(UINT32 port, EFI_IPv4_ADDRESS *address)
 	ret = uefi_call_wrapper(tcp_listener->Configure, 2,
 				tcp_listener, &tcp_config);
 	if (EFI_ERROR(ret) && ret != EFI_NO_MAPPING) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to configure IP stack");
 		return ret;
 	}
 
 	/* DHCP still ongoing. */
 	if (ret == EFI_NO_MAPPING) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		do {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = uefi_call_wrapper(tcp_listener->GetModeData, 5,
 						tcp_listener, NULL, NULL, &ip_data, NULL, NULL);
 			if (EFI_ERROR(ret)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				efi_perror(ret, L"Failed to get IP mode data");
 				return ret;
 			}
@@ -385,15 +424,18 @@ static EFI_STATUS ip_configuration(UINT32 port, EFI_IPv4_ADDRESS *address)
 		ret = uefi_call_wrapper(tcp_listener->Configure, 2,
 					tcp_listener, &tcp_config);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to configure IP stack");
 			return ret;
 		}
 	}
 
 	if (!ip_data.IsConfigured) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(tcp_listener->GetModeData, 5,
 					tcp_listener, NULL, NULL, &ip_data, NULL, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to get IP mode data");
 			return ret;
 		}
@@ -407,6 +449,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 		     data_callback_t rx_cb, data_callback_t tx_cb,
 		     EFI_IPv4_ADDRESS *station_address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID tcp_srv_binding_guid = EFI_TCP4_SERVICE_BINDING_PROTOCOL;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
@@ -423,6 +466,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 	ret = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol,
 				&tcp_srv_binding_guid, NULL, &nb_handle, &handles);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Failed to locate TCP service binding protocol");
 		return EFI_UNSUPPORTED;
 	}
@@ -437,6 +481,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 				EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	FreePool(handles);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open TCP service binding protocol");
 		return ret;
 	}
@@ -444,6 +489,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 	ret = uefi_call_wrapper(tcp_srv_binding->CreateChild, 2,
 				tcp_srv_binding, &tcp_handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create TCP child");
 		return ret;
 	}
@@ -456,6 +502,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 				NULL,
 				EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open TCP protocol");
 		goto err;
 	}
@@ -468,6 +515,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 
 	ret = ip_configuration(port, station_address);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"IP configuration failed");
 		goto err;
 	}
@@ -475,6 +523,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 	ret = uefi_call_wrapper(tcp_listener->Accept, 2,
 				tcp_listener, &accept_token);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"TCP Accept failed");
 		goto err;
 	}
@@ -488,6 +537,7 @@ err:
 
 EFI_STATUS tcp_write(void *buf, UINT32 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	token_t *token;
 	EFI_TCP4_TRANSMIT_DATA *data;
@@ -514,6 +564,7 @@ EFI_STATUS tcp_write(void *buf, UINT32 size)
 
 EFI_STATUS tcp_read(void *buf, UINT32 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -526,8 +577,10 @@ EFI_STATUS tcp_read(void *buf, UINT32 size)
 	rx.receiving = TRUE;
 
 	for (i = 0; i < MAX_TOKEN && size; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = request_data(&rx_token[i], size);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			rx.receiving = FALSE;
 			return ret;
 		}
@@ -539,6 +592,7 @@ EFI_STATUS tcp_read(void *buf, UINT32 size)
 
 EFI_STATUS tcp_stop(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN index;
 
@@ -546,11 +600,13 @@ EFI_STATUS tcp_stop(void)
 		close_events();
 
 	if (tcp_connection) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		close_token.AbortOnClose = FALSE;
 
 		ret = uefi_call_wrapper(BS->CreateEvent, 5, 0, 0, NULL, NULL,
 					&close_token.CompletionToken.Event);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to create TCP Close event");
 			return ret;
 		}
@@ -558,6 +614,7 @@ EFI_STATUS tcp_stop(void)
 		ret = uefi_call_wrapper(tcp_connection->Close, 2,
 					tcp_connection, &close_token);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"TCP Close failed");
 			return ret;
 		}
@@ -565,11 +622,13 @@ EFI_STATUS tcp_stop(void)
 		ret = uefi_call_wrapper(BS->WaitForEvent, 3,
 					1, &close_token.CompletionToken.Event, &index);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"TCP Wait for event failed");
 			return ret;
 		}
 
 		if (EFI_ERROR(close_token.CompletionToken.Status)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(close_token.CompletionToken.Status,
 				   L"TCP Close with bad status");
 			return close_token.CompletionToken.Status;
@@ -578,6 +637,7 @@ EFI_STATUS tcp_stop(void)
 		ret = uefi_call_wrapper(BS->CloseEvent, 1,
 					close_token.CompletionToken.Event);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to close TCP Close event");
 			return ret;
 		}
@@ -585,6 +645,7 @@ EFI_STATUS tcp_stop(void)
 		ret = uefi_call_wrapper(tcp_connection->Configure, 2,
 					tcp_connection, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"TCP Configure for connection failed");
 			return ret;
 		}
@@ -592,9 +653,11 @@ EFI_STATUS tcp_stop(void)
 	}
 
 	if (tcp_listener) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(tcp_listener->Configure, 2,
 					tcp_listener, NULL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"TCP Configure for listener failed");
 			return ret;
 		}
@@ -602,9 +665,11 @@ EFI_STATUS tcp_stop(void)
 	}
 
 	if (tcp_srv_binding) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(tcp_srv_binding->DestroyChild, 2,
 					tcp_srv_binding, tcp_handle);
 		if (EFI_ERROR(ret) && ret != EFI_UNSUPPORTED) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"TCP service DestroyChild failed");
 			return ret;
 		}
@@ -617,6 +682,7 @@ EFI_STATUS tcp_stop(void)
 EFI_STATUS tcp_run(UINT32 *state)
 
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!tcp_connection)
 		return EFI_SUCCESS;
 	if (state)

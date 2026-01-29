@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -123,6 +124,7 @@ typedef struct {
   storage hierarchy (ownerPolicy), and and the endorsement hierarchy (endorsementPolicy).
 
   @param[in]  AuthHandle            TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP} parameters to be validated
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  AuthSession           Auth Session context
   @param[in]  AuthPolicy            An authorization policy hash
   @param[in]  HashAlg               The hash algorithm to use for the policy
@@ -139,6 +141,7 @@ Tpm2SetPrimaryPolicy (
   IN  TPMI_ALG_HASH             HashAlg
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                                 Status;
   TPM2_SET_PRIMARY_POLICY_COMMAND            SendBuffer;
   TPM2_SET_PRIMARY_POLICY_RESPONSE           RecvBuffer;
@@ -184,15 +187,18 @@ Tpm2SetPrimaryPolicy (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2SetPrimaryPolicy - RecvBufferSize Error - %x\n", RecvBufferSize));
     Status = EFI_DEVICE_ERROR;
     goto Done;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2SetPrimaryPolicy - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -211,6 +217,7 @@ Done:
   This command removes all TPM context associated with a specific Owner.
 
   @param[in] AuthHandle        TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
 
   @retval EFI_SUCCESS      Operation completed successfully.
@@ -223,6 +230,7 @@ Tpm2Clear (
   IN TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_CLEAR_COMMAND                Cmd;
   TPM2_CLEAR_RESPONSE               Res;
@@ -252,10 +260,12 @@ Tpm2Clear (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Clear: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -266,6 +276,7 @@ Tpm2Clear (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Clear: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -275,6 +286,7 @@ Tpm2Clear (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Clear: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -298,6 +310,7 @@ Done:
   Disables and enables the execution of TPM2_Clear().
 
   @param[in] AuthHandle        TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
   @param[in] Disable           YES if the disableOwnerClear flag is to be SET,
                                NO if the flag is to be CLEAR.
@@ -313,6 +326,7 @@ Tpm2ClearControl (
   IN TPMI_YES_NO               Disable
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_CLEAR_CONTROL_COMMAND        Cmd;
   TPM2_CLEAR_CONTROL_RESPONSE       Res;
@@ -346,10 +360,12 @@ Tpm2ClearControl (
   ResultBufSize = sizeof(Res);
   Status = Tpm2SubmitCommand (CmdSize, (UINT8 *)&Cmd, &ResultBufSize, (UINT8 *)&Res);
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ClearControl: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -360,6 +376,7 @@ Tpm2ClearControl (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ClearControl: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -369,6 +386,7 @@ Tpm2ClearControl (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ClearControl: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -393,6 +411,7 @@ Done:
   authorization value as the command authorization.
 
   @param[in] AuthHandle        TPM_RH_LOCKOUT, TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
   @param[in] NewAuth           New authorization secret
 
@@ -407,6 +426,7 @@ Tpm2HierarchyChangeAuth (
   IN TPM2B_AUTH                *NewAuth
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                           Status;
   TPM2_HIERARCHY_CHANGE_AUTH_COMMAND   Cmd;
   TPM2_HIERARCHY_CHANGE_AUTH_RESPONSE  Res;
@@ -459,10 +479,12 @@ Tpm2HierarchyChangeAuth (
              ResultBuf
              );
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HierarchyChangeAuth: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -473,6 +495,7 @@ Tpm2HierarchyChangeAuth (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HierarchyChangeAuth: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -482,6 +505,7 @@ Tpm2HierarchyChangeAuth (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG((EFI_D_ERROR,"HierarchyChangeAuth: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -501,6 +525,7 @@ Done:
   their default initialization values.
 
   @param[in] AuthHandle        TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
 
   @retval EFI_SUCCESS      Operation completed successfully.
@@ -513,6 +538,7 @@ Tpm2ChangeEPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPM2_CHANGE_EPS_COMMAND   Cmd;
   TPM2_CHANGE_EPS_RESPONSE  Res;
@@ -557,10 +583,12 @@ Tpm2ChangeEPS (
              ResultBuf
              );
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ChangeEPS: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -571,6 +599,7 @@ Tpm2ChangeEPS (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ChangeEPS: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -580,6 +609,7 @@ Tpm2ChangeEPS (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG((EFI_D_ERROR,"ChangeEPS: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -599,6 +629,7 @@ Done:
   initialization value (the Empty Buffer).
 
   @param[in] AuthHandle        TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
 
   @retval EFI_SUCCESS      Operation completed successfully.
@@ -611,6 +642,7 @@ Tpm2ChangePPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPM2_CHANGE_PPS_COMMAND   Cmd;
   TPM2_CHANGE_PPS_RESPONSE  Res;
@@ -655,10 +687,12 @@ Tpm2ChangePPS (
              ResultBuf
              );
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ChangePPS: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -669,6 +703,7 @@ Tpm2ChangePPS (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "ChangePPS: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -678,6 +713,7 @@ Tpm2ChangePPS (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG((EFI_D_ERROR,"ChangePPS: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;
@@ -696,6 +732,7 @@ Done:
   This command enables and disables use of a hierarchy.
 
   @param[in] AuthHandle        TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP}
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
   @param[in] Hierarchy         Hierarchy of the enable being modified
   @param[in] State             YES if the enable should be SET,
@@ -713,6 +750,7 @@ Tpm2HierarchyControl (
   IN TPMI_YES_NO               State
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                       Status;
   TPM2_HIERARCHY_CONTROL_COMMAND   Cmd;
   TPM2_HIERARCHY_CONTROL_RESPONSE  Res;
@@ -763,10 +801,12 @@ Tpm2HierarchyControl (
              ResultBuf
              );
   if (EFI_ERROR(Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     goto Done;
   }
 
   if (ResultBufSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HierarchyControl: Failed ExecuteCommand: Buffer Too Small\r\n"));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -777,6 +817,7 @@ Tpm2HierarchyControl (
   //
   RespSize = SwapBytes32(Res.Header.paramSize);
   if (RespSize > sizeof(Res)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "HierarchyControl: Response size too large! %d\r\n", RespSize));
     Status = EFI_BUFFER_TOO_SMALL;
     goto Done;
@@ -786,6 +827,7 @@ Tpm2HierarchyControl (
   // Fail if command failed
   //
   if (SwapBytes32(Res.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG((EFI_D_ERROR,"HierarchyControl: Response Code error! 0x%08x\r\n", SwapBytes32(Res.Header.responseCode)));
     Status = EFI_DEVICE_ERROR;
     goto Done;

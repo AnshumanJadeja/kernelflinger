@@ -23,10 +23,13 @@
  */
 
 #include <trusty/keymaster_serializable.h>
+#include "log.h"
 
 uint8_t *append_to_buf(uint8_t *buf, const void *data, size_t data_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (data && data_len) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         trusty_memcpy(buf, (void *)data, data_len);
     }
     return buf + data_len;
@@ -34,12 +37,14 @@ uint8_t *append_to_buf(uint8_t *buf, const void *data, size_t data_len)
 
 uint8_t *append_uint32_to_buf(uint8_t *buf, uint32_t val)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return append_to_buf(buf, &val, sizeof(val));
 }
 
 uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
                                  uint32_t data_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     buf = append_uint32_to_buf(buf, data_len);
     return append_to_buf(buf, data, data_len);
 }
@@ -47,9 +52,11 @@ uint8_t *append_sized_buf_to_buf(uint8_t *buf, const uint8_t *data,
 int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
                              uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint8_t *tmp;
 
     if (!out || !params || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = (sizeof(params->os_version) + sizeof(params->os_patchlevel) +
@@ -61,6 +68,7 @@ int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
                  params->verified_boot_hash_size);
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
 
@@ -79,12 +87,15 @@ int km_boot_params_serialize(const struct km_boot_params *params, uint8_t** out,
 int km_boot_patchlevel_serialize(const struct km_boot_patchlevel *params, uint8_t** out,
                              uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!out || !params || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = (sizeof(params->boot_patchlevel));
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
     
@@ -96,9 +107,11 @@ int km_boot_patchlevel_serialize(const struct km_boot_patchlevel *params, uint8_
 int km_attestation_ids_serialize(const struct km_attestation_ids *params, uint8_t** out,
                              uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint8_t *tmp;
 
     if (!out || !params || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = (sizeof(params->brand_size) +
@@ -119,6 +132,7 @@ int km_attestation_ids_serialize(const struct km_attestation_ids *params, uint8_
                  params->model_size);
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
 
@@ -137,15 +151,18 @@ int km_attestation_ids_serialize(const struct km_attestation_ids *params, uint8_
 int km_attestation_data_serialize(const struct km_attestation_data *data,
                                  uint8_t** out, uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint8_t *tmp;
 
     if (!out || !data || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = (sizeof(data->algorithm) + sizeof(data->data_size) +
                  data->data_size);
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
 
@@ -158,12 +175,15 @@ int km_attestation_data_serialize(const struct km_attestation_data *data,
 int km_provision_data_serialize(const struct km_provision_data *data,
                                  uint8_t** out, uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!out || !data || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = (sizeof(data->data_size) + data->data_size);
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
 
@@ -175,12 +195,15 @@ int km_provision_data_serialize(const struct km_provision_data *data,
 int km_raw_buffer_serialize(const struct km_raw_buffer *buf, uint8_t** out,
                             uint32_t *out_size)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!out || !buf || !out_size) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_INVALID_ARGS;
     }
     *out_size = sizeof(buf->data_size) + buf->data_size;
     *out = trusty_calloc(*out_size, 1);
     if (!*out) {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return TRUSTY_ERR_NO_MEMORY;
     }
     append_sized_buf_to_buf(*out, buf->data, buf->data_size);

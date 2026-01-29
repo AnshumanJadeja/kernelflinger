@@ -40,6 +40,7 @@
 
 static struct storage *cur_storage;
 static PCI_DEVICE_PATH boot_device = { .Function = -1, .Device = -1 };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 static enum storage_type boot_device_type;
 static BOOLEAN initialized = FALSE;
 static EFI_DEVICE_PATH *exclude_device = NULL;
@@ -50,6 +51,7 @@ static EFI_HANDLE boot_device_handle;
 
 static BOOLEAN is_boot_device(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	PCI_DEVICE_PATH *pci;
 
 	if (boot_device.Header.Type == 0)
@@ -80,6 +82,7 @@ static EFI_STATUS identify_storage(EFI_DEVICE_PATH *device_path,
 {
 	enum storage_type st = STORAGE_EMMC;
 	static struct storage *supported_storage[STORAGE_ALL] = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		&STORAGE(STORAGE_EMMC)
 		, &STORAGE(STORAGE_UFS)
 		, &STORAGE(STORAGE_SDCARD)
@@ -96,8 +99,10 @@ static EFI_STATUS identify_storage(EFI_DEVICE_PATH *device_path,
 	st = STORAGE_NVME;
 #endif
 	for (; st < STORAGE_ALL; st++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if ((filter == st || filter == STORAGE_ALL) &&
 		    supported_storage[st] && supported_storage[st]->probe(device_path)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			debug(L"%s storage identified", supported_storage[st]->name);
 			*storage = supported_storage[st];
 			*type = st;
@@ -110,18 +115,23 @@ static EFI_STATUS identify_storage(EFI_DEVICE_PATH *device_path,
 
 BOOLEAN is_same_device(EFI_DEVICE_PATH *p, EFI_DEVICE_PATH *e)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!p)
 		return FALSE;
 	if (!e)
 		return FALSE;
 
 	while (!IsDevicePathEndType(p)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (DevicePathType(p) == MEDIA_DEVICE_PATH) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			p = NextDevicePathNode(p);
 			continue;
 		}
 		while (!IsDevicePathEndType(e)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (DevicePathType(e) == MEDIA_DEVICE_PATH) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				e = NextDevicePathNode(e);
 				continue;
 			}
@@ -138,6 +148,7 @@ BOOLEAN is_same_device(EFI_DEVICE_PATH *p, EFI_DEVICE_PATH *e)
 		p = NextDevicePathNode(p);
 	}
 	while (!IsDevicePathEndType(e)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (DevicePathType(e) != MEDIA_DEVICE_PATH)
 			return FALSE;
 		e = NextDevicePathNode(e);
@@ -148,6 +159,7 @@ BOOLEAN is_same_device(EFI_DEVICE_PATH *p, EFI_DEVICE_PATH *e)
 
 EFI_STATUS identify_boot_device(enum storage_type filter)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
@@ -158,6 +170,7 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 	enum storage_type type;
 	EFI_HANDLE new_boot_device_handle = NULL;
 	PCI_DEVICE_PATH new_boot_device = { .Function = -1, .Device = -1 };
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum storage_type new_boot_device_type;
 	struct storage *new_storage;
 
@@ -165,12 +178,14 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 	ret = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol,
 				&BlockIoProtocol, NULL, &nb_handle, &handles);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to locate Block IO Protocol");
 		return ret;
 	}
 
 	new_boot_device.Header.Type = 0;
 	for (i = 0; i < nb_handle; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		device_path = DevicePathFromHandle(handles[i]);
 		if (!device_path)
 			continue;
@@ -193,9 +208,11 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 			continue;
 
 		if (!new_boot_device.Header.Type || new_boot_device_type >= type) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = memcpy_s(&new_boot_device, sizeof(new_boot_device), pci,
 							   sizeof(new_boot_device));
 				if (EFI_ERROR(ret)) {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						FreePool(handles);
 						return ret;
 				}
@@ -208,6 +225,7 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 		if (new_boot_device_type == type &&
 				type != STORAGE_GENERAL_BLOCK &&
 				filter > type) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Multiple identifcal storage found! Can't make a decision");
 			new_storage = NULL;
 			new_boot_device.Header.Type = 0;
@@ -219,6 +237,7 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 	FreePool(handles);
 
 	if (!new_storage) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"No PCI storage found for type %d", filter);
 		return EFI_UNSUPPORTED;
 	}
@@ -235,7 +254,9 @@ EFI_STATUS identify_boot_device(enum storage_type filter)
 
 static BOOLEAN valid_storage(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!initialized) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		initialized = TRUE;
 		return !EFI_ERROR(identify_boot_device(STORAGE_ALL));
 	}
@@ -244,6 +265,7 @@ static BOOLEAN valid_storage(void)
 
 static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_DEVICE_PATH *dev_path;
 	EFI_GUID guid = EFI_ERASE_BLOCK_PROTOCOL_GUID;
 	EFI_ERASE_BLOCK_PROTOCOL *erase_blockp;
@@ -254,6 +276,7 @@ static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_L
 
 	dev_path = DevicePathFromHandle(handle);
 	if (!dev_path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path");
 		return EFI_DEVICE_ERROR;
 	}
@@ -274,6 +297,7 @@ static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_L
 	 * in such a case we cannot afford a group erase.
 	 */
 	if ((end - start + 1) < erase_granularity) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, start, end);
 		if (EFI_ERROR(ret))
 			error(L"Failed to fill with zeros");
@@ -283,8 +307,10 @@ static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_L
 
 	left = start % erase_granularity;
 	if (left) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, start, start + erase_granularity - left - 1);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to fill with zeros");
 			return ret;
 		}
@@ -293,8 +319,10 @@ static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_L
 
 	left = (end + 1) % erase_granularity;
 	if (left) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fill_zero(bio, end + 1 - left, end);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to fill with zeros");
 			return ret;
 		}
@@ -312,6 +340,7 @@ static EFI_STATUS media_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_L
 
 EFI_STATUS storage_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!valid_storage())
 		return EFI_UNSUPPORTED;
 	if (!is_boot_device(p))
@@ -322,6 +351,7 @@ EFI_STATUS storage_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_uni
 
 EFI_STATUS storage_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!valid_storage())
@@ -341,6 +371,7 @@ EFI_STATUS storage_erase_blocks(EFI_HANDLE handle, EFI_BLOCK_IO *bio, EFI_LBA st
 EFI_STATUS fill_with(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end,
 			    VOID *pattern, UINTN pattern_blocks)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_LBA lba;
 	UINT64 size;
 	uint32_t total, print_sec, print_prev;
@@ -358,6 +389,7 @@ EFI_STATUS fill_with(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end,
 	print_sec = boottime_in_msec() / 1000;
 	print_prev = 0;
 	for (lba = start; lba <= end; lba += pattern_blocks) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (lba + pattern_blocks > end + 1)
 			size = end - lba + 1;
 		else
@@ -367,6 +399,7 @@ EFI_STATUS fill_with(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end,
 				vm_offset / bio->Media->BlockSize + lba,
 				bio->Media->BlockSize * size, pattern);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to erase block %ld", lba);
 			return ret;
 		}
@@ -381,6 +414,7 @@ EFI_STATUS fill_with(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end,
 
 EFI_STATUS fill_zero(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VOID *emptyblock;
 	VOID *aligned_emptyblock;
@@ -400,18 +434,21 @@ EFI_STATUS fill_zero(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 
 EFI_STATUS storage_set_boot_device(EFI_HANDLE device)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_DEVICE_PATH *device_path  = DevicePathFromHandle(device);
 	PCI_DEVICE_PATH *pci;
 	EFI_STATUS ret;
 	CHAR16 *dps;
 
 	if (!device_path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path from boot handle");
 		return EFI_UNSUPPORTED;
 	}
 
 	pci = get_pci_device_path(device_path);
 	if (!pci) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Boot device is not PCI, unsupported");
 		return EFI_UNSUPPORTED;
 	}
@@ -419,6 +456,7 @@ EFI_STATUS storage_set_boot_device(EFI_HANDLE device)
 	ret = identify_storage(device_path, STORAGE_ALL, &cur_storage,
 			       &boot_device_type);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Boot device unsupported");
 		return ret;
 	}
@@ -437,23 +475,27 @@ EFI_STATUS storage_set_boot_device(EFI_HANDLE device)
 
 EFI_HANDLE get_boot_device_handle(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return boot_device_handle;
 }
 
 const char *get_boot_device_var(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char boot_device_var[64]; // MAX_VARIABLE_LENGTH
 	PCI_DEVICE_PATH *pci;
 	CHAR16 *dps;
 	EFI_DEVICE_PATH *device_path = DevicePathFromHandle(boot_device_handle);
 
 	if (!device_path) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path from boot handle");
 		return NULL;
 	}
 
 	pci = get_pci_device_path(device_path);
 	if (!pci) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Boot device is not PCI, unsupported");
 		return NULL;
 	}
@@ -468,9 +510,11 @@ const char *get_boot_device_var(void)
 
 PCI_DEVICE_PATH *get_boot_device(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!initialized) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = identify_boot_device(STORAGE_ALL);
 		if (EFI_ERROR(ret))
 			efi_perror(ret, L"Failed to get boot device");
@@ -483,6 +527,7 @@ PCI_DEVICE_PATH *get_boot_device(void)
 
 EFI_STATUS get_boot_device_type(enum storage_type *type)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	PCI_DEVICE_PATH *boot_device;
 
 	if (!type)
@@ -491,6 +536,7 @@ EFI_STATUS get_boot_device_type(enum storage_type *type)
 	boot_device = get_boot_device();
 
 	if (boot_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*type = boot_device_type;
 		return EFI_SUCCESS;
 	}
@@ -499,6 +545,7 @@ EFI_STATUS get_boot_device_type(enum storage_type *type)
 
 BOOLEAN is_cur_storage_ufs(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (cur_storage == &STORAGE(STORAGE_UFS))
 		return TRUE;
 	else
@@ -507,6 +554,7 @@ BOOLEAN is_cur_storage_ufs(void)
 
 EFI_STATUS set_logical_unit(UINT64 user_lun, UINT64 factory_lun)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (cur_storage && cur_storage->set_logical_unit)
 		return cur_storage->set_logical_unit(user_lun, factory_lun);
 	return EFI_UNSUPPORTED;
@@ -514,11 +562,13 @@ EFI_STATUS set_logical_unit(UINT64 user_lun, UINT64 factory_lun)
 
 EFI_STATUS get_logical_block_size(UINTN *logical_blk_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
 
 	ret = gpt_get_root_disk(&gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get disk information");
 		return ret;
 	}
@@ -530,6 +580,7 @@ EFI_STATUS get_logical_block_size(UINTN *logical_blk_size)
 
 EFI_STATUS storage_get_erase_block_size(UINTN *erase_blk_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_HANDLE *handles = NULL;
 	UINTN nb_handle = 0;
@@ -538,13 +589,16 @@ EFI_STATUS storage_get_erase_block_size(UINTN *erase_blk_size)
 	struct gpt_partition_interface gparti;
 
 	if (cur_storage->get_erase_block_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(BS->LocateHandleBuffer, 5, ByProtocol, &BlockIoProtocol, NULL, &nb_handle, &handles);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to locate Block IO Protocol");
 			return ret;
 		}
 
 		for (i = 0; i < nb_handle; i++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			device_path = DevicePathFromHandle(handles[i]);
 			if (is_boot_device(device_path))
 				break;
@@ -563,6 +617,7 @@ notfound:
 		FreePool(handles);
 	ret = gpt_get_root_disk(&gparti, LOGICAL_UNIT_USER);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get disk information");
 		return ret;
 	}
@@ -574,6 +629,7 @@ notfound:
 
 BOOLEAN is_live_boot(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef LIVE_BOOT
 	return cur_storage == &STORAGE(STORAGE_USB);
 #else
@@ -583,12 +639,14 @@ BOOLEAN is_live_boot(void)
 
 BOOLEAN is_boot_device_virtual(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return cur_storage == &STORAGE(STORAGE_VIRTUAL);
 }
 
 #define PRINT_INTERVAL (3)
 void print_progress(EFI_LBA done, EFI_LBA total, uint32_t sec, uint32_t *print_sec, uint32_t *prev)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT64 progress = 0;
 	CHAR8 buf[128];
 	CHAR8 *pos = buf;
@@ -597,7 +655,9 @@ void print_progress(EFI_LBA done, EFI_LBA total, uint32_t sec, uint32_t *print_s
 
 	progress = done * 50 / total;
 	if (sec - *print_sec > PRINT_INTERVAL || progress == 50) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for (; print_prev <= progress; print_prev++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (print_prev % 5 == 0)
 				pos += strlen(itoa(print_prev * 2, pos, 10));
 			else
@@ -606,6 +666,7 @@ void print_progress(EFI_LBA done, EFI_LBA total, uint32_t sec, uint32_t *print_s
 		*pos = '\0';
 		temp = stra_to_str(buf);
 		if (temp) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			info_n(L"%s", temp);
 			FreePool(temp);
 		}
@@ -617,9 +678,11 @@ void print_progress(EFI_LBA done, EFI_LBA total, uint32_t sec, uint32_t *print_s
 
 void set_exclude_device(EFI_HANDLE device)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *dps;
 
 	if (device == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		exclude_device = NULL;
 		return;
 	}
@@ -635,6 +698,7 @@ void set_exclude_device(EFI_HANDLE device)
 
 EFI_DEVICE_PATH *get_exclude_device(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return exclude_device;
 }
 

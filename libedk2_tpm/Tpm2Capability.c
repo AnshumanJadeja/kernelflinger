@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -78,6 +79,7 @@ Tpm2GetCapability (
   OUT     TPMS_CAPABILITY_DATA      *CapabilityData
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_GET_CAPABILITY_COMMAND       SendBuffer;
   TPM2_GET_CAPABILITY_RESPONSE      RecvBuffer;
@@ -103,10 +105,12 @@ Tpm2GetCapability (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize <= sizeof (TPM2_RESPONSE_HEADER) + sizeof (UINT8)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return EFI_DEVICE_ERROR;
   }
 
@@ -138,6 +142,7 @@ Tpm2GetCapabilityFamily (
   OUT     CHAR8                     *Family
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -150,6 +155,7 @@ Tpm2GetCapabilityFamily (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   CopyMem (Family, &TpmCap.data.tpmProperties.tpmProperty->value, 4);
@@ -173,6 +179,7 @@ Tpm2GetCapabilityManufactureID (
   OUT     UINT32                    *ManufactureId
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -185,6 +192,7 @@ Tpm2GetCapabilityManufactureID (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *ManufactureId = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -210,6 +218,7 @@ Tpm2GetCapabilityFirmwareVersion (
   OUT     UINT32                    *FirmwareVersion2
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -222,6 +231,7 @@ Tpm2GetCapabilityFirmwareVersion (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *FirmwareVersion1 = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -234,6 +244,7 @@ Tpm2GetCapabilityFirmwareVersion (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *FirmwareVersion2 = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -259,6 +270,7 @@ Tpm2GetCapabilityMaxCommandResponseSize (
   OUT UINT32                    *MaxResponseSize
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status;
@@ -271,6 +283,7 @@ Tpm2GetCapabilityMaxCommandResponseSize (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
@@ -284,6 +297,7 @@ Tpm2GetCapabilityMaxCommandResponseSize (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
@@ -308,6 +322,7 @@ Tpm2GetCapabilitySupportedAlg (
   OUT TPML_ALG_PROPERTY      *AlgList
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   UINTN                   Index;
@@ -321,6 +336,7 @@ Tpm2GetCapabilitySupportedAlg (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   
@@ -328,6 +344,7 @@ Tpm2GetCapabilitySupportedAlg (
 
   AlgList->count = SwapBytes32 (AlgList->count);
   for (Index = 0; Index < AlgList->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     AlgList->algProperties[Index].alg = SwapBytes16 (AlgList->algProperties[Index].alg);
     WriteUnaligned32 ((UINT32 *)&AlgList->algProperties[Index].algProperties, SwapBytes32 (ReadUnaligned32 ((UINT32 *)&AlgList->algProperties[Index].algProperties)));
   }
@@ -351,6 +368,7 @@ Tpm2GetCapabilityLockoutCounter (
   OUT     UINT32                    *LockoutCounter
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -363,6 +381,7 @@ Tpm2GetCapabilityLockoutCounter (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *LockoutCounter = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -386,6 +405,7 @@ Tpm2GetCapabilityLockoutInterval (
   OUT     UINT32                    *LockoutInterval
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -398,6 +418,7 @@ Tpm2GetCapabilityLockoutInterval (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *LockoutInterval = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -422,6 +443,7 @@ Tpm2GetCapabilityInputBufferSize (
   OUT     UINT32                    *InputBufferSize
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -434,6 +456,7 @@ Tpm2GetCapabilityInputBufferSize (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *InputBufferSize = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -457,6 +480,7 @@ Tpm2GetCapabilityPcrs (
   OUT TPML_PCR_SELECTION      *Pcrs
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status;
@@ -470,11 +494,13 @@ Tpm2GetCapabilityPcrs (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   Pcrs->count = SwapBytes32 (TpmCap.data.assignedPCR.count);
   for (Index = 0; Index < Pcrs->count; Index++) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     Pcrs->pcrSelections[Index].hash = SwapBytes16 (TpmCap.data.assignedPCR.pcrSelections[Index].hash);
     Pcrs->pcrSelections[Index].sizeofSelect = TpmCap.data.assignedPCR.pcrSelections[Index].sizeofSelect;
     CopyMem (Pcrs->pcrSelections[Index].pcrSelect, TpmCap.data.assignedPCR.pcrSelections[Index].pcrSelect, Pcrs->pcrSelections[Index].sizeofSelect);
@@ -499,6 +525,7 @@ Tpm2GetCapabilityAlgorithmSet (
   OUT     UINT32      *AlgorithmSet
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPMS_CAPABILITY_DATA    TpmCap;
   TPMI_YES_NO             MoreData;
   EFI_STATUS              Status; 
@@ -511,6 +538,7 @@ Tpm2GetCapabilityAlgorithmSet (
              &TpmCap
              );
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
   *AlgorithmSet = SwapBytes32 (TpmCap.data.tpmProperties.tpmProperty->value);
@@ -532,6 +560,7 @@ Tpm2TestParms (
   IN  TPMT_PUBLIC_PARMS           *Parameters
   )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_TEST_PARMS_COMMAND           SendBuffer;
   TPM2_TEST_PARMS_RESPONSE          RecvBuffer;
@@ -549,10 +578,12 @@ Tpm2TestParms (
   WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->type));
   Buffer += sizeof(UINT16);
   switch (Parameters->type) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   case TPM_ALG_KEYEDHASH:
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.keyedHashDetail.scheme.scheme));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.keyedHashDetail.scheme.scheme) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_HMAC:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.keyedHashDetail.scheme.details.hmac.hashAlg));
       Buffer += sizeof(UINT16);
@@ -571,6 +602,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.symDetail.algorithm));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.symDetail.algorithm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_AES:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.symDetail.keyBits.aes));
       Buffer += sizeof(UINT16);
@@ -597,6 +629,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.rsaDetail.symmetric.algorithm));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.rsaDetail.symmetric.algorithm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_AES:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.rsaDetail.symmetric.keyBits.aes));
       Buffer += sizeof(UINT16);
@@ -617,6 +650,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.rsaDetail.scheme.scheme));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.rsaDetail.scheme.scheme) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_RSASSA:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.rsaDetail.scheme.details.rsassa.hashAlg));
       Buffer += sizeof(UINT16);
@@ -645,6 +679,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.symmetric.algorithm));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.eccDetail.symmetric.algorithm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_AES:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.symmetric.keyBits.aes));
       Buffer += sizeof(UINT16);
@@ -665,6 +700,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.scheme.scheme));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.eccDetail.scheme.scheme) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_ECDSA:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.scheme.details.ecdsa.hashAlg));
       Buffer += sizeof(UINT16);
@@ -689,6 +725,7 @@ Tpm2TestParms (
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.kdf.scheme));
     Buffer += sizeof(UINT16);
     switch (Parameters->parameters.eccDetail.kdf.scheme) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     case TPM_ALG_MGF1:
       WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16 (Parameters->parameters.eccDetail.kdf.details.mgf1.hashAlg));
       Buffer += sizeof(UINT16);
@@ -724,14 +761,17 @@ Tpm2TestParms (
   RecvBufferSize = sizeof (RecvBuffer);
   Status = Tpm2SubmitCommand (SendBufferSize, (UINT8 *)&SendBuffer, &RecvBufferSize, (UINT8 *)&RecvBuffer);
   if (EFI_ERROR (Status)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return Status;
   }
 
   if (RecvBufferSize < sizeof (TPM2_RESPONSE_HEADER)) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2TestParms - RecvBufferSize Error - %x\n", RecvBufferSize));
     return EFI_DEVICE_ERROR;
   }
   if (SwapBytes32(RecvBuffer.Header.responseCode) != TPM_RC_SUCCESS) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     DEBUG ((EFI_D_ERROR, "Tpm2TestParms - responseCode - %x\n", SwapBytes32(RecvBuffer.Header.responseCode)));
     return EFI_UNSUPPORTED;
   }

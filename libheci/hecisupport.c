@@ -29,12 +29,14 @@
 
 #include <lib.h>
 #include <hecisupport.h>
+#include "log.h"
 
 /*
  * Send message with ack
  */
 static EFI_STATUS heci_send_w_ack(uint8_t *Message, uint32_t Length, uint32_t *RecLength, uint8_t HostAddress, uint8_t DevAddr)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_NOT_READY;
 
 	EFI_GUID guid = HECI_PROTOCOL_GUID;
@@ -42,6 +44,7 @@ static EFI_STATUS heci_send_w_ack(uint8_t *Message, uint32_t Length, uint32_t *R
 
 	ret = LibLocateProtocol(&guid, (void **)&protocol);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get heciprotocol");
 		return ret;
 	}
@@ -57,6 +60,7 @@ static EFI_STATUS heci_send_w_ack(uint8_t *Message, uint32_t Length, uint32_t *R
  */
 static EFI_STATUS heci_get_sec_mode (unsigned *sec_mode)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	EFI_GUID guid = HECI_PROTOCOL_GUID;
@@ -64,12 +68,14 @@ static EFI_STATUS heci_get_sec_mode (unsigned *sec_mode)
 
 	ret = LibLocateProtocol(&guid, (void **)&protocol);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get heciprotocol");
 		return ret;
 	}
 
 	ret = uefi_call_wrapper(protocol->GetSeCMode, 1, sec_mode);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return ret;
 	}
 
@@ -79,6 +85,7 @@ static EFI_STATUS heci_get_sec_mode (unsigned *sec_mode)
 
 BOOLEAN heci_is_eop_received(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	uint32_t EopStatus;
 	uint32_t HeciSendLength;
@@ -90,6 +97,7 @@ BOOLEAN heci_is_eop_received(void)
 
 	ret = heci_get_sec_mode(&SeCMode);
 	if (EFI_ERROR(ret) || (SeCMode != SEC_MODE_NORMAL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return FALSE;
 	}
 	debug(L"GetSeCMode successful");
@@ -110,6 +118,7 @@ BOOLEAN heci_is_eop_received(void)
 	Resp = (GEN_GET_EOP_STATUS_ACK *)DataBuffer;
 	EopStatus = Resp->EopStatus & 0xFF;            /* 0 - received; other - not received */
 	if (EFI_ERROR(ret) || EopStatus) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return FALSE;
 	}
 	debug(L"Eop has been received");
@@ -121,6 +130,7 @@ BOOLEAN heci_is_eop_received(void)
  */
 EFI_STATUS heci_end_of_post(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	uint32_t HeciSendLength;
@@ -133,6 +143,7 @@ EFI_STATUS heci_end_of_post(void)
 	debug(L"Start Send HECI Message: EndOfPost");
 	ret = heci_get_sec_mode(&SeCMode);
 	if (EFI_ERROR(ret) || (SeCMode != SEC_MODE_NORMAL)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return ret;
 	}
 	debug(L"GetSeCMode successful");

@@ -40,6 +40,7 @@
 #include "usb.h"
 #include "protocol/UsbDeviceModeProtocol.h"
 #include "smbios.h"
+#include "log.h"
 
 #define CONFIG_COUNT            1
 #define INTERFACE_COUNT         1
@@ -87,12 +88,19 @@ typedef enum {
 #define STR_INTERFACE		L"Default interface"
 
 static USB_STRING_DESCRIPTOR string_table[] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(LANG_EN_US)	, USB_DESC_TYPE_STRING, {LANG_EN_US} },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_MANUFACTURER)	, USB_DESC_TYPE_STRING, STR_MANUFACTURER },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_PRODUCT)	, USB_DESC_TYPE_STRING, STR_PRODUCT },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_SERIAL)	, USB_DESC_TYPE_STRING, STR_SERIAL },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_CONFIGURATION)	, USB_DESC_TYPE_STRING, STR_CONFIGURATION },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_INTERFACE)	, USB_DESC_TYPE_STRING, STR_INTERFACE },
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 /* Complete Configuration structure */
@@ -115,6 +123,7 @@ static struct config_descriptor config_descriptor = {
 		CFG_MAX_POWER
 	},
 	.interface = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		sizeof(EFI_USB_INTERFACE_DESCRIPTOR),
 		USB_DESC_TYPE_INTERFACE,
 		0x0,
@@ -126,6 +135,7 @@ static struct config_descriptor config_descriptor = {
 		STR_TBL_INTERFACE
 	},
 	.ep_in = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		sizeof(EFI_USB_ENDPOINT_DESCRIPTOR),
 		USB_DESC_TYPE_ENDPOINT,
 		IN_ENDPOINT_NUM | USB_ENDPOINT_DIR_IN,
@@ -134,6 +144,7 @@ static struct config_descriptor config_descriptor = {
 		0x00 /* Not specified for bulk endpoint */
 	},
 	.ep_out = {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		sizeof(EFI_USB_ENDPOINT_DESCRIPTOR),
 		USB_DESC_TYPE_ENDPOINT,
 		OUT_ENDPOINT_NUM | USB_ENDPOINT_DIR_OUT,
@@ -144,6 +155,7 @@ static struct config_descriptor config_descriptor = {
 };
 
 static USB_DEVICE_DESCRIPTOR device_descriptor = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sizeof(USB_DEVICE_DESCRIPTOR),
 	USB_DESC_TYPE_DEVICE,
 	USB_BCD_VERSION_HS, /* Default to High Speed */
@@ -162,6 +174,7 @@ static USB_DEVICE_DESCRIPTOR device_descriptor = {
 
 EFI_STATUS usb_write(void *buf, UINT32 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
@@ -180,6 +193,7 @@ EFI_STATUS usb_write(void *buf, UINT32 size)
 
 EFI_STATUS usb_read(void *buf, UINT32 size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
@@ -204,6 +218,7 @@ EFI_STATUS usb_read(void *buf, UINT32 size)
 static EFIAPI EFI_STATUS setup_handler(__attribute__((__unused__)) EFI_USB_DEVICE_REQUEST *CtrlRequest,
 				       __attribute__((__unused__)) USB_DEVICE_IO_INFO *IoInfo)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	/* Does not handle any Class/Vendor specific setup requests */
 
@@ -212,13 +227,16 @@ static EFIAPI EFI_STATUS setup_handler(__attribute__((__unused__)) EFI_USB_DEVIC
 
 static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS status = EFI_SUCCESS;
 
 	if (cfgVal == config_descriptor.config.ConfigurationValue) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* we've been configured, get ready to receive Commands */
 		if (start_callback)
 			start_callback();
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"invalid configuration value: 0x%x", cfgVal);
 		status = EFI_INVALID_PARAMETER;
 	}
@@ -228,13 +246,16 @@ static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 
 EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!XferInfo->Buffer || XferInfo->Length == 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Received an unexpected NULL or zero length buffer");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	/* if we are receiving a command or data, call the processing routine */
 	if (XferInfo->EndpointDir == USB_ENDPOINT_DIR_OUT) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (rx_callback)
 			rx_callback(XferInfo->Buffer, XferInfo->Length);
 	} else
@@ -245,12 +266,14 @@ EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 
 static void set_string16_table_line(UINTN line, CHAR16 *str)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size;
 
 	size = (StrLen(str) + 1) * sizeof(CHAR16);
 
 	if (size > sizeof(string_table[line].LangID)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"String number from SMBIOS table is too long.");
 		return;
 	}
@@ -264,10 +287,12 @@ static void set_string16_table_line(UINTN line, CHAR16 *str)
 
 static void set_string_table_line(UINTN line, char *string)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *str;
 
 	str = stra_to_str((CHAR8 *)string);
 	if (!str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to convert '%a' to CHAR16 string", string);
 		return;
 	}
@@ -278,10 +303,12 @@ static void set_string_table_line(UINTN line, char *string)
 
 static void set_manufacturer(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *manufacturer;
 
 	manufacturer = SMBIOS_GET_STRING(2, Manufacturer);
 	if (manufacturer == SMBIOS_UNDEFINED) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"SMBIOS Manufacturer value unavailable");
 		return;
 	}
@@ -291,10 +318,12 @@ static void set_manufacturer(void)
 
 static void set_product(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *product;
 
 	product = SMBIOS_GET_STRING(2, ProductName);
 	if (product == SMBIOS_UNDEFINED) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"SMBIOS ProductName value unavailable");
 		return;
 	}
@@ -304,10 +333,12 @@ static void set_product(void)
 
 static void set_serial_number(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *serial;
 
 	serial = get_serial_number();
 	if (!serial) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"SMBIOS SerialNumber value unavailable");
 		return;
 	}
@@ -320,6 +351,7 @@ static void init_driver_objs(UINT8 subclass,
 			     CHAR16 *str_configuration,
 			     CHAR16 *str_interface)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	config_descriptor.interface.InterfaceSubClass = subclass;
 	config_descriptor.interface.InterfaceProtocol = protocol;
 
@@ -361,6 +393,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 		     start_callback_t start_cb, data_callback_t rx_cb,
 		     data_callback_t tx_cb)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!str_configuration || !str_interface || !start_cb || !rx_cb || !tx_cb)
@@ -372,18 +405,22 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 
 	ret = LibLocateProtocol(&gEfiUsbDeviceModeProtocolGuid, (void **)&usb_device);
 	if (EFI_ERROR(ret) || !usb_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Can't locate USB device mode protocol in BIOS");
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_call_wrapper(usb_device->InitXdci, 1, usb_device);
 		if (EFI_ERROR(ret))
 			efi_perror(ret, L"Init USB xDCI failed");
 	}
 
 	if (EFI_ERROR(ret)) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USE_SELF_USB_DEVICE_MODE_PROTOCOL
 		debug(L"Trying self implemented USB device mode protocol");
 		ret = init_usb_device_mode_protocol(&usb_device);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't run self implemented USB device mode protocol");
 			error(L"Make sure xDCI is enabled in BIOS");
 			return EFI_UNSUPPORTED;
@@ -391,6 +428,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 
 		ret = uefi_call_wrapper(usb_device->InitXdci, 1, usb_device);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't init xDCI by self implemented interface");
 			return ret;
 		}
@@ -403,6 +441,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 	init_driver_objs(subclass, protocol, str_configuration, str_interface);
 
 	if (!usb_device) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Can't locate device mode protocol");
 		return EFI_UNSUPPORTED;
 	}
@@ -410,12 +449,14 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 	/* Bind this layer to the USB device driver layer */
 	ret = uefi_call_wrapper(usb_device->Bind, 2, usb_device, &gDevObj);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Failed to initialize USB Device driver layer: %r", ret);
 		return ret;
 	}
 
 	ret = uefi_call_wrapper(usb_device->Connect, 1, usb_device);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to connect");
 		return ret;
 	}
@@ -425,6 +466,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 
 EFI_STATUS usb_stop(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(usb_device->Stop, 1, usb_device);
@@ -433,12 +475,14 @@ EFI_STATUS usb_stop(void)
 
 	ret = uefi_call_wrapper(usb_device->DisConnect, 1, usb_device);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to disconnect USB");
 		return ret;
 	}
 
 	ret = uefi_call_wrapper(usb_device->UnBind, 1, usb_device);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to unbind USB");
 		return ret;
 	}
@@ -452,5 +496,6 @@ EFI_STATUS usb_stop(void)
 
 EFI_STATUS usb_run(UINT32 *state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return uefi_call_wrapper(usb_device->Run, 2, usb_device, 1, state);
 }

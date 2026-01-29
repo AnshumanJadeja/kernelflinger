@@ -3,6 +3,7 @@
 #include <lib.h>
 #include <stdint.h>
 #include "openssl_support.h"
+#include "log.h"
 
 FILE  *__sF = NULL;
 typedef UINT32 uid_t;
@@ -14,6 +15,7 @@ int *__errno(void)
 	__attribute__((weak));
 int *__errno(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return &errno;
 }
 
@@ -21,6 +23,7 @@ int atoi(const char *str)
 	__attribute__((weak));
 int atoi(const char *str)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int u;
 	char c;
 
@@ -31,6 +34,7 @@ int atoi(const char *str)
 	/* convert digits */
 	u = 0;
 	while ((c = *(str++))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (c >= '0' && c <= '9')
 			u = (u * 10) + c - '0';
 		else
@@ -44,6 +48,7 @@ int fprintf(FILE *f, const char *s, ...)
 	__attribute__((weak));
 int fprintf(FILE *f, const char *s, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -52,6 +57,7 @@ int ioctl(int d, int request, ...)
 	__attribute__((weak));
 int ioctl(int d, int request, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -59,6 +65,7 @@ int ioctl(int d, int request, ...)
 typedef void (*sighandler_t)(int);
 sighandler_t bsd_signal(int signum, sighandler_t handler)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -66,6 +73,7 @@ sighandler_t bsd_signal(int signum, sighandler_t handler)
 void __assert2(const char *file, int line, const char *function,
 	       const char *failed_expression)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Assertion '%a' failed at %a:%a:%d",
 	      failed_expression, file, function, line);
 }
@@ -74,20 +82,24 @@ void *bsearch(const void *key, const void *base,
 	      size_t nmemb, size_t size,
 	      int (*compar)(const void *, const void *))
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN start, end, middle;
 	void *current;
 	int ret;
 
 	for (start = 0, end = nmemb ; start < end;) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		middle = start + (end - start) / 2;
 
 		current = (void *)base + (middle * size);
 		ret = compar(key, current);
 		if (ret < 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			end = middle;
 			continue;
 		}
 		if (ret > 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			start = middle + 1;
 			continue;
 		}
@@ -102,6 +114,7 @@ int fcntl(int fd, int cmd, ... /* arg */ )
 	__attribute__((weak));
 int fcntl(int fd, int cmd, ... /* arg */ )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return -1;
 }
 
@@ -109,6 +122,7 @@ int dup(int oldfd)
 	__attribute__((weak));
 int dup(int oldfd)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return -1;
 }
 
@@ -119,6 +133,7 @@ int strcasecmp(const char *c, const char *s)
 	__attribute__((weak));
 int strcasecmp(const char *c, const char *s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -127,6 +142,7 @@ int sscanf(const char *buffer, const char *format, ...)
 	__attribute__((weak));
 int sscanf(const char *buffer, const char *format, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -135,6 +151,7 @@ size_t fwrite(const void *buffer, size_t size, size_t count, FILE *stream)
 	__attribute__((weak));
 size_t fwrite(const void *buffer, size_t size, size_t count, FILE *stream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -143,6 +160,7 @@ size_t __strlen_chk(const char *s, size_t slen)
 	__attribute__((weak));
 size_t __strlen_chk(const char *s, size_t slen)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	size_t len = strlen(s);
 	if (len >= slen)
 		error(L"Error: %a overflow", __func__);
@@ -153,6 +171,7 @@ void * __memset_chk(void* dest, int c, size_t n, size_t dest_len)
 	__attribute__((weak));
 void * __memset_chk(void* dest, int c, size_t n, size_t dest_len)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (dest_len < n)
 		panic(L"%a Error: dest_len(%d) is less than n(%d)", __func__, dest_len, n);
 
@@ -163,6 +182,7 @@ char *fgets(char * dest, int size, FILE* stream)
 	__attribute__((weak));
 char *fgets(char * dest, int size, FILE* stream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -171,6 +191,7 @@ char *__fgets_chk(char * dest, int size, int strsize, FILE* stream)
 	__attribute__((weak));
 char *__fgets_chk(char * dest, int size, int strsize, FILE* stream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -179,6 +200,7 @@ int fclose(FILE *f)
 	__attribute__((weak));
 int fclose(FILE *f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -187,6 +209,7 @@ size_t fread(void *b, size_t c, size_t i, FILE *f)
 	__attribute__((weak));
 size_t fread(void *b, size_t c, size_t i, FILE *f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -195,6 +218,7 @@ int ferror(FILE *f)
 	__attribute__((weak));
 int ferror(FILE *f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -203,6 +227,7 @@ FILE *fopen(const char *c, const char *m)
 	__attribute__((weak));
 FILE *fopen(const char *c, const char *m)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -211,6 +236,7 @@ int fseek(FILE *fp, long offset, int whence)
 	__attribute__((weak));
 int fseek(FILE *fp, long offset, int whence)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -219,6 +245,7 @@ int feof(FILE *f)
 	__attribute__((weak));
 int feof(FILE *f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -227,6 +254,7 @@ int fflush(FILE *fp)
 	__attribute__((weak));
 int fflush(FILE *fp)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -235,9 +263,11 @@ char *strrchr(const char *str, int c)
 	__attribute__((weak));
 char *strrchr(const char *str, int c)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *save;
 
 	for (save = NULL; ; ++str) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (*str == c)
 			save = (char *)str;
 		if (*str == 0)
@@ -250,6 +280,7 @@ char *getenv(const char *varname)
 	__attribute__((weak));
 char *getenv(const char *varname)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return NULL;
 }
 
@@ -257,6 +288,7 @@ pid_t getpid(void)
 	__attribute__((weak));
 pid_t getpid(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -265,6 +297,7 @@ int vfprintf(FILE *stream, const char *format, va_list arg)
 	__attribute__((weak));
 int vfprintf(FILE *stream, const char *format, va_list arg)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -273,6 +306,7 @@ int vsnprintf_s(char *str, size_t size, const char *format, va_list ap)
 	__attribute__((weak));
 int vsnprintf_s(char *str, size_t size, const char *format, va_list ap)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *efi_format;
 	size_t i;
 	int ret;
@@ -283,7 +317,9 @@ int vsnprintf_s(char *str, size_t size, const char *format, va_list ap)
 
 	/* Replace "%s" with "%a" */
 	for (i = 0; i < strlen(efi_format) - 2; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (!memcmp("%%", &efi_format[i], 2)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			i++;
 			continue;
 		}
@@ -302,6 +338,7 @@ int __vsnprintf_chk(char *str, size_t size, int flags, size_t slen,
 int __vsnprintf_chk(char *str, size_t size, int flags, size_t slen,
 			const char *format, va_list ap)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (slen < size)
 		panic(L"%a Error: slen(%d) is less than size(%d)", __func__, slen, size);
 
@@ -309,6 +346,7 @@ int __vsnprintf_chk(char *str, size_t size, int flags, size_t slen,
 }
 void abort(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 }
 
@@ -316,6 +354,7 @@ char *strerror(int errnum)
 	__attribute__((weak));
 char *strerror(int errnum)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -326,6 +365,7 @@ void * __memcpy_chk(void* dest, const void* src,
 void * __memcpy_chk(void* dest, const void* src,
 			size_t copy_amount, size_t dest_len)
 {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     EFI_STATUS ret;
     ret = memcpy_s(dest, dest_len, src, copy_amount);
     return (ret == EFI_SUCCESS) ? (dest) : (NULL);
@@ -353,11 +393,15 @@ void * __memcpy_chk(void* dest, const void* src,
 #define TM_YEAR_BASE	1900
 
 static const int mon_lengths[2][MONSPERYEAR] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 };
 
 static const int year_lengths[2] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DAYSPERNYEAR, DAYSPERLYEAR
 };
 
@@ -365,6 +409,7 @@ static const int year_lengths[2] = {
 
 static int leaps_thru_end_of(register const int y)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return (y >= 0) ? (y / 4 - y / 100 + y / 400) :
 		-(leaps_thru_end_of(-(y + 1)) + 1);
 }
@@ -372,6 +417,7 @@ static int leaps_thru_end_of(register const int y)
 static int
 increment_overflow(int *const ip, int j)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	register int const i = *ip;
 
 	/* If i >= 0 there can only be overflow if i + j > INT_MAX
@@ -404,6 +450,7 @@ struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 	__attribute__((weak));
 struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int64_t tdays;
 	int idays;  /* unsigned would be so 2003 */
 	long long rem;
@@ -414,6 +461,7 @@ struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 	tdays = *timep / SECSPERDAY;
 	rem = (long long) (*timep - tdays * SECSPERDAY);
 	while (tdays < 0 || tdays >= year_lengths[isleap(y)]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		int newy;
 		int64_t tdelta;
 		int idelta;
@@ -435,6 +483,7 @@ struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 		y = newy;
 	}
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		int seconds;
 
 		seconds = tdays * SECSPERDAY;
@@ -445,19 +494,23 @@ struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 	idays = tdays;
 
 	while (rem < 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rem += SECSPERDAY;
 		--idays;
 	}
 	while (rem >= SECSPERDAY) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		rem -= SECSPERDAY;
 		++idays;
 	}
 	while (idays < 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (increment_overflow(&y, -1))
 			return NULL;
 		idays += year_lengths[isleap(y)];
 	}
 	while (idays >= year_lengths[isleap(y)]) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		idays -= year_lengths[isleap(y)];
 		if (increment_overflow(&y, 1))
 			return NULL;
@@ -494,7 +547,9 @@ struct tm *gmtime_r(const int64_t *timep, struct tm *tmp)
 }
 
 static UINTN CumulativeDays[2][14] = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		0,
 		0,
 		31,
@@ -511,6 +566,7 @@ static UINTN CumulativeDays[2][14] = {
 		31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 + 31
 	},
 	{
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		0,
 		0,
 		31,
@@ -532,7 +588,9 @@ int64_t time(int64_t *timer)
 	__attribute__((weak));
 int64_t time(int64_t *timer)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_TIME  Time = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN     Year;
 
 	/* Defaultly set timezone as EFI_UNSPECIFIED_TIMEZONE */
@@ -562,6 +620,7 @@ char *strcat(char *dest, const char *src)
 	__attribute__((weak));
 char *strcat(char *dest, const char *src)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -569,6 +628,7 @@ char *strcat(char *dest, const char *src)
 char * __strcat_chk(char* __restrict dest, const char* __restrict src,
 		    size_t dest_buf_size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -577,6 +637,7 @@ int open(const char * pathname, int flags, ...)
 	__attribute__((weak));
 int open(const char * pathname, int flags, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -585,6 +646,7 @@ int __open_2(const char *file, int oflag)
 	__attribute__((weak));
 int __open_2(const char *file, int oflag)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -593,6 +655,7 @@ int poll(void)
 	__attribute__((weak));
 int poll(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -601,6 +664,7 @@ ssize_t read(int f, void *b, size_t c)
 	__attribute__((weak));
 ssize_t read(int f, void *b, size_t c)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -609,6 +673,7 @@ ssize_t __read_chk(int f, void *b, size_t c, size_t buflen)
 	__attribute__((weak));
 ssize_t __read_chk(int f, void *b, size_t c, size_t buflen)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -617,6 +682,7 @@ uid_t getuid(void)
 	__attribute__((weak));
 uid_t getuid(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -625,6 +691,7 @@ long strtol(const char *nptr, char **endptr, int base)
 	__attribute__((weak));
 long strtol(const char *nptr, char **endptr, int base)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -633,6 +700,7 @@ int socket(int domain, int type, int protocol)
 	__attribute__((weak));
 int socket(int domain, int type, int protocol)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -641,6 +709,7 @@ int connect(void)
 	__attribute__((weak));
 int connect(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -649,6 +718,7 @@ ssize_t write(int f, const void *b, size_t l)
 	__attribute__((weak));
 ssize_t write(int f, const void *b, size_t l)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -657,6 +727,7 @@ int close(int f)
 	__attribute__((weak));
 int close(int f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -665,6 +736,7 @@ int fputs(const char *s, FILE *f)
 	__attribute__((weak));
 int fputs(const char *s, FILE *f)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -673,6 +745,7 @@ void *signal(int i, void *s)
 	__attribute__((weak));
 void *signal(int i, void *s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -680,6 +753,7 @@ void *signal(int i, void *s)
 int sigaction(int signum, const void *act,
 	      void *oldact)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -688,6 +762,7 @@ int fileno(FILE *stream)
 	__attribute__((weak));
 int fileno(FILE *stream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -695,6 +770,7 @@ int fileno(FILE *stream)
 int tcsetattr(int fd, int optional_actions,
 	      const void *termios_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -703,6 +779,7 @@ long int ftell(FILE *__stream)
 	__attribute__((weak));
 long int ftell(FILE *__stream)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -711,6 +788,7 @@ void* localtime(const void* t)
 	__attribute__((weak));
 void* localtime(const void* t)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -719,6 +797,7 @@ int fstat(int __fd, void *__buf)
 	__attribute__((weak));
 int fstat(int __fd, void *__buf)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -728,6 +807,7 @@ char* __strchr_chk(const char* p, int ch, size_t s_len)
 char* __strchr_chk(const char* p, int ch, size_t s_len)
 
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return NULL;
 }
@@ -736,6 +816,7 @@ int tcgetattr(int fd, void *termios_p)
 	__attribute__((weak));
 int tcgetattr(int fd, void *termios_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"Error: STUBBED %a", __func__);
 	return 0;
 }
@@ -768,10 +849,12 @@ void *malloc(size_t size)
 	__attribute__((weak));
 void *malloc(size_t size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	mem_chunk_t *mc;
 
 	mc = search_mem(NULL);
 	if (!mc) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"malloc failed, wrapper allocator is full!");
 		return NULL;
 	}
@@ -785,6 +868,7 @@ void free(void *addr)
 	__attribute__((weak));
 void free(void *addr)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	mem_chunk_t *mc;
 
 	if (!addr)
@@ -792,6 +876,7 @@ void free(void *addr)
 
 	mc = search_mem(addr);
 	if (!mc) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Tried to free an unknown pointer");
 		return;
 	}
@@ -804,10 +889,12 @@ void *realloc(void *ptr, size_t size)
 	__attribute__((weak));
 void *realloc(void *ptr, size_t size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	mem_chunk_t *mc;
 
 	mc = search_mem(ptr);
 	if (!mc) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Tried to realloc an unknown pointer");
 		return NULL;
 	}
@@ -821,9 +908,11 @@ void *memchr(const void *s, int c, size_t n)
 	__attribute__((weak));
 void *memchr(const void *s, int c, size_t n)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const unsigned char *p = s;
 
 	if (n) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		for( ; n; n--, p++)
 			if (*p == (unsigned char)c)
 				return (void *) p;
@@ -835,6 +924,7 @@ void *memchr(const void *s, int c, size_t n)
 
 void __attribute__((weak)) perror ( const char * str )
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"%a: errno=%d", str, errno);
 }
 
@@ -842,6 +932,7 @@ int printf(int fd, int cmd, ... /* arg */ )
        __attribute__((weak));
 int printf(int fd, int cmd, ... /* arg */ )
 {
+         debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
        error(L"Error: STUBBED %a", __func__);
        return -1;
 }

@@ -32,6 +32,7 @@
 
 #include <lib.h>
 #include "storage.h"
+#include "log.h"
 
 #ifndef MSG_VIRTUAL_MEDIA_DP
 #define MSG_VIRTUAL_MEDIA_DP	0x20
@@ -39,6 +40,7 @@
 
 static EFI_DEVICE_PATH *get_virtual_media_device_path(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_VIRTUAL_MEDIA_DP)
@@ -49,10 +51,12 @@ static EFI_DEVICE_PATH *get_virtual_media_device_path(EFI_DEVICE_PATH *p)
 static EFI_STATUS virtual_media_erase_blocks(EFI_HANDLE handle, __attribute__((unused)) EFI_BLOCK_IO *bio,
 	__attribute__((unused))EFI_LBA start, __attribute__((unused))EFI_LBA end)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_DEVICE_PATH *dp = DevicePathFromHandle(handle);
 
 	if (!dp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get device path from handle");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -63,6 +67,7 @@ static EFI_STATUS virtual_media_erase_blocks(EFI_HANDLE handle, __attribute__((u
 
 static EFI_STATUS virtual_media_check_logical_unit(EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	p = get_virtual_media_device_path(p);
 	if (!p)
 		return EFI_NOT_FOUND;
@@ -76,6 +81,7 @@ static EFI_STATUS virtual_media_check_logical_unit(EFI_DEVICE_PATH *p, logical_u
 
 static BOOLEAN is_virtual_media(EFI_DEVICE_PATH *p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_virtual_media_device_path(p) != NULL;
 }
 

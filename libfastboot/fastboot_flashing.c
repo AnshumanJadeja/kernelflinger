@@ -41,11 +41,13 @@
 #include "intel_variables.h"
 #include "android.h"
 #include "tpm2_security.h"
+#include "log.h"
 
 static cmdlist_t cmdlist;
 
 EFI_STATUS fastboot_flashing_publish(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef FASTBOOT_FOR_NON_ANDROID
 	return EFI_SUCCESS;
 #endif
@@ -64,6 +66,7 @@ EFI_STATUS fastboot_flashing_publish(void)
 
 EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	/* "Eng" builds skip all these security policies */
@@ -72,6 +75,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 	 * provisioning mode to avoid unnecessary steps and user interaction
 	 * during provisioning */
 	if (!device_is_provisioning()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* 'eng' or 'userdebug' bootloaders skip the prompts
 		 * to make CI automation easier */
 #ifdef USE_UI
@@ -82,6 +86,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 		 * so disable UI confirm function even in USE_UI case
 		 */
 		if (is_UEFI() && interactive && !fastboot_ui_confirm_for_state(new_state)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_fail("Refusing to change device state");
 			return EFI_ACCESS_DENIED;
 		}
@@ -90,6 +95,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 	info(L"Erasing userdata...");
 	ret = erase_by_label(L"userdata");
 	if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (interactive)
 			fastboot_fail("Failed to wipe data.");
 		return ret;
@@ -103,6 +109,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 	info(L"Erasing metadata...");
 	ret = erase_by_label(L"metadata");
 	if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (interactive)
 			fastboot_fail("Failed to wipe metadata.");
 		return ret;
@@ -116,6 +123,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 #endif
 
 	if (UNLOCKED == new_state) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		info(L"Erasing rollback index...");
 
 /*
@@ -123,24 +131,31 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
  * we reset 2 possible slots only.
  */
 		for (int slot = 0; slot < 2; slot++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			uint64_t idx;
 			if (tee_tpm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = tee_read_rollback_index_tpm2(slot, &idx);
 				if (EFI_SUCCESS == ret) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					ret = tee_write_rollback_index_tpm2(slot, 0);
 					if (EFI_ERROR(ret))
 						return ret;
 				}
 			} else if (andr_tpm) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = read_rollback_index_tpm2(slot, &idx);
 				if (EFI_SUCCESS == ret) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					ret = write_rollback_index_tpm2(slot, 0);
 					if (EFI_ERROR(ret))
 						return ret;
 				}
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				ret = read_efi_rollback_index(slot, &idx);
 				if (EFI_SUCCESS == ret) {
+       debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					ret = write_efi_rollback_index(slot, 0);
 					if (EFI_ERROR(ret))
 						return ret;
@@ -151,6 +166,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 
 	ret = set_current_state(new_state);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (interactive)
 			fastboot_fail("Failed to change the device state");
 		return ret;
@@ -161,6 +177,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 #endif
 	ret = fastboot_flashing_publish();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (interactive)
 			fastboot_fail("Failed to publish OEM variables");
 		return ret;
@@ -177,7 +194,9 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 
 static BOOLEAN is_already_in_state(enum device_state state)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (get_current_state() == state && !device_is_provisioning()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Device is already in the required state.");
 		fastboot_okay("");
 		return TRUE;
@@ -189,6 +208,7 @@ static BOOLEAN is_already_in_state(enum device_state state)
 static void cmd_lock(__attribute__((__unused__)) INTN argc,
 		     __attribute__((__unused__)) CHAR8 **argv)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef FASTBOOT_FOR_NON_ANDROID
 	fastboot_info("lock/Unlock is not supported");
 	fastboot_okay("");
@@ -200,6 +220,7 @@ static void cmd_lock(__attribute__((__unused__)) INTN argc,
 
 static BOOLEAN frp_allows_unlock()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 persist_byte;
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
@@ -217,6 +238,7 @@ static BOOLEAN frp_allows_unlock()
 				gparti.bio->Media->MediaId, vm_offset + offset,
 				sizeof(persist_byte), &persist_byte);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		/* Pathological if this fails, GPT screwed up? */
 		efi_perror(ret, L"Couldn't read persistent partition");
 		return FALSE;
@@ -246,6 +268,7 @@ static enum unlock_ability get_unlock_ability(void)
 static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 		       __attribute__((__unused__)) CHAR8 **argv)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USER
 	EFI_STATUS ret;
 #endif
@@ -259,22 +282,27 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 		return;
 
 	if (get_unlock_ability() == UNLOCK_ALLOWED) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef USER
 		ret = android_clear_memory();
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_fail("Failed to clear memory.  Unlock aborted.");
 			return;
 		}
 #endif
 		change_device_state(UNLOCKED, TRUE);
 	} else {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 /*#ifdef USER
 		fastboot_fail("Unlocking device not allowed");
 #else*/
 		/* user_build is from boot parameters to compatible for CIV and IVI */
 		if (user_build) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_fail("Unlocking device not allowed");
 		} else {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_info("Unlock protection is set");
 			fastboot_info("Unlocking anyway since this is not a User build");
 			change_device_state(UNLOCKED, TRUE);
@@ -286,12 +314,14 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 static void cmd_get_unlock_ability(__attribute__((__unused__)) INTN argc,
 				   __attribute__((__unused__)) CHAR8 **argv)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef FASTBOOT_FOR_NON_ANDROID
 	fastboot_info("lock/Unlock is not supported");
 	fastboot_okay("");
 	return;
 #endif
 	switch (get_unlock_ability()) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case UNLOCK_ALLOWED:
 		fastboot_info("The device can be unlocked.");
 		break;
@@ -309,7 +339,9 @@ static void cmd_get_unlock_ability(__attribute__((__unused__)) INTN argc,
 
 static void cmd_flashing(INTN argc, CHAR8 **argv)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (argc < 2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		fastboot_fail("Invalid parameter");
 		return;
 	}
@@ -318,21 +350,30 @@ static void cmd_flashing(INTN argc, CHAR8 **argv)
 }
 
 static struct fastboot_cmd COMMANDS[] = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef FASTBOOT_FOR_NON_ANDROID
 	{ "lock",		UNKNOWN_STATE,	cmd_lock },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "unlock",		UNKNOWN_STATE,	cmd_unlock },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "get_unlock_ability",	UNKNOWN_STATE,	cmd_get_unlock_ability }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #else
 	{ "lock",		LOCKED,	cmd_lock },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "unlock",		LOCKED,	cmd_unlock },
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ "get_unlock_ability",	LOCKED,	cmd_get_unlock_ability }
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #endif
 };
 
 static struct fastboot_cmd flashing = { "flashing", LOCKED, cmd_flashing };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 EFI_STATUS fastboot_flashing_init(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -341,6 +382,7 @@ EFI_STATUS fastboot_flashing_init(void)
 		return ret;
 
 	for (i = 0; i < ARRAY_SIZE(COMMANDS); i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = fastboot_register_into(&cmdlist, &COMMANDS[i]);
 		if (EFI_ERROR(ret))
 			return ret;
@@ -353,5 +395,6 @@ EFI_STATUS fastboot_flashing_init(void)
 
 void fastboot_flashing_free()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_cmdlist_unregister(&cmdlist);
 }

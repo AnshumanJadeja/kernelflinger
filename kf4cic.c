@@ -55,6 +55,7 @@
 
 EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID gEfiLoadedImageProtocolGuid = LOADED_IMAGE_PROTOCOL;
 	EFI_STATUS Status = EFI_SUCCESS;
 	EFI_HANDLE efi_handle = NULL;
@@ -73,6 +74,7 @@ EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 			0,
 			&efi_handle);
 	if (Status != EFI_SUCCESS && Status != EFI_SECURITY_VIOLATION) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Could not load the image '%s'", efi_file);
 		return Status;
 	}
@@ -91,6 +93,7 @@ EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 
 	Status = BS->StartImage(efi_handle, &exit_data_size, (CHAR16 **) NULL);
 	if (Status != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Could not start image");
 		error(L"Exit data size: %d", exit_data_size);
 	}
@@ -100,12 +103,14 @@ EFI_STATUS load_and_start_efi(EFI_HANDLE image_handle, CHAR16 *efi_file)
 
 CHAR16 *get_base_path(EFI_HANDLE image_handle)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_LOADED_IMAGE *g_loaded_image = NULL;
 	CHAR16 *self_path = NULL;
 
 	ret = uefi_call_wrapper(BS->HandleProtocol, 3, image_handle, &LoadedImageProtocol, (void **)&g_loaded_image);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"OpenProtocol LoadedImageProtocol failed");
 		return NULL;
 	}
@@ -116,6 +121,7 @@ CHAR16 *get_base_path(EFI_HANDLE image_handle)
 
 CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *base_path = NULL;
 	CHAR16 *abs_path = NULL;
 	UINTN len;
@@ -130,7 +136,9 @@ CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 
 	len = StrLen(base_path);
 	if (len > 4) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (StrcaseCmp(base_path + len - 4, L".EFI") == 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			UINTN i = len - 4;
 
 			while (i > 0 && base_path[i] != L'\\')
@@ -164,6 +172,7 @@ CHAR16 *absolute_path(EFI_HANDLE image_handle, CHAR16 *file)
 
 static VOID show_disable_secure_boot_warnning()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target bt = NORMAL_BOOT;
 
 #ifdef USE_UI
@@ -177,6 +186,7 @@ static VOID show_disable_secure_boot_warnning()
 
 EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *boot_path = NULL;
 
@@ -193,12 +203,14 @@ EFI_STATUS start_systemd_boot(EFI_HANDLE image_handle)
 #ifdef USE_TRUSTY
 static EFI_STATUS load_and_start_tos(void)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VOID *tosimage = NULL;
 
 	debug(L"loading trusty");
 	ret = load_tos_image(&tosimage);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Load tos image failed");
 		return ret;
 	}
@@ -206,6 +218,7 @@ static EFI_STATUS load_and_start_tos(void)
 	debug(L"start trusty");
 	ret = start_trusty(tosimage);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Unable to start trusty;");
 		return ret;
 	}
@@ -215,15 +228,18 @@ static EFI_STATUS load_and_start_tos(void)
 
 static EFI_STATUS update_rollback_indexes()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	AvbOps *ops;
 	AvbSlotVerifyResult verify_result;
 	AvbSlotVerifyData *slot_data = NULL;
 	UINT8 boot_state = BOOT_STATE_GREEN;
 	const char *requested_partitions[] = {"tos", NULL};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	ops = avb_init();
 	if (!ops) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to init avb");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -239,6 +255,7 @@ static EFI_STATUS update_rollback_indexes()
 				verify_result,
 				&boot_state);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to get avb result for tos");
 		return ret;
 	}
@@ -251,6 +268,7 @@ static EFI_STATUS update_rollback_indexes()
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 boot_state;
 
@@ -259,8 +277,10 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	/* Set device state as locked due to there is no fastboot
 	 * implement in CIC host oS side to support whole devcie lock/unlock */
 	if (device_is_unlocked()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = set_current_state(LOCKED);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to set device state");
 			return ret;
 		}
@@ -269,14 +289,17 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 	if (is_platform_secure_boot_enabled())
 		boot_state = BOOT_STATE_GREEN;
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		boot_state = BOOT_STATE_YELLOW;
 		show_disable_secure_boot_warnning();
 	}
 
 #ifdef USE_TPM
 	if (is_platform_secure_boot_enabled()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = tpm2_init();
 		if (EFI_ERROR(ret) && ret != EFI_NOT_FOUND) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to init TPM");
 			return ret;
 		}
@@ -285,6 +308,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 
 	ret = set_device_security_info(NULL);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to init security info");
 		return ret;
 	}
@@ -299,8 +323,10 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 		return ret;
 
 	if (boot_state == BOOT_STATE_GREEN) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = update_rollback_indexes();
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"Failed to update rollback indexes.\n");
 			return ret;
 		}

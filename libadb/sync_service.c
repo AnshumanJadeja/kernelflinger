@@ -35,6 +35,7 @@
 #include "adb_socket.h"
 #include "service.h"
 #include "reader.h"
+#include "log.h"
 
 #define ID_STAT MKID('S','T','A','T')
 #define ID_RECV MKID('R','E','C','V')
@@ -84,6 +85,7 @@ static sync_ctx_t CONTEXTS[MAX_ADB_SOCKET];
 
 static EFI_STATUS sync_service_open(const char *arg, void **ctx_p)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_ctx_t *ctx = NULL;
 	UINTN i;
 
@@ -95,6 +97,7 @@ static EFI_STATUS sync_service_open(const char *arg, void **ctx_p)
 			ctx = &CONTEXTS[i];
 
 	if (!ctx) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Failed to allocate sync service context structure");
 		return EFI_OUT_OF_RESOURCES;
 	}
@@ -108,11 +111,13 @@ static EFI_STATUS sync_service_open(const char *arg, void **ctx_p)
 
 static EFI_STATUS sync_service_ready(__attribute__((__unused__)) asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_SUCCESS;
 }
 
 static EFI_STATUS sync_service_close(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_ctx_t *ctx = asock_context(s);
 
 	if (!ctx)
@@ -128,6 +133,7 @@ static EFI_STATUS sync_service_close(asock_t s)
 
 static EFI_STATUS send_done(asock_t s, sync_ctx_t *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_msg_t msg;
 
 	reader_close(&ctx->reader_ctx);
@@ -143,12 +149,14 @@ static EFI_STATUS send_done(asock_t s, sync_ctx_t *ctx)
 
 static EFI_STATUS send_more_data(asock_t s, sync_ctx_t *ctx)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 sent;
 	sync_msg_t msg;
 
 	/* Need to load more data. */
 	if (ctx->need_more_data) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ctx->buf_len = SYNC_DATA_MAX;
 
 		ret = reader_read(&ctx->reader_ctx, &ctx->buf, &ctx->buf_len);
@@ -184,6 +192,7 @@ static EFI_STATUS send_more_data(asock_t s, sync_ctx_t *ctx)
 
 static EFI_STATUS sync_service_okay(asock_t s)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	sync_ctx_t *ctx = asock_context(s);
 
@@ -198,6 +207,7 @@ static EFI_STATUS sync_service_okay(asock_t s)
 
 static EFI_STATUS sync_service_reader_open(sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	char path[length + 1];
 
@@ -214,6 +224,7 @@ static EFI_STATUS sync_service_reader_open(sync_ctx_t *ctx, unsigned char *data,
 
 static EFI_STATUS sync_service_stat(asock_t s, sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, write_ret;
 	sync_msg_t msg;
 	EFI_TIME now;
@@ -235,6 +246,7 @@ static EFI_STATUS sync_service_stat(asock_t s, sync_ctx_t *ctx, unsigned char *d
 
 	ret = uefi_call_wrapper(RT->GetTime, 2, &now, NULL);
         if (EFI_ERROR(ret)) {
+                  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
                 efi_perror(ret, L"Failed to get the current time");
 		msg.stat.time = 0;
         } else
@@ -247,6 +259,7 @@ fail:
 
 static EFI_STATUS sync_service_recv(asock_t s, sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = asock_send_okay(s);
@@ -266,22 +279,27 @@ static EFI_STATUS sync_service_recv(asock_t s, sync_ctx_t *ctx, unsigned char *d
 
 static EFI_STATUS sync_service_read(asock_t s, unsigned char *data, UINT32 length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	sync_msg_t *msg = (sync_msg_t *) data;
 	sync_ctx_t *ctx = asock_context(s);
 
 	if (!ctx) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"sync service: invalid context");
 		goto fail;
 	}
 
 	switch (ctx->state) {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case ESTABLISHED:
 		if (length < sizeof(msg->req)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"sync service: message is too short");
 			goto fail;
 		}
 		if (msg->id == ID_STAT) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ctx->state = STAT;
 			if (length == sizeof(msg->req))
 				return asock_send_okay(s);
@@ -289,6 +307,7 @@ static EFI_STATUS sync_service_read(asock_t s, unsigned char *data, UINT32 lengt
 						 msg->req.namelen);
 		}
 		if (msg->id == ID_RECV) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ctx->state = RECV;
 			if (length == sizeof(msg->req))
 				return asock_send_okay(s);
@@ -317,6 +336,7 @@ fail:
 }
 
 service_t sync_service = {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name	= "sync",
 	.open	= sync_service_open,
 	.ready	= sync_service_ready,

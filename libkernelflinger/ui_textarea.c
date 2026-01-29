@@ -37,9 +37,11 @@
 #include <lib.h>
 
 #include "ui.h"
+#include "log.h"
 
 static EFI_STATUS ui_textarea_allocate_blt(ui_textarea_t *textarea)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN blt_size;
 
 	textarea->width = textarea->font->cwidth * textarea->row_nb;
@@ -57,6 +59,7 @@ ui_textarea_t *ui_textarea_create(UINTN line_nb, UINTN row_nb, ui_font_t *font,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN text_size;
 
 	if (!font)
@@ -71,6 +74,7 @@ ui_textarea_t *ui_textarea_create(UINTN line_nb, UINTN row_nb, ui_font_t *font,
 	textarea->font = font;
 
 	if (EFI_ERROR(ui_textarea_allocate_blt(textarea))) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(textarea);
 		return NULL;
 	}
@@ -78,6 +82,7 @@ ui_textarea_t *ui_textarea_create(UINTN line_nb, UINTN row_nb, ui_font_t *font,
 	text_size = sizeof(*textarea->text) * line_nb;
 	textarea->text = AllocateZeroPool(text_size);
 	if (!textarea->text) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(textarea->blt);
 		FreePool(textarea);
 		return NULL;
@@ -95,19 +100,24 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 				  int width, int height,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int i, j;
 
 	for (j = 0; j < height; ++j) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unsigned char* sx = src_p;
 		unsigned char* px = dst_p;
 		for (i = 0; i < width; ++i) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			unsigned char a = *sx++;
 			if (a == 255 && color) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				*px++ = color->Blue;
 				*px++ = color->Green;
 				*px++ = color->Red;
 				px++;
 			} else if (a > 0 && color) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				*px = (*px * (255-a) + color->Blue * a) / 255;
 				++px;
 				*px = (*px * (255-a) + color->Green * a) / 255;
@@ -116,6 +126,7 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 				++px;
 				++px;
 			} else {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				px += 4;
 			}
 		}
@@ -126,6 +137,7 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 
 static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN cur, i, j, x, y = 0;
 	ui_font_t *font = textarea->font;
 	UINTN pixel_size = sizeof(*textarea->blt);
@@ -137,6 +149,7 @@ static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 		textarea->width * textarea->height * sizeof(*textarea->blt));
 
 	for (i = 1; i <= textarea->line_nb; i++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		cur = (textarea->current + i) % textarea->line_nb;
 
 		color = textarea->color;
@@ -144,6 +157,7 @@ static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 			color = textarea->text[cur].color;
 
 		if (bg_color) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			UINTN x1;
 			for (x1 = 0; x1 < textarea->height * textarea->width; x1++)
 				CopyMem(textarea->blt + x1, bg_color,
@@ -152,6 +166,7 @@ static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 
 		unsigned char *s = (unsigned char *)textarea->text[cur].str;
 		for (x = 0, j = 0; s && *s && j < textarea->row_nb; s++, x += font->cwidth, j++) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (*s <= 0x20 || *s > 0x7E)
 				continue;
 			if (*s == '\n')
@@ -174,6 +189,7 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 				    UINTN x, UINTN *y, UINTN width, UINTN height,
 				    EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_textarea_t textarea;
 	EFI_STATUS ret;
 	UINTN line_nb, len, row_nb = 0;
@@ -182,6 +198,7 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 		return EFI_INVALID_PARAMETER;
 
 	for (line_nb = 0; text[line_nb].str; line_nb++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		len = strlen((CHAR8 *)text[line_nb].str);
 		row_nb = row_nb < len ? len : row_nb;
 	}
@@ -208,6 +225,7 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 
 void ui_textarea_free(ui_textarea_t *textarea)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_textarea_clear(textarea);
 	FreePool(textarea->blt);
 	FreePool(textarea->text);
@@ -216,10 +234,12 @@ void ui_textarea_free(ui_textarea_t *textarea)
 
 void ui_textarea_clear(ui_textarea_t *textarea)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < textarea->line_nb; i++)
 		if (textarea->text[i].str) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			FreePool(textarea->text[i].str);
 			textarea->text[i].str = NULL;
 		}
@@ -230,6 +250,7 @@ void ui_textarea_clear(ui_textarea_t *textarea)
 void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->text[line_nb].str = str;
 	textarea->text[line_nb].color = color;
 	textarea->text[line_nb].bold = bold;
@@ -238,6 +259,7 @@ void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *newbuf = NULL;
 	UINTN len;
 	EFI_STATUS ret;
@@ -248,9 +270,11 @@ void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 	if (textarea->text[line_nb].str == NULL)
 		newbuf = str;
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		len = strlen(str) + strlen(textarea->text[line_nb].str) + 1;
 		newbuf = AllocatePool(len);
 		if (newbuf == NULL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			FreePool(str);
 			return;
 		}
@@ -272,6 +296,7 @@ void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 			 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->current = (textarea->current + 1) % textarea->line_nb;
 
 	if (textarea->text[textarea->current].str)
@@ -283,6 +308,7 @@ void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 void ui_textarea_n(ui_textarea_t *textarea, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->current = (textarea->current + 0) % textarea->line_nb;
 	ui_textarea_set_line_n(textarea, textarea->current, str, color, bold);
 }
@@ -290,6 +316,7 @@ void ui_textarea_n(ui_textarea_t *textarea, char *str,
 EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 				  UINTN width, UINTN height)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN new_width, new_height;
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *scaled_blt = NULL;
 	EFI_STATUS ret;
@@ -316,6 +343,7 @@ EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 
 EFI_STATUS ui_textarea_draw(ui_textarea_t *textarea, UINTN x, UINTN y)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_textarea_refresh_blt(textarea);
 	return ui_draw_blt(textarea->blt, x, y, textarea->width, textarea->height);
 }

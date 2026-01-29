@@ -39,13 +39,17 @@
 #include "protocol.h"
 #include "uefi_utils.h"
 #include "options.h"
+#include "log.h"
 
 /* GUID for ESP partition on gmin */
 const EFI_GUID esp_ptn_guid = { 0x2568845d, 0x2332, 0x4675,
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		{0xbc, 0x39, 0x8f, 0xa5, 0xa4, 0x74, 0x8d, 0x15}};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_GUID SimpleFileSystemProtocol = SIMPLE_FILE_SYSTEM_PROTOCOL;
 	EFI_HANDLE esp_handle = NULL;
@@ -54,6 +58,7 @@ EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 	ret = gpt_get_partition_handle(BOOTLOADER_LABEL, LOGICAL_UNIT_USER,
 				       &esp_handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get ESP partition");
 		return ret;
 	}
@@ -61,6 +66,7 @@ EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 	ret = handle_protocol(esp_handle, &SimpleFileSystemProtocol,
 			      (void **)&esp);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"HandleProtocol for ESP partition failed");
 		return ret;
 	}
@@ -71,6 +77,7 @@ EFI_STATUS get_esp_fs(EFI_FILE_IO_INTERFACE **esp_fs)
 
 EFI_STATUS uefi_open_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, EFI_FILE **file)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, file);
@@ -88,6 +95,7 @@ EFI_STATUS uefi_open_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, EFI_FILE 
 
 EFI_STATUS uefi_get_file_size(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, UINTN *size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_INFO *info;
 	UINTN info_size;
@@ -101,6 +109,7 @@ EFI_STATUS uefi_get_file_size(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, UINTN
 
 	info = AllocatePool(info_size);
 	if (!info) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto close;
 	}
@@ -123,6 +132,7 @@ out:
 
 EFI_STATUS uefi_read_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void **data, UINTN *size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_INFO *info;
 	UINTN info_size;
@@ -136,6 +146,7 @@ EFI_STATUS uefi_read_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void **da
 
 	info = AllocatePool(info_size);
 	if (!info) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto close;
 	}
@@ -150,6 +161,7 @@ EFI_STATUS uefi_read_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void **da
 retry:
 	ret = uefi_call_wrapper(file->Read, 3, file, size, *data);
 	if (ret == EFI_BUFFER_TOO_SMALL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		FreePool(*data);
 		*data = AllocatePool(*size);
 		goto retry;
@@ -170,6 +182,7 @@ out:
 
 EFI_STATUS uefi_write_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void *data, UINTN *size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *file, *root;
 
@@ -192,6 +205,7 @@ out:
 
 EFI_STATUS uefi_create_dir(EFI_FILE *parent, EFI_FILE **dir, CHAR16 *dirname)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return uefi_call_wrapper(parent->Open, 5, parent, dir, dirname,
 				 EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,
 				 EFI_FILE_DIRECTORY);
@@ -200,6 +214,7 @@ EFI_STATUS uefi_create_dir(EFI_FILE *parent, EFI_FILE **dir, CHAR16 *dirname)
 #define MAX_SUBDIR 10
 EFI_STATUS uefi_write_file_with_dir(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename, void *data, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *dirs[MAX_SUBDIR];
 	EFI_FILE *file;
@@ -209,14 +224,17 @@ EFI_STATUS uefi_write_file_with_dir(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename,
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &dirs[0]);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open root directory");
 		return ret;
 	}
 	start = filename;
 	for (end = filename; *end; end++) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (*end != '/')
 			continue;
 		if (start == end) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			start++;
 			continue;
 		}
@@ -229,6 +247,7 @@ EFI_STATUS uefi_write_file_with_dir(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename,
 			goto out;
 		subdir++;
 		if (subdir >= MAX_SUBDIR - 1) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"too many subdirectories, limit is %d", MAX_SUBDIR);
 			ret = EFI_INVALID_PARAMETER;
 			goto out;
@@ -254,6 +273,7 @@ out:
 
 EFI_STATUS uefi_delete_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *file, *root;
 
@@ -277,6 +297,7 @@ out:
 
 BOOLEAN uefi_exist_file(EFI_FILE *parent, CHAR16 *filename)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *file;
 
@@ -292,12 +313,14 @@ BOOLEAN uefi_exist_file(EFI_FILE *parent, CHAR16 *filename)
 
 BOOLEAN uefi_exist_file_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *root;
 	BOOLEAN ret2;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &root);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open volume %s", filename);
 		return FALSE;
 	}
@@ -310,14 +333,17 @@ BOOLEAN uefi_exist_file_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *filename)
 
 EFI_STATUS uefi_create_directory(EFI_FILE *parent, CHAR16 *dirname)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *dir;
 
 	ret = uefi_create_dir(parent, &dir, dirname);
 
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to create directory %s", dirname);
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		uefi_call_wrapper(dir->Close, 1, dir);
 	}
 
@@ -326,11 +352,13 @@ EFI_STATUS uefi_create_directory(EFI_FILE *parent, CHAR16 *dirname)
 
 EFI_STATUS uefi_create_directory_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *dirname)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *root;
 
 	ret = uefi_call_wrapper(io->OpenVolume, 2, io, &root);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to open volume %s", dirname);
 		return ret;
 	}
@@ -341,6 +369,7 @@ EFI_STATUS uefi_create_directory_root(EFI_FILE_IO_INTERFACE *io, CHAR16 *dirname
 
 EFI_STATUS uefi_rename_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *oldname, CHAR16 *newname)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE *file = NULL, *root = NULL;
 	EFI_FILE_INFO *info = NULL;
@@ -353,12 +382,14 @@ EFI_STATUS uefi_rename_file(EFI_FILE_IO_INTERFACE *io, CHAR16 *oldname, CHAR16 *
 	ret = uefi_call_wrapper(root->Open, 5, root, &file, oldname,
 				EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE, 0);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		goto out;
 	}
 
 	info_size = SIZE_OF_EFI_FILE_INFO + FILENAME_MAX_LENGTH;
 	info = AllocatePool(info_size);
 	if (!info) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
 	}
@@ -389,12 +420,14 @@ out:
 
 EFI_STATUS verify_image(EFI_HANDLE handle, CHAR16 *path)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, unload_ret = EFI_SUCCESS;
 	EFI_DEVICE_PATH *edp;
 	EFI_HANDLE image;
 
 	edp = FileDevicePath(handle, path);
 	if (!edp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Couldn't generate a path for '%s'", path);
 		return EFI_INVALID_PARAMETER;
 	}
@@ -405,6 +438,7 @@ EFI_STATUS verify_image(EFI_HANDLE handle, CHAR16 *path)
 	if (EFI_ERROR(ret))
 		efi_perror(ret, L"Failed to load '%s'", path);
 	if (!EFI_ERROR(ret) || ret == EFI_SECURITY_VIOLATION) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		unload_ret = uefi_call_wrapper(BS->UnloadImage, 1, image);
 		if (EFI_ERROR(unload_ret))
 			efi_perror(unload_ret, L"Failed to unload image");
@@ -415,6 +449,7 @@ EFI_STATUS verify_image(EFI_HANDLE handle, CHAR16 *path)
 
 EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN len = 0;
 	UINT64 max = 0;
 	EFI_CAPSULE_HEADER *capHeader = NULL;
@@ -429,6 +464,7 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 
 	ret = file_read(root_dir, name, &content, &len);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret == EFI_NOT_FOUND)
 			return EFI_SUCCESS;
 		efi_perror(ret, L"Failed to read file %s", name);
@@ -437,6 +473,7 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 	debug(L"Trying to load capsule: %s", name);
 
 	if (len <= 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Couldn't load capsule data from disk");
 		ret = EFI_LOAD_ERROR;
 		goto out;
@@ -446,6 +483,7 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 	 */
 	ret = file_delete(root_dir, name);
 	if (ret != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Couldn't delete %s", name);
 		goto out;
 	}
@@ -453,6 +491,7 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 	capHeader = (EFI_CAPSULE_HEADER *) content;
 	capHeaderArray = AllocatePool(2 * sizeof(EFI_CAPSULE_HEADER *));
 	if (!capHeaderArray) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Can allocate pool for capsule header");
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
@@ -463,16 +502,19 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 	ret = uefi_call_wrapper(RT->QueryCapsuleCapabilities, 4,
 		capHeaderArray, 1,  &max, &resetType);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"QueryCapsuleCapabilities failed");
 		goto out;
 	}
 	if (len > max) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Bad buffer size of QueryCapsuleCapabilities");
 		ret = EFI_BAD_BUFFER_SIZE;
 		goto out;
 	}
 	scatterList = AllocatePool(2*sizeof(EFI_CAPSULE_BLOCK_DESCRIPTOR));
 	if (!scatterList) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Can allocate pool for capsule block");
 		ret = EFI_OUT_OF_RESOURCES;
 		goto out;
@@ -486,6 +528,7 @@ EFI_STATUS uefi_bios_update_capsule(EFI_HANDLE root_dir, CHAR16 *name)
 	ret = uefi_call_wrapper(RT->UpdateCapsule, 3, capHeaderArray, 1,
 		(EFI_PHYSICAL_ADDRESS) (UINTN) scatterList);
 	if (ret != EFI_SUCCESS) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"UpdateCapsule failed");
 		goto out;
 	}
@@ -511,6 +554,7 @@ out:
 EFI_STATUS uefi_enter_binary(EFI_HANDLE part_handle, CHAR16 *path,
 		BOOLEAN delete, UINT32 load_options_size, VOID *load_options)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_DEVICE_PATH *edp;
 	EFI_STATUS ret;
 	EFI_HANDLE image;
@@ -521,6 +565,7 @@ EFI_STATUS uefi_enter_binary(EFI_HANDLE part_handle, CHAR16 *path,
 
 	edp = FileDevicePath(part_handle, path);
 	if (!edp) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Couldn't generate a path");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -529,24 +574,29 @@ EFI_STATUS uefi_enter_binary(EFI_HANDLE part_handle, CHAR16 *path,
 			edp, NULL, 0, &image);
 	FreePool(edp);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"BS->LoadImage '%s'", path);
 		return ret;
 	}
 	if (delete) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = file_delete(part_handle, path);
 		if (EFI_ERROR(ret))
 			efi_perror(ret, L"Couldn't delete %s", path);
 	}
 	if (load_options_size > 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		// Set the command line option
 		ret = uefi_call_wrapper(BS->OpenProtocol, 6, image,
 				&LoadedImageProtocol, (VOID **)&loaded_image,
 				image, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"OpenProtocol: LoadedImageProtocol");
 			goto out;
 		}
 		if (loaded_image == NULL) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			error(L"LoadedImageProtocol, but return image is NULL");
 			ret = EFI_INVALID_PARAMETER;
 			goto out;
@@ -566,6 +616,7 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 		CHAR16 *partition, CHAR16 *upgrade_file,
 		CHAR16 *self_path1, CHAR16 *bak_path1, CHAR16 *self_path2, CHAR16 *bak_path2)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *io = NULL;
 	EFI_GUID SimpleFileSystemProtocol = SIMPLE_FILE_SYSTEM_PROTOCOL;
@@ -582,6 +633,7 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 			|| loaded_image->FilePath == NULL
 			|| loaded_image->FilePath->Type != MEDIA_DEVICE_PATH
 			|| loaded_image->FilePath->SubType != MEDIA_FILEPATH_DP) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		// maybe loaded by the "fastboot boot" command, or the BIOS not support
 		debug(L"Loaded image or FilePath is NULL");
 		return EFI_INVALID_PARAMETER;
@@ -592,18 +644,22 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 	if (EFI_ERROR(ret))
 		goto out;
 	if (argc > 0 && argv[0][0] != L'-') {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		// If load from EFI shell, then the loaded_image->FilePath is the working directory of shell,
 		// and argv[0] is the efi application path.
 		// If load from BIOS boot manager, or other EFI application, then the loaded_image->FilePath
 		// is the full path of efi application path.
 		self_path_len = StrLen(self_path);
 		if (self_path_len > 0) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			// Build the full path of efi application path.
 			if (self_path[self_path_len - 1] == L'\\') {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				// Loaded from EFI shell root directory, ended with '\'.
 				SPrint(efi_full_path, sizeof(efi_full_path), L"%s%s", self_path, argv[0]);
 				self_path = efi_full_path;
 			} else if (self_path_len <= 4 || StrcaseCmp(self_path + self_path_len - 4, L".EFI")) {
+      debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				// Loaded from EFI shell and not root directory, need add '\'.
 				SPrint(efi_full_path, sizeof(efi_full_path), L"%s\\%s", self_path, argv[0]);
 				self_path = efi_full_path;
@@ -620,12 +676,14 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 	else if (!StrcaseCmp(self_path, self_path2))
 		bak_path = bak_path2;
 	else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Unsupported running path for check upgrade");
 		goto out;
 	}
 
 	ret = gpt_get_partition_handle(partition, LOGICAL_UNIT_USER, &part_handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (ret != EFI_NOT_FOUND)
 			efi_perror(ret, L"Failed to find partition %s", partition);
 		goto out;
@@ -633,11 +691,13 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 
 	ret = handle_protocol(part_handle, &SimpleFileSystemProtocol, (void **)&io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"HandleProtocol for FAT in partition %s failed", partition);
 		goto out;
 	}
 
 	if (!uefi_exist_file_root(io, upgrade_file)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		debug(L"Upgrade file %s is not exist", upgrade_file);
 		goto out;
 	}
@@ -645,6 +705,7 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 
 	ret = verify_image(part_handle, upgrade_file);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Verify upgrade image failed");
 		uefi_delete_file(io, upgrade_file);
 		goto out;
@@ -653,14 +714,17 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 
 	// Verify it again
 	if (!uefi_exist_file_root(io, self_path)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Can't find file %s", self_path);
 		ret = EFI_NOT_FOUND;
 		goto out;
 	}
 
 	if (uefi_exist_file_root(io, bak_path)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = uefi_delete_file(io, bak_path);
 		if (EFI_ERROR(ret)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Failed to delete %s", bak_path);
 			goto out;
 		}
@@ -668,12 +732,14 @@ EFI_STATUS uefi_check_upgrade(EFI_LOADED_IMAGE *loaded_image,
 	}
 	ret = uefi_rename_file(io, self_path, bak_path);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to rename the %s to %s", self_path, bak_path);
 		goto out;
 	}
 	debug(L"Success rename file %s to %s", self_path, bak_path);
 	ret = uefi_rename_file(io, upgrade_file, self_path);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to rename the upgrade file %s to %s", upgrade_file, self_path);
 		goto out;
 	}

@@ -75,6 +75,7 @@ typedef struct {                    // an IAS image generic header:
 static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 				    IASIMAGE_DATA *img, UINT32 *numFile)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 *subFileSizeArray;
 	VOID *addr;
 	UINT32 index;
@@ -88,11 +89,13 @@ static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 		return EFI_INVALID_PARAMETER;
 
 	if (numImg != 0) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ZeroMem(img, numImg * sizeof(img[0]));
 		addr = (VOID *)IAS_PAYLOAD(header);
 
 		// If there are sub-images (Index.e NumFile > 0) return their addresses and sizes.
 		for (index = 0 ; index < numImg && index < *numFile ; index += 1) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			img[index].addr = addr;
 			img[index].size = subFileSizeArray[index];
 			addr = (UINT32 *) ((UINT8 *)addr + ROUNDED_UP(img[index].size, 4));
@@ -105,6 +108,7 @@ static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 /*Obtain file io interface of the label name parition*/
 static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	EFI_STATUS ret;
 	EFI_HANDLE handle = NULL;
@@ -112,6 +116,7 @@ static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 	ret = gpt_get_partition_handle(label, LOGICAL_UNIT_USER,
 			&handle);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get partition %s", label);
 		return ret;
 	}
@@ -119,6 +124,7 @@ static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 	ret = handle_protocol(handle, &FileSystemProtocol,
 			(void **)io);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Handle protocol %s failed", label);
 		return ret;
 	}
@@ -129,6 +135,7 @@ static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 /*Get buffer sha256 hash value*/
 static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EVP_MD_CTX mdctx;
 
 	EVP_MD_CTX_init(&mdctx);
@@ -145,15 +152,18 @@ static EFI_STATUS verify_file_hash(CHAR8* filename,
 				UINT32 hashLen,
 				BOOLEAN* verify_pass)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	CHAR8 *data;
 	UINTN size = 0;
 	CHAR8 realHash[EVP_MAX_MD_SIZE] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *file;
 
 	file = stra_to_str((CHAR8*)(filename));
 	ret = uefi_read_file(io, file, (VOID **)&data, &size);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read %s",file);
 		*verify_pass = FALSE;
 		goto out;
@@ -161,6 +171,7 @@ static EFI_STATUS verify_file_hash(CHAR8* filename,
 	hash_buffer(data, size, realHash);
 	FreePool(data);
 	if (memcmp(hash, realHash, hashLen)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*verify_pass = FALSE;
 		error(L"'%s' verify failure", file);
 		goto out;
@@ -175,6 +186,7 @@ out:
 
 static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BIO *bio;
 	X509 *x509;
 
@@ -192,11 +204,13 @@ static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 
 static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EVP_PKEY *pkey = X509_get_pubkey(cert);
 	if (!pkey)
 		return NULL;
 
 	if (EVP_PKEY_RSA != EVP_PKEY_type(EVP_PKEY_id(pkey))) {
+           debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	        EVP_PKEY_free(pkey);
 		return NULL;
 	}
@@ -206,8 +220,10 @@ static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 /*Signature check ias iamge*/
 static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 *signature_data;
 	CHAR8 datahash[32] = {0};
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 datalen = 0;
 	EVP_PKEY *pkey = NULL;
 	RSA *rsa;
@@ -216,11 +232,13 @@ static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 
 	IASIMAGE_HEADER *header = (IASIMAGE_HEADER*)iasimage;
 	if (header->magicPattern !=  MAGIC_PATTERN){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"[IAS image] Check magic pattern fail\n");
 		return EFI_INVALID_PARAMETER;
 	}
 
 	if (IAS_IMAGE_TYPE(header->imageType)!= 0x4){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"[IAS image] Check imageType fail\n");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -229,6 +247,7 @@ static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 	//CRC check
 
 	if (!IAS_IMAGE_IS_SIGNED(header->imageType)){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"[IAS image] Image is unsigned\n");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -245,6 +264,7 @@ static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 
 	rsa = EVP_PKEY_get1_RSA(pkey);
 	if (!rsa) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = EFI_INVALID_PARAMETER;
 		goto free_pkey;
 	}
@@ -267,6 +287,7 @@ free_pkey:
 /*Verify vbmeta cover files' integerity*/
 EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pass)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT32 index;
 	UINT32 num_files;
@@ -276,10 +297,12 @@ EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pa
 	EFI_FILE_IO_INTERFACE *io;
 
 	if (!is_platform_secure_boot_enabled()) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		*verify_pass = TRUE;
 		return ret;
 	}
 	if (fileName == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid vbmeta file");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -289,16 +312,19 @@ EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pa
 
 	ret = uefi_read_file(io, fileName, &iasimage, &size);
 	if (EFI_ERROR(ret) || iasimage == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to read %s",fileName);
 		return ret;
 	}
 
 	if (iasimage == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"Invalid ias image");
 		return EFI_INVALID_PARAMETER;
 	}
 	ret = verify_ias_image(iasimage,verify_pass);
 	if (EFI_ERROR(ret) || *verify_pass == FALSE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to verify_iasimage");
 		goto out;
 	}
@@ -306,11 +332,13 @@ EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pa
 
 	ret = ias_get_sub_files(iasimage, IASIMAGE_MAX_SUB_IMAGE, file, &num_files);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get sub files");
 		goto out;
 	}
 
 	for (index = 0; index < num_files; index+=2) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = verify_file_hash( (CHAR8*)file[index].addr, io,
 					(CHAR8*)(file[index + 1].addr),
 					file[index + 1].size, verify_pass);

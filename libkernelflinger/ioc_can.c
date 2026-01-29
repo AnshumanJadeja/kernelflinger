@@ -39,18 +39,21 @@
 
 EFI_STATUS notify_ioc_ready()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;
 	IOC_UART_PROTOCOL *iocprotocol = NULL;
 
 	ret = LibLocateProtocol(&guid, (void **)&iocprotocol);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to get iocprotocol");
 		return ret;
 	}
 
 	ret = uefi_call_wrapper(iocprotocol->NotifyIOCCMReady, 1, iocprotocol);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to set CM ready to IOC");
 		return ret;
 	}
@@ -60,17 +63,20 @@ EFI_STATUS notify_ioc_ready()
 
 EFI_STATUS set_suppress_heart_beat_timeout(UINT32 timeout)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	IOC_UART_PROTOCOL *iocprotocol = NULL;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;
 
 	ret = LibLocateProtocol(&guid, (void **)&iocprotocol);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		return ret;
 	}
 
 	ret = uefi_call_wrapper(iocprotocol->SetSuppressHeartBeatTimeout, 2, iocprotocol, timeout);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to set suppress heart beat timeout");
 		return ret;
 	}

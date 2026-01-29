@@ -48,6 +48,7 @@
 #include "libelfloader.h"
 #ifdef RPMB_STORAGE
 #include "rpmb_storage.h"
+#include "log.h"
 #endif
 
 #define TRUSTY_MEM_SIZE			0x1000000
@@ -109,6 +110,7 @@ struct tos_image_header {
 static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UINTN base,
 	UINTN size, trusty_boot_param_t *boot_param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT64 entry_addr;
 #ifdef RPMB_STORAGE
 	EFI_STATUS ret = EFI_SUCCESS;
@@ -120,6 +122,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 		return EFI_INVALID_PARAMETER;
 	if (!relocate_elf_image(base, size, boot_param->trusty_mem_base + 0x1000,
 				(boot_param->trusty_mem_size << 10) - 0x1000, &entry_addr)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		error(L"relocate tos image failed");
 		return EFI_INVALID_PARAMETER;
 	}
@@ -135,6 +138,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #ifdef RPMB_STORAGE
 	ret = get_rpmb_derived_key(&out_key, &number_derived_key);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"get_rpmb_derived_key failed");
 		return ret;
 	}
@@ -151,6 +155,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #define ACRN_HC_LAUNCH_TRUSTY 0x80000070
 static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	register signed long smc_id asm("r8") = ACRN_HC_LAUNCH_TRUSTY;
 
@@ -167,6 +172,7 @@ static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 #else
 static EFI_STATUS launch_trusty_os(__attribute__((unused)) trusty_startup_params_t *param)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	efi_perror(ret, L"Unsupport to launch trusty on 32bit");
 	return EFI_UNSUPPORTED;
 }
@@ -174,11 +180,13 @@ static EFI_STATUS launch_trusty_os(__attribute__((unused)) trusty_startup_params
 
 EFI_STATUS set_trusty_param(__attribute__((unused)) IN VOID *param_data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
+          debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 	const struct boot_img_hdr *header;
 	UINTN load_base;
@@ -194,6 +202,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
 	trusty_boot_params.trusty_mem_size = TRUSTY_MEM_SIZE;
 	ret = init_trusty_startup_params(&trusty_startup_params, load_base, header->kernel_size, &trusty_boot_params);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to init trusty startup params");
 		return ret;
 	}
@@ -204,6 +213,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
             sizeof(trusty_startup_params.rpmb_key));
 #endif
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to launch trusty os");
 		return ret;
 	}
@@ -216,6 +226,7 @@ EFI_STATUS start_trusty(VOID *tosimage)
 #if 0
 	ret = heci_end_of_post();
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Failed to send EOP message to CSE FW, halt");
 		goto fail;
 	}

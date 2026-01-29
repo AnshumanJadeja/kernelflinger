@@ -56,6 +56,7 @@ static UINTN pos, last_pos;
 
 EFI_STATUS log_flush_to_var(BOOLEAN nonvol)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static volatile BOOLEAN running;
 	EFI_STATUS ret;
 	CHAR8 *buf, *cur;
@@ -75,15 +76,18 @@ EFI_STATUS log_flush_to_var(BOOLEAN nonvol)
 #endif
 
 	if (last_pos) {		/* Manage roll-over */
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		size = last_pos < pos ? pos : last_pos;
 
 		cur = buf = AllocatePool(size);
 		if (!buf) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = EFI_OUT_OF_RESOURCES;
 			goto out;
 		}
 
 		if (pos < last_pos) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			ret = memcpy_s(buf, size, log_buf + pos, last_pos - pos);
 			if (EFI_ERROR(ret))
 				goto out;
@@ -93,6 +97,7 @@ EFI_STATUS log_flush_to_var(BOOLEAN nonvol)
 		if (EFI_ERROR(ret))
 			goto out;
 	} else {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		size = pos;
 		buf = log_buf;
 	}
@@ -109,12 +114,14 @@ out:
 
 static void log_append_to_buffer(CHAR8 *msg, UINTN length)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (length > LOG_BUF_SIZE)
 		return;
 
 	if (pos + length >= LOG_BUF_SIZE) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		last_pos = pos;
 		pos = 0;
 	}
@@ -128,6 +135,7 @@ static void log_append_to_buffer(CHAR8 *msg, UINTN length)
 
 static EFI_STATUS serial_init()
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = SERIAL_IO_PROTOCOL;
 
@@ -151,6 +159,7 @@ static EFI_STATUS serial_init()
 
 void vlog(const CHAR16 *fmt, va_list args)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN length;
 
 	if (!serial && EFI_ERROR(serial_init()))
@@ -171,6 +180,7 @@ void vlog(const CHAR16 *fmt, va_list args)
 
 void log(const CHAR16 *fmt, ...)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 
 	if (!serial && EFI_ERROR(serial_init()))

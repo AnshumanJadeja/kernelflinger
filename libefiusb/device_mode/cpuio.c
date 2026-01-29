@@ -37,19 +37,23 @@
 #include <vars.h>
 #include "efiapi.h"
 #include "CpuIo2.h"
+#include "log.h"
 
 EFI_GUID gEfiCpuIo2ProtocolGuid = EFI_CPU_IO2_PROTOCOL_GUID;
 static EFI_CPU_IO2_PROTOCOL  *mCpuIo = NULL;
 
 UINT32 MmioRead32(UINTN address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFFFFFFFF;
 		}
@@ -63,6 +67,7 @@ UINT32 MmioRead32(UINTN address)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  read data from 0x%x", address);
 		return 0xFFFFFFFF;
 	}
@@ -72,13 +77,16 @@ UINT32 MmioRead32(UINTN address)
 
 UINT16 MmioRead16(UINTN address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFFFF;
 		}
@@ -92,6 +100,7 @@ UINT16 MmioRead16(UINTN address)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  read data from 0x%x", address);
 		return 0xFFFF;
 	}
@@ -101,13 +110,16 @@ UINT16 MmioRead16(UINTN address)
 
 UINT8 MmioRead8(UINTN address)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 data;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFF;
 		}
@@ -121,6 +133,7 @@ UINT8 MmioRead8(UINTN address)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  read data from 0x%x", address);
 		return 0xFF;
 	}
@@ -130,12 +143,15 @@ UINT8 MmioRead8(UINTN address)
 
 UINT32 MmioWrite32(UINTN add, UINT32 data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFFFFFFFF;
 		}
@@ -149,6 +165,7 @@ UINT32 MmioWrite32(UINTN add, UINT32 data)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  write data to 0x%x", add);
 		return 0xFFFFFFFF;
 	}
@@ -158,12 +175,15 @@ UINT32 MmioWrite32(UINTN add, UINT32 data)
 
 UINT16 MmioWrite16(UINTN add, UINT16 data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFFFF;
 		}
@@ -177,6 +197,7 @@ UINT16 MmioWrite16(UINTN add, UINT16 data)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  write data to 0x%x", add);
 		return 0xFFFF;
 	}
@@ -186,12 +207,15 @@ UINT16 MmioWrite16(UINTN add, UINT16 data)
 
 UINT8 MmioWrite8(UINTN add, UINT8 data)
 {
+   debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (mCpuIo == NULL) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = LibLocateProtocol (&gEfiCpuIo2ProtocolGuid,
 					 (VOID **) &mCpuIo);
 		if (EFI_ERROR(ret) || (mCpuIo == NULL)) {
+     debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			efi_perror(ret, L"Can't locate cpu io protocol");
 			return 0xFF;
 		}
@@ -205,6 +229,7 @@ UINT8 MmioWrite8(UINTN add, UINT8 data)
 				 1,
 				 &data);
 	if (EFI_ERROR(ret)) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		efi_perror(ret, L"Fail to  write data to 0x%x", add);
 		return 0xFF;
 	}
