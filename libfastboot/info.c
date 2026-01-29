@@ -36,6 +36,7 @@
 #include <lib.h>
 
 #include "info.h"
+#include "log.h"
 
 const char *info_bootloader_version(void)
 {
@@ -49,6 +50,7 @@ const char *info_baseband_version(void)
 
 const char *info_variant(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef HAL_AUTODETECT
 	return get_property_device();
 #else
@@ -64,5 +66,6 @@ const char *info_product(void)
 
 const char *info_hw_revision(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return SMBIOS_GET_STRING(1, Version);
 }

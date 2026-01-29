@@ -41,6 +41,7 @@ static EFI_GUID gEfiTcoResetProtocolGuid = EFI_TCO_RESET_PROTOCOL_GUID;
 
 BOOLEAN watchdog_disabled_from_cmdline(CHAR8 *cmdline)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         while (cmdline != NULL) {
                 if (!strncmp(cmdline, (CHAR8 *)TCO_OPT_DISABLED, strlen((CHAR8 *)TCO_OPT_DISABLED)))
                         return TRUE;
@@ -55,6 +56,7 @@ BOOLEAN watchdog_disabled_from_cmdline(CHAR8 *cmdline)
 
 EFI_STATUS start_watchdog(UINT32 seconds)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_TCO_RESET_PROTOCOL *tco;
         EFI_STATUS ret;
 

@@ -33,6 +33,7 @@
 #include "oemvars.h"
 #include "vars.h"
 #include "text_parser.h"
+#include "log.h"
 
 enum vartype {
 	VAR_TYPE_UNKNOWN,
@@ -48,6 +49,7 @@ typedef struct oemvars_ctx {
 
 static BOOLEAN parse_oemvar_guid_line(char *line, EFI_GUID *g)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	const CHAR8 *prefix = (CHAR8 *) "GUID";
 
@@ -75,9 +77,11 @@ static BOOLEAN parse_oemvar_guid_line(char *line, EFI_GUID *g)
  * bytes */
 static UINTN unescape_oemvar_val(char *val)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *p = val, *out = val;
 	unsigned int byte;
 	char value[3] = { '\0', '\0', '\0' };
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *tmp;
 	while (*p) {
 		if (p[0] != '%') {
@@ -101,6 +105,7 @@ static UINTN unescape_oemvar_val(char *val)
 
 static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum vartype *typep)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *line = *linep;
 	char *pos, *end;
 	/* No point in writing volatile values. Default to both boot and runtime
@@ -167,6 +172,7 @@ static int parse_oemvar_attributes(char **linep, uint32_t *attributesp, enum var
 
 static EFI_STATUS parse_line(char *line, VOID *context)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	uint32_t attributes = 0;
 	enum vartype type;
@@ -293,7 +299,9 @@ static EFI_STATUS _flash_oemvars(VOID *data, UINTN size,
 				 const EFI_GUID *restricted_guid,
 				 BOOLEAN silent_error)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	oemvars_ctx_t ctx = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		.guid = loader_guid,
 		.restricted_guid = restricted_guid,
 		.silent_write_error = silent_error
@@ -311,5 +319,6 @@ EFI_STATUS flash_oemvars_silent_write_error(VOID *data, UINTN size,
 
 EFI_STATUS flash_oemvars(VOID *data, UINTN size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _flash_oemvars(data, size, NULL, FALSE);
 }

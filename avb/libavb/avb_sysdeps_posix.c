@@ -29,12 +29,14 @@
 #include <string.h>
 
 #include "avb_sysdeps.h"
+#include "log.h"
 
 int avb_memcmp(const void* src1, const void* src2, size_t n) {
   return memcmp(src1, src2, n);
 }
 
 void* avb_memcpy(void* dest, const void* src, size_t n) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS ret;
   ret = memcpy_s(dest, n, src, n);
   return (ret == EFI_SUCCESS) ? (dest) : (NULL);
@@ -49,6 +51,7 @@ int avb_strcmp(const char* s1, const char* s2) {
 }
 
 size_t avb_strlen(const char* str) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return strlen(str);
 }
 
@@ -61,6 +64,7 @@ void avb_print(const char* message) {
 }
 
 void avb_printv(const char* message, ...) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   va_list ap;
   const char* m;
 
@@ -80,6 +84,7 @@ void avb_free(void* ptr) {
 }
 
 uint32_t avb_div_by_10(uint64_t* dividend) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t rem = (uint32_t)(*dividend % 10);
   *dividend /= 10;
   return rem;

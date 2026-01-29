@@ -33,6 +33,7 @@
 #include <lib.h>
 
 #include "ioport.h"
+#include "log.h"
 
 static const char * const usage = "Usage:\n"
 	"  inb|inw|inl IOPORT\n"
@@ -47,6 +48,7 @@ static inline UINT16 inw(int port)
 
 static inline void outw(UINT16 val, int port)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	__asm__ __volatile__("outw %w0, %w1" : : "a"(val), "Nd"(port));
 }
 
@@ -58,6 +60,7 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS ioport_main(INTN argc, const char **argv)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 ioport, data = 0;
 
@@ -126,6 +129,7 @@ shcmd_t inl_shcmd = {
 	.main = ioport_main
 };
 shcmd_t outb_shcmd = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "outb",
 	.summary = "Perform a byte size write operation on the given I/O port",
 	.help = usage,
@@ -139,6 +143,7 @@ shcmd_t outw_shcmd = {
 };
 
 shcmd_t outl_shcmd = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "outl",
 	.summary = "Perform a long size (32 bits) write operation on the given I/O port",
 	.help = usage,

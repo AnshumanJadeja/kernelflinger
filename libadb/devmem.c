@@ -34,6 +34,7 @@
 #include <pae.h>
 
 #include "devmem.h"
+#include "log.h"
 
 static const CHAR16 *VALUE_FORMAT[] = {
 	L"0x%02x\n", L"0x%04x\n", L"0x%08x\n", NULL, L"0x%016x\n"
@@ -49,6 +50,7 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS devmem_main(INTN argc, const char **argv)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	EFI_PHYSICAL_ADDRESS address, width = 8 * sizeof(UINT32), value;
 
@@ -79,6 +81,7 @@ static EFI_STATUS devmem_main(INTN argc, const char **argv)
 #endif
 
 	switch (width) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	case 8:
 		READ_OR_WRITE(argc < 4, UINT8, address, value);
 		break;
@@ -110,6 +113,7 @@ static EFI_STATUS devmem_main(INTN argc, const char **argv)
 }
 
 shcmd_t devmem_shcmd = {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	.name = "devmem",
 	.summary = "Read/write from physical address",
 	.help = "Usage: devmem ADDRESS [WIDTH [VALUE]]\n"

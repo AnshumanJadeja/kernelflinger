@@ -16,6 +16,7 @@
 
 #include "elf64_ld.h"
 #include "elf_ld.h"
+#include "log.h"
 
 #define local_print(fmt, ...)
 //#define local_print(fmt, ...) debug(fmt, ##__VA_ARGS__)
@@ -24,6 +25,7 @@ BOOLEAN
 elf64_get_segment_info(const elf64_ehdr_t *ehdr,
 				uint16_t segment_no, elf_segment_info_t *p_info)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const uint8_t *phdrtab;
 	const elf64_phdr_t *phdr;
 	if (segment_no < ehdr->e_phnum) {
@@ -50,6 +52,7 @@ elf64_get_segment_info(const elf64_ehdr_t *ehdr,
 static BOOLEAN
 elf64_update_rela_section(uint16_t e_type, uint64_t relocation_offset, elf64_dyn_t *dyn_section, uint64_t dyn_section_sz)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	elf64_rela_t *rela = NULL;
 	uint64_t rela_sz = 0;
 	uint64_t rela_entsz = 0;
@@ -75,6 +78,7 @@ elf64_update_rela_section(uint16_t e_type, uint64_t relocation_offset, elf64_dyn
 			rela_sz = dyn_section[i].d_un.d_val;
 		}
 		else if(DT_RELAENT == d_tag) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			rela_entsz = dyn_section[i].d_un.d_val;
 		}
 		else if(DT_SYMTAB == d_tag) {
@@ -82,6 +86,7 @@ elf64_update_rela_section(uint16_t e_type, uint64_t relocation_offset, elf64_dyn
 					relocation_offset);
 		}
 		else if(DT_SYMENT == d_tag) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			symtab_entsz = dyn_section[i].d_un.d_val;
 		}
 		else { continue; }
@@ -132,6 +137,7 @@ elf64_update_rela_section(uint16_t e_type, uint64_t relocation_offset, elf64_dyn
 
 static void elf64_update_segment_table(module_file_info_t *file_info, uint64_t relocation_offset)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	elf64_ehdr_t *ehdr;
 	uint8_t *phdrtab;
 	uint32_t i;
@@ -161,6 +167,7 @@ static void elf64_update_segment_table(module_file_info_t *file_info, uint64_t r
 BOOLEAN
 elf64_load_executable(module_file_info_t *file_info, uint64_t *p_entry)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	elf64_ehdr_t *ehdr;
 	uint8_t *phdrtab;
 	uint64_t phsize;

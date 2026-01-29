@@ -28,6 +28,7 @@
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_ipc.h>
 #include <trusty/util.h>
+#include "log.h"
 
 #define LOCAL_LOG 0
 
@@ -37,6 +38,7 @@ static struct trusty_ipc_dev* _ipc_dev;
 static struct trusty_dev _tdev; /* There should only be one trusty device */
 
 void trusty_ipc_shutdown(void) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     (void)km_tipc_shutdown(_ipc_dev);
 
     /* shutdown Trusty IPC device */
@@ -47,6 +49,7 @@ void trusty_ipc_shutdown(void) {
 }
 
 int trusty_ipc_init(void) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int rc;
     /* init Trusty device */
     trusty_info("Initializing Trusty device\n");

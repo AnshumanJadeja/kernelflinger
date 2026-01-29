@@ -48,6 +48,7 @@
 #include "libelfloader.h"
 #ifdef RPMB_STORAGE
 #include "rpmb_storage.h"
+#include "log.h"
 #endif
 
 #define TRUSTY_MEM_SIZE			0x1000000
@@ -109,6 +110,7 @@ struct tos_image_header {
 static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UINTN base,
 	UINTN size, trusty_boot_param_t *boot_param)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT64 entry_addr;
 #ifdef RPMB_STORAGE
 	EFI_STATUS ret = EFI_SUCCESS;
@@ -151,6 +153,7 @@ static EFI_STATUS init_trusty_startup_params(trusty_startup_params_t *param, UIN
 #define ACRN_HC_LAUNCH_TRUSTY 0x80000070
 static EFI_STATUS launch_trusty_os(trusty_startup_params_t *param)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	register signed long smc_id asm("r8") = ACRN_HC_LAUNCH_TRUSTY;
 
@@ -179,6 +182,7 @@ EFI_STATUS set_trusty_param(__attribute__((unused)) IN VOID *param_data)
 
 EFI_STATUS start_trusty(VOID *tosimage)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
 	const struct boot_img_hdr *header;
 	UINTN load_base;

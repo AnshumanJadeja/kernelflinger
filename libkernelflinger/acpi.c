@@ -34,6 +34,7 @@
 #include "power.h"
 #include "efilinux.h"
 #include "lib.h"
+#include "log.h"
 
 static struct FACP_TABLE *FACP_table = NULL;
 #ifdef USE_RSCI
@@ -83,6 +84,7 @@ static const struct ACPI_DESC_HEADER SUPPORTED_TABLES[] = {
 
 static EFI_STATUS acpi_table_is_supported(struct ACPI_DESC_HEADER *t)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef ALLOW_UNSUPPORTED_ACPI_TABLE
 	(void)t; /* eliminate compiler warning */
 	debug(L"WARNING: skipping validation check on ACPI table %c%c%c%c",
@@ -109,6 +111,7 @@ static EFI_STATUS acpi_table_is_supported(struct ACPI_DESC_HEADER *t)
 
 static UINT64 _get_acpi_field(CHAR8 *name, CHAR8 *fieldname _unused, VOID **var, UINTN offset, UINTN size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret_supported;
 	struct ACPI_DESC_HEADER *acpi_desc_hdr = NULL;
 
@@ -142,6 +145,7 @@ static UINT64 _get_acpi_field(CHAR8 *name, CHAR8 *fieldname _unused, VOID **var,
 
 static EFI_STATUS acpi_verify_checksum(struct ACPI_DESC_HEADER *table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 i;
 	CHAR8 sum = 0, *data = (CHAR8 *)table;
 
@@ -153,6 +157,7 @@ static EFI_STATUS acpi_verify_checksum(struct ACPI_DESC_HEADER *table)
 
 static EFI_STATUS get_xsdt_table(struct XSDT_TABLE **xsdt)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID acpi2_guid = ACPI_20_TABLE_GUID;
 	struct RSDP_TABLE *rsdp;
 	EFI_STATUS ret;
@@ -185,6 +190,7 @@ out:
 
 EFI_STATUS get_acpi_table(const CHAR8 *signature, VOID **table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct XSDT_TABLE *xsdt;
 	EFI_STATUS ret;
 	UINTN i, nb_acpi_tables, sign_count = 1;
@@ -246,6 +252,7 @@ out:
 #ifdef USE_RSCI
 enum wake_sources rsci_get_wake_source(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_acpi_field(RSCI, wake_source);
 }
 
@@ -261,6 +268,7 @@ enum reset_types rsci_get_reset_type(void)
 
 UINT32 rsci_get_reset_extra_info(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_acpi_field(RSCI, reset_extra_info);
 }
 #else
@@ -276,6 +284,7 @@ enum reset_sources rsci_get_reset_source(void)
 
 enum reset_types rsci_get_reset_type(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return NOT_APPLICABLE;
 }
 
@@ -292,6 +301,7 @@ UINT8 oem1_get_ia_apps_to_use(void)
 
 UINT8 oem1_get_ia_apps_cap(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_acpi_field(OEM1, ia_apps_cap);
 }
 
@@ -303,6 +313,7 @@ UINT16 oem1_get_ia_apps_run(void)
 #if DEBUG_MESSAGES
 const CHAR16 *wake_source_string(enum wake_sources ws)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (ws) {
 	case WAKE_NOT_APPLICABLE:
 		return L"Not applicable";
@@ -326,6 +337,7 @@ const CHAR16 *wake_source_string(enum wake_sources ws)
 
 const CHAR16 *reset_type_string(enum reset_types rt)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (rt) {
 	case NOT_APPLICABLE:
 		return L"Not Applicable";
@@ -341,6 +353,7 @@ const CHAR16 *reset_type_string(enum reset_types rt)
 
 const CHAR16 *reset_source_string(enum reset_sources rs)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (rs) {
 	case RESET_NOT_APPLICABLE:
 		return L"Not Applicable";

@@ -43,6 +43,7 @@
 #include "slot.h"
 
 #include "libavb_ab.h"
+#include "log.h"
 
 /* BIOS Capsule update file */
 #define FWUPDATE_FILE             L"\\BIOSUPDATE.fv"
@@ -67,6 +68,7 @@ static EFI_LOADED_IMAGE *g_loaded_image;
 
 EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	UINT32 MediaId;
@@ -112,6 +114,7 @@ EFI_STATUS avb_ab_read_misc(AvbABData *avbABData)
 
 EFI_STATUS get_active_slot(UINT8 *slot)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	AvbABData avbABData;
 	UINT8 i;
@@ -141,6 +144,7 @@ EFI_STATUS get_active_slot(UINT8 *slot)
 
 EFI_STATUS load_kf(UINT8 slot)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, unload_ret;
 	CHAR16 *label;
 	EFI_HANDLE kf_handle = NULL;
@@ -222,6 +226,7 @@ out:
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *_table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 active_slot;
 

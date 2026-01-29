@@ -37,9 +37,11 @@
 #include <lib.h>
 
 #include "ui.h"
+#include "log.h"
 
 static EFI_STATUS ui_textarea_allocate_blt(ui_textarea_t *textarea)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN blt_size;
 
 	textarea->width = textarea->font->cwidth * textarea->row_nb;
@@ -57,6 +59,7 @@ ui_textarea_t *ui_textarea_create(UINTN line_nb, UINTN row_nb, ui_font_t *font,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN text_size;
 
 	if (!font)
@@ -95,6 +98,7 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 				  int width, int height,
 				  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int i, j;
 
 	for (j = 0; j < height; ++j) {
@@ -108,6 +112,7 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 				*px++ = color->Red;
 				px++;
 			} else if (a > 0 && color) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				*px = (*px * (255-a) + color->Blue * a) / 255;
 				++px;
 				*px = (*px * (255-a) + color->Green * a) / 255;
@@ -126,6 +131,7 @@ static void ui_textarea_copy_char(unsigned char *src_p, UINTN src_row_bytes,
 
 static void ui_textarea_refresh_blt(ui_textarea_t *textarea)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN cur, i, j, x, y = 0;
 	ui_font_t *font = textarea->font;
 	UINTN pixel_size = sizeof(*textarea->blt);
@@ -174,6 +180,7 @@ EFI_STATUS ui_textarea_display_text(const ui_textline_t *text, ui_font_t *font,
 				    UINTN x, UINTN *y, UINTN width, UINTN height,
 				    EFI_GRAPHICS_OUTPUT_BLT_PIXEL *bg_color)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_textarea_t textarea;
 	EFI_STATUS ret;
 	UINTN line_nb, len, row_nb = 0;
@@ -216,6 +223,7 @@ void ui_textarea_free(ui_textarea_t *textarea)
 
 void ui_textarea_clear(ui_textarea_t *textarea)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < textarea->line_nb; i++)
@@ -230,6 +238,7 @@ void ui_textarea_clear(ui_textarea_t *textarea)
 void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->text[line_nb].str = str;
 	textarea->text[line_nb].color = color;
 	textarea->text[line_nb].bold = bold;
@@ -238,6 +247,7 @@ void ui_textarea_set_line(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *newbuf = NULL;
 	UINTN len;
 	EFI_STATUS ret;
@@ -272,6 +282,7 @@ void ui_textarea_set_line_n(ui_textarea_t *textarea, UINTN line_nb, char *str,
 void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 			 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->current = (textarea->current + 1) % textarea->line_nb;
 
 	if (textarea->text[textarea->current].str)
@@ -283,6 +294,7 @@ void ui_textarea_newline(ui_textarea_t *textarea, char *str,
 void ui_textarea_n(ui_textarea_t *textarea, char *str,
 			  EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color, BOOLEAN bold)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	textarea->current = (textarea->current + 0) % textarea->line_nb;
 	ui_textarea_set_line_n(textarea, textarea->current, str, color, bold);
 }
@@ -290,6 +302,7 @@ void ui_textarea_n(ui_textarea_t *textarea, char *str,
 EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 				  UINTN width, UINTN height)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN new_width, new_height;
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *scaled_blt = NULL;
 	EFI_STATUS ret;
@@ -316,6 +329,7 @@ EFI_STATUS ui_textarea_draw_scale(ui_textarea_t *textarea, UINTN x, UINTN *y,
 
 EFI_STATUS ui_textarea_draw(ui_textarea_t *textarea, UINTN x, UINTN y)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_textarea_refresh_blt(textarea);
 	return ui_draw_blt(textarea->blt, x, y, textarea->width, textarea->height);
 }

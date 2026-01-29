@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
@@ -109,6 +110,7 @@ Tpm2PcrExtend (
   IN      TPML_DIGEST_VALUES        *Digests
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_EXTEND_COMMAND           Cmd;
   TPM2_PCR_EXTEND_RESPONSE          Res;
@@ -141,6 +143,7 @@ Tpm2PcrExtend (
 
   //Digest
   for (Index = 0; Index < Digests->count; Index++) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     WriteUnaligned16 ((UINT16 *)Buffer, SwapBytes16(Digests->digests[Index].hashAlg));
     Buffer += sizeof(UINT16);
     DigestSize = GetHashSizeFromAlgo (Digests->digests[Index].hashAlg);
@@ -219,6 +222,7 @@ Tpm2PcrEvent (
      OUT  TPML_DIGEST_VALUES        *Digests
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_EVENT_COMMAND            Cmd;
   TPM2_PCR_EVENT_RESPONSE           Res;
@@ -333,6 +337,7 @@ Tpm2PcrRead (
      OUT  TPML_DIGEST               *PcrValues
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_PCR_READ_COMMAND             SendBuffer;
   TPM2_PCR_READ_RESPONSE            RecvBuffer;
@@ -467,6 +472,7 @@ Tpm2PcrAllocate (
   OUT UINT32                    *SizeAvailable
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                  Status;
   TPM2_PCR_ALLOCATE_COMMAND   Cmd;
   TPM2_PCR_ALLOCATE_RESPONSE  Res;
@@ -586,6 +592,7 @@ Tpm2PcrAllocateBanks (
   IN UINT32                    PCRBanks
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPMS_AUTH_COMMAND         *AuthSession;
   TPMS_AUTH_COMMAND         LocalAuthSession;
@@ -722,6 +729,7 @@ Tpm2PolicyPCR (
   IN TPML_PCR_SELECTION       *Pcrs
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                   Status;
   TPM2_PCR_POLICYPCR_COMMAND   SendBuffer;
   TPM2_PCR_POLICYPCR_RESPONSE  RecvBuffer;

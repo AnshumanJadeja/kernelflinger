@@ -75,6 +75,7 @@ typedef struct {                    // an IAS image generic header:
 static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 				    IASIMAGE_DATA *img, UINT32 *numFile)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 *subFileSizeArray;
 	VOID *addr;
 	UINT32 index;
@@ -105,6 +106,7 @@ static EFI_STATUS ias_get_sub_files(void *iasimage, UINT32 numImg,
 /*Obtain file io interface of the label name parition*/
 static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	EFI_STATUS ret;
 	EFI_HANDLE handle = NULL;
@@ -129,6 +131,7 @@ static EFI_STATUS get_partition_io(CHAR16 *label, EFI_FILE_IO_INTERFACE **io)
 /*Get buffer sha256 hash value*/
 static void hash_buffer(CHAR8 *buffer, UINT64 len, CHAR8 *hash)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EVP_MD_CTX mdctx;
 
 	EVP_MD_CTX_init(&mdctx);
@@ -145,6 +148,7 @@ static EFI_STATUS verify_file_hash(CHAR8* filename,
 				UINT32 hashLen,
 				BOOLEAN* verify_pass)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	CHAR8 *data;
 	UINTN size = 0;
@@ -175,6 +179,7 @@ out:
 
 static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BIO *bio;
 	X509 *x509;
 
@@ -192,6 +197,7 @@ static X509 *der_to_x509(CONST UINT8 *der, UINTN size)
 
 static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EVP_PKEY *pkey = X509_get_pubkey(cert);
 	if (!pkey)
 		return NULL;
@@ -206,8 +212,10 @@ static EVP_PKEY *get_rsa_pubkey(X509 *cert)
 /*Signature check ias iamge*/
 static EFI_STATUS verify_ias_image(void *iasimage, BOOLEAN* verify_pass)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 *signature_data;
 	CHAR8 datahash[32] = {0};
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 datalen = 0;
 	EVP_PKEY *pkey = NULL;
 	RSA *rsa;
@@ -267,6 +275,7 @@ free_pkey:
 /*Verify vbmeta cover files' integerity*/
 EFI_STATUS verify_vbmeta_ias(CHAR16 *label, CHAR16* fileName, BOOLEAN* verify_pass)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT32 index;
 	UINT32 num_files;

@@ -23,8 +23,10 @@
  */
 
 #include <trusty/util.h>
+#include "log.h"
 
 const char* trusty_basename(const char* str) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int64_t n;
     size_t len;
 

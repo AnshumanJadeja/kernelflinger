@@ -26,6 +26,7 @@ void ff_memfree (
 	void* mblock	/* Pointer to the memory block to free (no effect if null) */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	free(mblock);	/* Free the memory block */
 }
 
@@ -62,6 +63,7 @@ static SemaphoreHandle_t Mutex[FF_VOLUMES + 1];	/* Table of mutex handle */
 
 #elif OS_TYPE == 4	/* CMSIS-RTOS */
 #include "cmsis_os.h"
+#include "log.h"
 static osMutexId Mutex[FF_VOLUMES + 1];	/* Table of mutex ID */
 
 #endif
@@ -80,6 +82,7 @@ int ff_mutex_create (	/* Returns 1:Function succeeded or 0:Could not create the 
 	int vol				/* Mutex ID: Volume mutex (0 to FF_VOLUMES - 1) or system mutex (FF_VOLUMES) */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if OS_TYPE == 0	/* Win32 */
 	Mutex[vol] = CreateMutex(NULL, FALSE, NULL);
 	return (int)(Mutex[vol] != INVALID_HANDLE_VALUE);
@@ -121,6 +124,7 @@ void ff_mutex_delete (	/* Returns 1:Function succeeded or 0:Could not delete due
 	int vol				/* Mutex ID: Volume mutex (0 to FF_VOLUMES - 1) or system mutex (FF_VOLUMES) */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if OS_TYPE == 0	/* Win32 */
 	CloseHandle(Mutex[vol]);
 
@@ -153,6 +157,7 @@ int ff_mutex_take (	/* Returns 1:Succeeded or 0:Timeout */
 	int vol			/* Mutex ID: Volume mutex (0 to FF_VOLUMES - 1) or system mutex (FF_VOLUMES) */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if OS_TYPE == 0	/* Win32 */
 	return (int)(WaitForSingleObject(Mutex[vol], FF_FS_TIMEOUT) == WAIT_OBJECT_0);
 
@@ -186,6 +191,7 @@ void ff_mutex_give (
 	int vol			/* Mutex ID: Volume mutex (0 to FF_VOLUMES - 1) or system mutex (FF_VOLUMES) */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if OS_TYPE == 0	/* Win32 */
 	ReleaseMutex(Mutex[vol]);
 

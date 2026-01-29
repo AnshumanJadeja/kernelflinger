@@ -33,9 +33,11 @@
 #include <lib.h>
 
 #include "text_parser.h"
+#include "log.h"
 
 void skip_whitespace(char **line)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *cur = *line;
 	while (*cur && isspace(*cur))
 		cur++;
@@ -46,6 +48,7 @@ EFI_STATUS parse_text_buffer(VOID *data, UINTN size,
 			     EFI_STATUS (*parse_line)(char *line, VOID *ctx),
 			     VOID *context)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	char *buf, *line, *eol, *p;
 	int lineno = 0;

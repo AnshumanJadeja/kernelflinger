@@ -17,6 +17,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "Tpm2Help.h"
 #include "Tcg2Protocol.h"
 #include "Tpm2DeviceLib.h"
+#include "log.h"
 
 EFI_STATUS
 EFIAPI
@@ -27,6 +28,7 @@ Tpm2SubmitCommand (
   IN UINT8             *OutputParameterBlock
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPM2_RESPONSE_HEADER      *Header;
 

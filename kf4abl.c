@@ -62,6 +62,7 @@
 #include "storage.h"
 #include "acpi.h"
 #include "ux.h"
+#include "log.h"
 
 typedef union {
 	uint32_t raw;
@@ -80,6 +81,7 @@ static CHAR8 cmd_buf[MAX_CMD_BUF];
 #ifdef CRASHMODE_USE_ADB
 static EFI_STATUS enter_crashmode(enum boot_target *target)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 #ifdef USER
@@ -110,6 +112,7 @@ static EFI_STATUS enter_crashmode(enum boot_target *target)
 #ifndef __FORCE_FASTBOOT
 static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct bootloader_message bcb;
 	CHAR16 *target = NULL;
@@ -135,6 +138,7 @@ static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 		target = stra_to_str(bcb_cmd + 5);
 		debug(L"BCB boot target: '%s'", target);
 	} else if (!strncmpa(bcb_cmd, (CHAR8 *)"bootonce-", 9)) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		target = stra_to_str(bcb_cmd + 9);
 		bcb_cmd[0] = '\0';
 		dirty = TRUE;
@@ -168,6 +172,7 @@ out:
 
 static EFI_STATUS process_bootimage(void *bootimage, UINTN imagesize)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VBDATA *param = NULL;
 	UINT8 boot_state = BOOT_STATE_GREEN;
@@ -305,6 +310,7 @@ fail:
 
 static EFI_STATUS enter_fastboot_mode(enum boot_target *target)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -374,6 +380,7 @@ static union bootMode
 
 static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UINTN max_cmd_size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	enum boot_target target = FASTBOOT;
 	static EFI_LOADED_IMAGE *limg;
@@ -663,6 +670,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 				VBDATA *vb_data,
 				CHAR8 *abl_cmd_line)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 #ifdef USER
 	/* per bootloaderequirements.pdf */
@@ -677,6 +685,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 
 #ifdef USER
 	if (boot_state == BOOT_STATE_RED) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		if (is_platform_secure_boot_enabled()) {
 			return EFI_SECURITY_VIOLATION;
 		}
@@ -717,6 +726,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 
 EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	AvbOps *ops;
 	AvbSlotVerifyData *slot_data = NULL;
 #ifndef USE_SLOT
@@ -802,6 +812,7 @@ EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 			capsule_buf = (CHAR8 *)"m1:@0";
 			capsule_buf_len = strlen(capsule_buf);
 		} else if (!(StrCmp(AB_SUFFIX, L"_b")) && (!(StrStr(ABL_AB_SUFFIX, L"ABL.suffix=1")))) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			capsule_buf = (CHAR8 *)"m2:@0";
 			capsule_buf_len = strlen(capsule_buf);
 		}
@@ -869,6 +880,7 @@ EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 
 #ifdef USE_TRUSTY
 	if (boot_target == NORMAL_BOOT) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		VOID *tosimage = NULL;
 		ret = load_tos_image(&tosimage);
 		if (EFI_ERROR(ret)) {
@@ -886,6 +898,7 @@ EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 #endif
 
 	if (boot_state == BOOT_STATE_GREEN) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		avb_update_stored_rollback_indexes_for_slot(ops, slot_data);
 	}
 
@@ -905,6 +918,7 @@ fail:
 #ifdef FASTBOOT_FOR_NON_ANDROID
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -927,6 +941,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	EFI_STATUS ret;
 
@@ -979,6 +994,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 #ifdef RPMB_STORAGE
 	if (target != CRASHMODE) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = rpmb_key_init();
 		if (EFI_ERROR(ret))
 			error(L"rpmb key init failure for osloader");
@@ -995,6 +1011,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	for (;;) {
 #ifdef CRASHMODE_USE_ADB
 		if (target == CRASHMODE) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			log(L"Enter crash mode ...\n");
 			enter_crashmode(&target);
 			continue;
@@ -1005,6 +1022,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 	}
 #else
 	if (target == FASTBOOT) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		ret = slot_init_use_misc();
 		if (EFI_ERROR(ret)) {
 			efi_perror(ret, L"Slot management initialization failed by misc");

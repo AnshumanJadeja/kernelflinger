@@ -35,6 +35,7 @@
 #include <efi.h>
 #include <efilib.h>
 #include <ui.h>
+#include "log.h"
 
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_BLACK	= { 0, 0, 0, 0 };
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL	COLOR_WHITE	= { 255, 255, 255, 0 };

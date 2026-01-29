@@ -36,6 +36,7 @@
  */
 
 #include "avb_sha.h"
+#include "log.h"
 
 #define SHFR(x, n) (x >> n)
 #define ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
@@ -50,6 +51,7 @@
 
 #define UNPACK32(x, str)                 \
   {                                      \
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *((str) + 3) = (uint8_t)((x));       \
     *((str) + 2) = (uint8_t)((x) >> 8);  \
     *((str) + 1) = (uint8_t)((x) >> 16); \
@@ -58,6 +60,7 @@
 
 #define UNPACK64(x, str)                         \
   {                                              \
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *((str) + 7) = (uint8_t)x;                   \
     *((str) + 6) = (uint8_t)((uint64_t)x >> 8);  \
     *((str) + 5) = (uint8_t)((uint64_t)x >> 16); \
@@ -70,6 +73,7 @@
 
 #define PACK64(str, x)                                                        \
   {                                                                           \
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *(x) =                                                                    \
         ((uint64_t) * ((str) + 7)) | ((uint64_t) * ((str) + 6) << 8) |        \
         ((uint64_t) * ((str) + 5) << 16) | ((uint64_t) * ((str) + 4) << 24) | \
@@ -84,6 +88,7 @@
 
 #define SHA512_EXP(a, b, c, d, e, f, g, h, j)                               \
   {                                                                         \
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     t1 = wv[h] + SHA512_F2(wv[e]) + CH(wv[e], wv[f], wv[g]) + sha512_k[j] + \
          w[j];                                                              \
     t2 = SHA512_F1(wv[a]) + MAJ(wv[a], wv[b], wv[c]);                       \
@@ -132,6 +137,7 @@ static const uint64_t sha512_k[80] = {
 /* SHA-512 implementation */
 
 void avb_sha512_init(AvbSHA512Ctx* ctx) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef UNROLL_LOOPS_SHA512
   ctx->h[0] = sha512_h0[0];
   ctx->h[1] = sha512_h0[1];
@@ -155,6 +161,7 @@ void avb_sha512_init(AvbSHA512Ctx* ctx) {
 static void SHA512_transform(AvbSHA512Ctx* ctx,
                              const uint8_t* message,
                              size_t block_nb) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t w[80];
   uint64_t wv[8];
   uint64_t t1, t2;
@@ -287,6 +294,7 @@ static void SHA512_transform(AvbSHA512Ctx* ctx,
     ctx->h[7] += wv[7];
 #else
     for (j = 0; j < 16; j++) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
       PACK64(&sub_block[j << 3], &w[j]);
     }
 
@@ -319,6 +327,7 @@ static void SHA512_transform(AvbSHA512Ctx* ctx,
 }
 
 void avb_sha512_update(AvbSHA512Ctx* ctx, const uint8_t* data, size_t len) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t block_nb;
   size_t new_len, rem_len, tmp_len;
   const uint8_t* shifted_data;
@@ -350,6 +359,7 @@ void avb_sha512_update(AvbSHA512Ctx* ctx, const uint8_t* data, size_t len) {
 }
 
 uint8_t* avb_sha512_final(AvbSHA512Ctx* ctx) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t block_nb;
   size_t pm_len;
   uint64_t len_b;

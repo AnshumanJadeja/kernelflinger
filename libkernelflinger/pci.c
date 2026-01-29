@@ -35,6 +35,7 @@
 
 PCI_DEVICE_PATH* get_pci_device_path(EFI_DEVICE_PATH *p)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!p)
 		return NULL;
 
@@ -49,6 +50,7 @@ PCI_DEVICE_PATH* get_pci_device_path(EFI_DEVICE_PATH *p)
 
 EFI_STATUS get_pci_device(IN EFI_DEVICE_PATH *p, OUT EFI_PCI_IO **p_pciio)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_HANDLE pci_handle;
 	EFI_DEVICE_PATH *tmp_path = p;
@@ -73,6 +75,7 @@ EFI_STATUS get_pci_device(IN EFI_DEVICE_PATH *p, OUT EFI_PCI_IO **p_pciio)
 
 EFI_STATUS get_pci_ids(IN EFI_PCI_IO *pciio, OUT pci_device_ids_t *ids)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!pciio || !ids)
 		return EFI_INVALID_PARAMETER;
 

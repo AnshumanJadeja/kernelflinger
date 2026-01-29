@@ -9,6 +9,7 @@
 #include <efi.h>
 #include <efiapi.h>
 #include <RegisterFilterLib.h>
+#include "log.h"
 
 /**
   Filter IO read operation before read IO port.
@@ -211,6 +212,7 @@ __attribute__((__unused__))  IN UINT32        Index,
 __attribute__((__unused__))  IN OUT UINT64    *Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return TRUE;
 }
 
@@ -228,6 +230,7 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return;
 }
 
@@ -251,6 +254,7 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return TRUE;
 }
 
@@ -268,5 +272,6 @@ __attribute__((__unused__))  IN UINT32    Index,
 __attribute__((__unused__))  IN UINT64    *Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return;
 }

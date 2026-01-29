@@ -36,6 +36,7 @@
 #include <usb.h>
 #include <tcp.h>
 #include <transport.h>
+#include "log.h"
 
 /* USB */
 #define FASTBOOT_IF_SUBCLASS		0x42
@@ -49,6 +50,7 @@ static EFI_STATUS fastboot_usb_start(start_callback_t start_cb,
 				     data_callback_t rx_cb,
 				     data_callback_t tx_cb)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return usb_start(FASTBOOT_IF_SUBCLASS, FASTBOOT_IF_PROTOCOL,
 			 FASTBOOT_STR_CONFIGURATION,
 			 FASTBOOT_STR_INTERFACE,
@@ -57,6 +59,7 @@ static EFI_STATUS fastboot_usb_start(start_callback_t start_cb,
 
 EFI_STATUS fastboot_usb_read(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return usb_read(buf, min(BLK_DOWNLOAD, size));
 }
 
@@ -87,6 +90,7 @@ static data_callback_t tx_callback;
 
 static void fastboot_tcp_start_cb(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char version[sizeof(PROTOCOL_VERSION)];
 	EFI_STATUS ret;
 
@@ -107,6 +111,7 @@ static void fastboot_tcp_start_cb(void)
 
 static void transport_tcp_rx_cb(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	switch (tcp_state) {
@@ -174,6 +179,7 @@ static void transport_tcp_tx_cb(void *buf, UINT32 size)
 
 static void print_tcpip_information(EFI_IPv4_ADDRESS *address)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define TCPIP_INFO_FMT L"Fastboot is listening on TCP %d.%d.%d.%d:%d"
 
 	ui_print(TCPIP_INFO_FMT, address->Addr[0], address->Addr[1],
@@ -186,6 +192,7 @@ static EFI_STATUS fastboot_tcp_start(start_callback_t start_cb,
 				     data_callback_t rx_cb,
 				     data_callback_t tx_cb)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_IPv4_ADDRESS station_address;
 
@@ -206,6 +213,7 @@ static EFI_STATUS fastboot_tcp_start(start_callback_t start_cb,
 
 EFI_STATUS fastboot_tcp_write(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static char write_buf[MAGIC_LENGTH + sizeof(UINT64)];
 
@@ -229,6 +237,7 @@ EFI_STATUS fastboot_tcp_write(void *buf, UINT32 size)
 
 EFI_STATUS fastboot_tcp_read(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (tcp_state != READY) {
@@ -276,5 +285,6 @@ EFI_STATUS fastboot_transport_register(void)
 
 void fastboot_transport_unregister(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	transport_unregister();
 }

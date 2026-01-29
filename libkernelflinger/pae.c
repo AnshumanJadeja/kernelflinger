@@ -35,6 +35,7 @@
 #include <uefi_utils.h>
 
 #include "pae.h"
+#include "log.h"
 
 /*
  * This module uses the Physical Address Extension hardware support to
@@ -93,6 +94,7 @@
 #define MIN_MEMMAP_SZ	(32 * PAGE_SIZE)
 
 static struct memmap_context {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BOOLEAN initialized;
 
 	/* 32 bits address space region used to map the DST memory
@@ -120,6 +122,7 @@ static volatile EFI_PHYSICAL_ADDRESS dir_ptr[1 << 2]
 static EFI_STATUS find_usable_memory_region(CHAR8 *entries, UINTN nr_entries,
 					  UINTN entry_sz)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS cur_end, start, end;
 	UINT64 size;
@@ -165,6 +168,7 @@ static EFI_STATUS find_usable_memory_region(CHAR8 *entries, UINTN nr_entries,
 
 static void init_directory(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_PHYSICAL_ADDRESS cur;
 	UINTN i, dir_size;
 
@@ -179,6 +183,7 @@ static void init_directory(void)
 static BOOLEAN has_above_4G_memory_region(CHAR8 *entries, UINTN nr_entries,
 					  UINTN entry_sz)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_MEMORY_DESCRIPTOR *cur;
 	EFI_PHYSICAL_ADDRESS end;
 	UINTN i;
@@ -195,6 +200,7 @@ static BOOLEAN has_above_4G_memory_region(CHAR8 *entries, UINTN nr_entries,
 
 EFI_STATUS pae_init(CHAR8 *entries, UINTN nr_entries, UINTN entry_sz)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 reg[4];
 
@@ -237,6 +243,7 @@ EFI_STATUS pae_init(CHAR8 *entries, UINTN nr_entries, UINTN entry_sz)
 
 static EFI_STATUS memmap(EFI_PHYSICAL_ADDRESS addr)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 src;
 
 	if (!ctx.initialized)
@@ -258,6 +265,7 @@ static EFI_STATUS memmap(EFI_PHYSICAL_ADDRESS addr)
 
 EFI_STATUS pae_map(EFI_PHYSICAL_ADDRESS addr, unsigned char **to, UINT64 *len)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (addr <= UINT32_MAX) {
@@ -283,6 +291,7 @@ EFI_STATUS pae_map(EFI_PHYSICAL_ADDRESS addr, unsigned char **to, UINT64 *len)
 
 EFI_STATUS pae_exit(void)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!ctx.initialized)
 		return EFI_SUCCESS;
 

@@ -32,6 +32,7 @@
 
 void trusty_lock(struct trusty_dev *dev)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(dev);
 }
 void trusty_unlock(struct trusty_dev *dev)
@@ -46,6 +47,7 @@ void trusty_local_irq_disable(unsigned long *state)
 
 void trusty_local_irq_restore(unsigned long *state)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     UNUSED(state);
 }
 
@@ -63,6 +65,7 @@ void trusty_abort(void)
 
 void trusty_printf(const char *format, ...)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     va_list ap;
     CHAR16 *format16;
     format16 = stra_to_str((CHAR8 *)format);
@@ -82,6 +85,7 @@ void *trusty_memcpy(void *dest, const void *src, size_t n)
 
 void *trusty_memset(void *dest, const int c, size_t n)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return memset_s(dest, n, c, n);
 }
 
@@ -94,6 +98,7 @@ char *trusty_strcpy(char *dest, const char *src)
 
 size_t trusty_strlen(const char *str)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return strlen((CHAR8 *)str);
 }
 
@@ -110,6 +115,7 @@ void trusty_free(void *addr)
 
 void *trusty_alloc_pages(unsigned count)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     void *pa = NULL;
     EFI_STATUS ret;
     EFI_PHYSICAL_ADDRESS Memory = 0XFFFFFFFF;
@@ -133,6 +139,7 @@ void *trusty_alloc_pages(unsigned count)
 
 void trusty_free_pages(void *va, unsigned count)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (va)
         uefi_call_wrapper(BS->FreePages,
                           2,

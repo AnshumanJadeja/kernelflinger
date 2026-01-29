@@ -35,6 +35,7 @@
 #include "adb_socket.h"
 #include "service.h"
 #include "reader.h"
+#include "log.h"
 
 #define ID_STAT MKID('S','T','A','T')
 #define ID_RECV MKID('R','E','C','V')
@@ -84,6 +85,7 @@ static sync_ctx_t CONTEXTS[MAX_ADB_SOCKET];
 
 static EFI_STATUS sync_service_open(const char *arg, void **ctx_p)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_ctx_t *ctx = NULL;
 	UINTN i;
 
@@ -113,6 +115,7 @@ static EFI_STATUS sync_service_ready(__attribute__((__unused__)) asock_t s)
 
 static EFI_STATUS sync_service_close(asock_t s)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_ctx_t *ctx = asock_context(s);
 
 	if (!ctx)
@@ -128,6 +131,7 @@ static EFI_STATUS sync_service_close(asock_t s)
 
 static EFI_STATUS send_done(asock_t s, sync_ctx_t *ctx)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sync_msg_t msg;
 
 	reader_close(&ctx->reader_ctx);
@@ -143,6 +147,7 @@ static EFI_STATUS send_done(asock_t s, sync_ctx_t *ctx)
 
 static EFI_STATUS send_more_data(asock_t s, sync_ctx_t *ctx)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 sent;
 	sync_msg_t msg;
@@ -184,6 +189,7 @@ static EFI_STATUS send_more_data(asock_t s, sync_ctx_t *ctx)
 
 static EFI_STATUS sync_service_okay(asock_t s)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	sync_ctx_t *ctx = asock_context(s);
 
@@ -198,6 +204,7 @@ static EFI_STATUS sync_service_okay(asock_t s)
 
 static EFI_STATUS sync_service_reader_open(sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	char path[length + 1];
 
@@ -214,6 +221,7 @@ static EFI_STATUS sync_service_reader_open(sync_ctx_t *ctx, unsigned char *data,
 
 static EFI_STATUS sync_service_stat(asock_t s, sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, write_ret;
 	sync_msg_t msg;
 	EFI_TIME now;
@@ -247,6 +255,7 @@ fail:
 
 static EFI_STATUS sync_service_recv(asock_t s, sync_ctx_t *ctx, unsigned char *data, UINT32 length)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = asock_send_okay(s);
@@ -266,6 +275,7 @@ static EFI_STATUS sync_service_recv(asock_t s, sync_ctx_t *ctx, unsigned char *d
 
 static EFI_STATUS sync_service_read(asock_t s, unsigned char *data, UINT32 length)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	sync_msg_t *msg = (sync_msg_t *) data;
 	sync_ctx_t *ctx = asock_context(s);

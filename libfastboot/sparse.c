@@ -39,6 +39,7 @@
 
 #include "flash.h"
 #include "sparse_format.h"
+#include "log.h"
 
 /* Hunks buffer size.  */
 static const unsigned int BUFFER_SIZE = 10 * 1024 * 1024;
@@ -50,6 +51,7 @@ static unsigned int cur_size;
 
 BOOLEAN is_sparse_image(void *data, UINT64 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct sparse_header *sph;
 
 	if (size < sizeof(struct sparse_header))
@@ -77,6 +79,7 @@ BOOLEAN is_sparse_image(void *data, UINT64 size)
 
 static EFI_STATUS init_buffer()
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	buffer = AllocatePool(BUFFER_SIZE);
 	if (!buffer) {
 		debug(L"Allocation failed, sparse file buffer is disabled");
@@ -98,6 +101,7 @@ static void free_buffer()
 
 static EFI_STATUS flush_buffer()
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 
 	if (buffer && cur_size != 0)
@@ -109,6 +113,7 @@ static EFI_STATUS flush_buffer()
 
 static EFI_STATUS flash_raw_data(void *data, unsigned size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!buffer)
@@ -138,6 +143,7 @@ static EFI_STATUS flash_raw_data(void *data, unsigned size)
 
 static EFI_STATUS flash_chunk(struct sparse_header *sph, struct chunk_header *ckh, CHAR8 *data, unsigned int size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 chunk_szb = (UINT64)ckh->chunk_sz * (UINT64)sph->blk_sz;
 
@@ -170,6 +176,7 @@ static EFI_STATUS flash_chunk(struct sparse_header *sph, struct chunk_header *ck
 
 EFI_STATUS flash_sparse(void *data, UINT64 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct sparse_header *sph;
 	CHAR8 *s;
 	UINT64 rlen;

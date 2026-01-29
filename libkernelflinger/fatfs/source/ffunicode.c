@@ -24,6 +24,7 @@
 
 
 #include "ff.h"
+#include "log.h"
 
 #if FF_USE_LFN != 0	/* This module will be blanked if in non-LFN configuration */
 
@@ -15224,6 +15225,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WCHAR c = 0;
 	const WCHAR* p = CVTBL(uc, FF_CODE_PAGE);
 
@@ -15246,6 +15248,7 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WCHAR c = 0;
 	const WCHAR* p = CVTBL(uc, FF_CODE_PAGE);
 
@@ -15277,6 +15280,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0, uc;
 	UINT i = 0, n, li, hi;
@@ -15313,6 +15317,7 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0;
 	UINT i = 0, n, li, hi;
@@ -15360,6 +15365,7 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0, uc;
 	UINT i, n, li, hi;
@@ -15412,6 +15418,7 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	WORD	cp		/* Code page for the conversion */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WCHAR* p;
 	WCHAR c = 0;
 	UINT i, n, li, hi;
@@ -15465,6 +15472,7 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 	DWORD uni		/* Unicode code point to be up-converted */
 )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const WORD* p;
 	WORD uc, bc, nc, cmd;
 	static const WORD cvt1[] = {	/* Compressed up conversion table for U+0000 - U+0FFF */

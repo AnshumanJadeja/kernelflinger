@@ -32,6 +32,7 @@
 
 #include <lib.h>
 #include <transport.h>
+#include "log.h"
 
 static transport_t *transports;
 static UINTN nb_transport;
@@ -39,6 +40,7 @@ static transport_t *current;
 
 EFI_STATUS transport_register(transport_t *trans, UINTN nb)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!trans || !nb)
 		return EFI_INVALID_PARAMETER;
 
@@ -58,6 +60,7 @@ EFI_STATUS transport_start(start_callback_t start_cb,
 			   data_callback_t rx_cb,
 			   data_callback_t tx_cb)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_NOT_READY;
 	UINTN i;
 
@@ -99,6 +102,7 @@ EFI_STATUS transport_stop(void)
 
 EFI_STATUS transport_run(UINT32 *state)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return current ? current->run(state) : EFI_NOT_STARTED;
 }
 
@@ -109,5 +113,6 @@ EFI_STATUS transport_read(void *buf, UINT32 size)
 
 EFI_STATUS transport_write(void *buf, UINT32 size)
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return current ? current->write(buf, size) : EFI_NOT_STARTED;
 }

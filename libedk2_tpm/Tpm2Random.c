@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "UefiTcgPlatform.h"
 #include "Tpm2DeviceLib.h"
 #include "Tpm2Help.h"
+#include "log.h"
 
 #pragma pack(1)
 
@@ -45,6 +46,7 @@ Tpm2GetRandom (
      OUT  TPM2B_DIGEST       *RandomBytes
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_GETRANDOM_COMMAND            Cmd;
   TPM2_GETRANDOM_RESPONSE           Res;
