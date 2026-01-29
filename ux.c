@@ -598,6 +598,6 @@ VOID ux_display_vendor_splash(VOID) {
 		if (EFI_ERROR(ux_init_screen()))
 			return;
 		ui_display_vendor_splash();
-		log(L"vendor splash shown\n");
+		log(L"aj_inst_kf::vendor splash shown\n");
 	}
 }
