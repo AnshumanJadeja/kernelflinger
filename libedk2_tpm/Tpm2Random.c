@@ -14,15 +14,18 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "UefiTcgPlatform.h"
 #include "Tpm2DeviceLib.h"
 #include "Tpm2Help.h"
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER  Header;
   UINT16               BytesRequested;
 } TPM2_GETRANDOM_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER Header;
   TPM2B_DIGEST         RandomBytes;
 } TPM2_GETRANDOM_RESPONSE;
@@ -45,6 +48,7 @@ Tpm2GetRandom (
      OUT  TPM2B_DIGEST       *RandomBytes
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_GETRANDOM_COMMAND            Cmd;
   TPM2_GETRANDOM_RESPONSE           Res;

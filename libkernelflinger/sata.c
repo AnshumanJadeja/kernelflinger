@@ -34,6 +34,7 @@
 #include "protocol/AtaPassThru.h"
 #include "protocol/Atapi.h"
 #include "storage.h"
+#include "log.h"
 
 #define TRIM_SUPPORTED_BIT		0x01
 #define BIT5				0x20
@@ -56,6 +57,7 @@ static ATA_IDENTIFY_DATA identify_data;
 
 static SATA_DEVICE_PATH *get_sata_device_path(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_SATA_DP)
@@ -68,6 +70,7 @@ static EFI_STATUS sata_identify_data(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 				     SATA_DEVICE_PATH *sata_dp,
 				     ATA_IDENTIFY_DATA *identify_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_ATA_STATUS_BLOCK asb;
 	EFI_ATA_COMMAND_BLOCK acb = {
@@ -97,6 +100,7 @@ static EFI_STATUS sata_identify_data(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 
 static BOOLEAN is_dsm_trim_supported( UINT16 *max_dsm_block_nb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!(identify_data.is_data_set_cmd_supported & TRIM_SUPPORTED_BIT)
 	    || identify_data.max_no_of_512byte_blocks_per_data_set_cmd == 0) {
 		debug(L"This SATA device does support DATA SET MANAGEMENT command");
@@ -110,6 +114,7 @@ static BOOLEAN is_dsm_trim_supported( UINT16 *max_dsm_block_nb)
 /* Deterministic Read Zero after TRIM */
 static BOOLEAN is_rzat_supported(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	debug(L"This SATA device additional supprote 0x%x", identify_data.additional_supported);
 	if ((identify_data.additional_supported & DETERMINISTIC_READ_AFTER_TRIM_SUPPORTED)
 	    && (identify_data.additional_supported & READ_ZERO_AFTER_TRIM_SUPPORTED))
@@ -126,6 +131,7 @@ static EFI_STATUS ata_dsm_trim(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 			       SATA_DEVICE_PATH *sata_dp, EFI_LBA start, EFI_LBA end,
 			       UINT16 max_dsm_block_nb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_ATA_STATUS_BLOCK asb;
 	EFI_ATA_COMMAND_BLOCK acb = {
@@ -193,6 +199,7 @@ static EFI_STATUS ata_fill_zero(EFI_ATA_PASS_THRU_PROTOCOL *ata,
 				SATA_DEVICE_PATH *sata_dp,
 				EFI_LBA start, EFI_LBA end)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_ATA_STATUS_BLOCK asb;
 	VOID *emptyblock;
@@ -298,6 +305,7 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 				    __attribute__((unused)) EFI_BLOCK_IO *bio,
 				    EFI_LBA start, EFI_LBA end)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID AtaPassThruProtocolGuid = EFI_ATA_PASS_THRU_PROTOCOL_GUID;
 	EFI_DEVICE_PATH *dp;
@@ -358,11 +366,13 @@ static EFI_STATUS sata_erase_blocks(EFI_HANDLE handle,
 static EFI_STATUS sata_check_logical_unit(__attribute__((unused)) EFI_DEVICE_PATH *p,
 					  logical_unit_t log_unit)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_sata(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_sata_device_path(p) != NULL;
 }
 

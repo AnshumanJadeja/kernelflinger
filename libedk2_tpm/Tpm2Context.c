@@ -16,15 +16,18 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER       Header;
   TPMI_DH_CONTEXT           FlushHandle;
 } TPM2_FLUSH_CONTEXT_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER      Header;
 } TPM2_FLUSH_CONTEXT_RESPONSE;
 
@@ -44,6 +47,7 @@ Tpm2FlushContext (
   IN      TPMI_DH_CONTEXT           FlushHandle
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_FLUSH_CONTEXT_COMMAND        SendBuffer;
   TPM2_FLUSH_CONTEXT_RESPONSE       RecvBuffer;

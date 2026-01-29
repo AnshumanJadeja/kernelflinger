@@ -35,6 +35,7 @@
 #include "adb.h"
 #include "adb_socket.h"
 #include "service.h"
+#include "log.h"
 
 struct asock {
 	UINT32 local;
@@ -51,6 +52,7 @@ static struct asock asocks[MAX_ADB_SOCKET];
 /* Host to device */
 EFI_STATUS asock_open(UINT32 remote, service_t *service, char *arg)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static adb_pkt_t fail_msg = { .msg.data_length = 0 };
 	EFI_STATUS ret;
 	asock_t s = NULL;
@@ -108,6 +110,7 @@ err:
 
 EFI_STATUS asock_close(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!s)
@@ -128,6 +131,7 @@ EFI_STATUS asock_close(asock_t s)
 
 EFI_STATUS asock_okay(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!s)
 		return EFI_INVALID_PARAMETER;
 
@@ -136,6 +140,7 @@ EFI_STATUS asock_okay(asock_t s)
 
 EFI_STATUS asock_read(asock_t s, unsigned char *data, UINT32 length)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!s)
 		return EFI_INVALID_PARAMETER;
 
@@ -145,6 +150,7 @@ EFI_STATUS asock_read(asock_t s, unsigned char *data, UINT32 length)
 /* Device to host */
 EFI_STATUS asock_write(asock_t s, unsigned char *data, UINT32 length)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!s || length > adb_max_payload)
@@ -165,6 +171,7 @@ EFI_STATUS asock_write(asock_t s, unsigned char *data, UINT32 length)
 
 EFI_STATUS asock_send_okay(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!s)
 		return EFI_INVALID_PARAMETER;
 
@@ -173,6 +180,7 @@ EFI_STATUS asock_send_okay(asock_t s)
 
 EFI_STATUS asock_send_close(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!s)
 		return EFI_INVALID_PARAMETER;
 
@@ -182,11 +190,13 @@ EFI_STATUS asock_send_close(asock_t s)
 /* Tools */
 void *asock_context(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return s ? s->context : NULL;
 }
 
 asock_t asock_find(UINT32 local, UINT32 remote)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	asock_t s;
 
 	if (local == 0 || local > ARRAY_SIZE(asocks))
@@ -202,6 +212,7 @@ asock_t asock_find(UINT32 local, UINT32 remote)
 
 void asock_close_all()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(asocks); i++)

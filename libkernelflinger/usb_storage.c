@@ -38,6 +38,7 @@
 #include "protocol/DevicePath.h"
 #include "protocol/ufs.h"
 #include "UsbMassBot.h"
+#include "log.h"
 
 #define EFI_SCSI_OP_WRITE_10      0x2A
 EFI_GUID
@@ -65,6 +66,7 @@ typedef struct {
 } USB_BOOT_REQUEST_SENSE_CMD;
 
 typedef struct {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8             ErrorCode;
 	UINT8             Reserved0;
 	UINT8             SenseKey;       ///< Sense key (low 4 bits)
@@ -80,6 +82,7 @@ typedef struct {
 
 static USB_DEVICE_PATH *get_usb_device_path(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 				&& DevicePathSubType(p) == MSG_USB_DP)
@@ -90,6 +93,7 @@ static USB_DEVICE_PATH *get_usb_device_path(EFI_DEVICE_PATH *p)
 
 static EFI_STATUS scsi_request_sense(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	USB_BOOT_REQUEST_SENSE_CMD  SenseCmd;
 	USB_BOOT_REQUEST_SENSE_DATA SenseData;
 	UINT32 cmd_status;
@@ -119,6 +123,7 @@ static EFI_STATUS scsi_request_sense(void)
 
 static EFI_STATUS scsi_unmap(EFI_LBA start, EFI_LBA end)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS status;
 	struct command_descriptor_block_unmap cdb;
 	struct unmap_parameter unmap;
@@ -159,6 +164,7 @@ static EFI_STATUS scsi_write_same16(EFI_BLOCK_IO *bio,
 				    UINTN block_size,
 				    BOOLEAN unmap)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS              status;
 	UINT32 cmd_status;
 	UINT8 write_same[16];
@@ -208,6 +214,7 @@ static EFI_STATUS scsi_write_same16(EFI_BLOCK_IO *bio,
 #define BLOCKS (0x2000)
 static EFI_STATUS clean_blocks(EFI_BLOCK_IO *bio, EFI_LBA start, EFI_LBA end)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS              status;
 	VOID *emptyblock;
 	VOID *aligned_emptyblock;
@@ -295,6 +302,7 @@ static EFI_STATUS usb_erase_blocks(__attribute__((unused)) EFI_HANDLE handle,
 				   EFI_LBA start,
 				   EFI_LBA end)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS              status;
 	EFI_USB_IO_PROTOCOL           *UsbIo;
 
@@ -337,11 +345,13 @@ static EFI_STATUS usb_erase_blocks(__attribute__((unused)) EFI_HANDLE handle,
 static EFI_STATUS usb_check_logical_unit (__attribute__((unused)) EFI_DEVICE_PATH *p,
 					  logical_unit_t log_unit)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 
 static BOOLEAN is_usb(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_usb_device_path(p) != NULL;
 }
 

@@ -43,6 +43,7 @@
 #include "smbios.h"
 #include "info.h"
 #include "android.h"
+#include "log.h"
 
 static const ui_textline_t unlocked_headers[] = {
 	{ &COLOR_WHITE,		"        Unlock bootloader?",			TRUE },
@@ -116,6 +117,7 @@ static ui_boot_menu_t *boot_menu;
 
 static EFI_STATUS fastboot_ui_clear_dynamic_part(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return ui_clear_area(area_x, area_y,
 			     swidth - area_x,
 			     sheight - area_y - margin);
@@ -123,27 +125,32 @@ static EFI_STATUS fastboot_ui_clear_dynamic_part(void)
 
 static EFI_GRAPHICS_OUTPUT_BLT_PIXEL *fastboot_ui_default_color(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return &COLOR_WHITE;
 }
 
 static const char *fastboot_ui_info_ifwi_version(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return SMBIOS_GET_STRING(0, BiosVersion);
 }
 
 static const char *fastboot_ui_info_serial_number(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *serial = get_serial_number();
 	return serial ? serial : "N/A";
 }
 
 static const char *fastboot_ui_info_secure_boot(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return is_platform_secure_boot_enabled() ? "ENABLED" : "DISABLED";
 }
 
 static EFI_GRAPHICS_OUTPUT_BLT_PIXEL *fastboot_ui_info_secure_boot_color(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return is_platform_secure_boot_enabled() ? &COLOR_GREEN : &COLOR_RED;
 }
 
@@ -167,6 +174,7 @@ static const char *FASTBOOT_TITLE = "FASTBOOT MODE";
 
 static UINTN fastboot_ui_info_draw(UINTN x, UINTN y, UINTN width, UINTN height)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, line_nb = ARRAY_SIZE(FASTBOOT_INFOS) + 2;
 	ui_textline_t *lines;
 
@@ -228,6 +236,7 @@ exit:
 
 BOOLEAN fastboot_ui_confirm_for_state(enum device_state target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 	BOOLEAN result = FALSE;
 
@@ -249,6 +258,7 @@ BOOLEAN fastboot_ui_confirm_for_state(enum device_state target)
 
 void fastboot_ui_refresh(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN y = area_y;
 
 	if (!fastboot_ui_initialized)
@@ -263,6 +273,7 @@ void fastboot_ui_refresh(void)
 
 EFI_STATUS fastboot_ui_init(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_image_t *droid;
 	UINTN width, height, x, y;
 	EFI_STATUS ret = EFI_SUCCESS;
@@ -327,6 +338,7 @@ EFI_STATUS fastboot_ui_init(void)
 
 enum boot_target fastboot_ui_event_handler()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_events_t event = EV_NONE;
 
 	event = ui_read_input();
@@ -339,6 +351,7 @@ enum boot_target fastboot_ui_event_handler()
 
 void fastboot_ui_destroy(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_boot_menu_free(boot_menu);
 	ui_print_clear();
 	ui_display_vendor_splash();

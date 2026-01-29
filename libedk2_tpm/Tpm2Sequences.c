@@ -16,21 +16,25 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER  Header;
   TPM2B_AUTH           Auth;
   TPMI_ALG_HASH        HashAlg;
 } TPM2_HASH_SEQUENCE_START_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER  Header;
   TPMI_DH_OBJECT        SequenceHandle;
 } TPM2_HASH_SEQUENCE_START_RESPONSE;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER       Header;
   TPMI_DH_OBJECT            SequenceHandle;
   UINT32                    AuthorizationSize;
@@ -99,6 +103,7 @@ Tpm2HashSequenceStart (
   OUT TPMI_DH_OBJECT *SequenceHandle
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_HASH_SEQUENCE_START_COMMAND  Cmd;
   TPM2_HASH_SEQUENCE_START_RESPONSE Res;
@@ -187,6 +192,7 @@ Tpm2SequenceUpdate (
   IN TPM2B_MAX_BUFFER *Buffer
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                    Status;
   TPM2_SEQUENCE_UPDATE_COMMAND  Cmd;
   TPM2_SEQUENCE_UPDATE_RESPONSE Res;
@@ -288,6 +294,7 @@ Tpm2EventSequenceComplete (
   OUT TPML_DIGEST_VALUES *Results
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                            Status;
   TPM2_EVENT_SEQUENCE_COMPLETE_COMMAND  Cmd;
   TPM2_EVENT_SEQUENCE_COMPLETE_RESPONSE Res;
@@ -418,6 +425,7 @@ Tpm2SequenceComplete (
   OUT TPM2B_DIGEST       *Result
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                            Status;
   TPM2_SEQUENCE_COMPLETE_COMMAND        Cmd;
   TPM2_SEQUENCE_COMPLETE_RESPONSE       Res;
@@ -535,6 +543,7 @@ Tpm2HashSequence(
   IN TPM2B_DIGEST *Buffers,
   OUT TPM2B_DIGEST *Result )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS          Status = EFI_SUCCESS;
   TPMI_DH_OBJECT      SequenceHandle;
   TPM2B_MAX_BUFFER    HashBbuf;

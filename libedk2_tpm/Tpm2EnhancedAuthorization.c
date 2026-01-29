@@ -16,10 +16,12 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER       Header;
   TPMI_DH_ENTITY            AuthHandle;
   TPMI_SH_POLICY            PolicySession;
@@ -32,6 +34,7 @@ typedef struct {
 } TPM2_POLICY_SECRET_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER      Header;
   UINT32                    AuthSessionSize;
   TPM2B_TIMEOUT             Timeout;
@@ -103,6 +106,7 @@ Tpm2PolicySecret (
   OUT     TPMT_TK_AUTH              *PolicyTicket
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_POLICY_SECRET_COMMAND        SendBuffer;
   TPM2_POLICY_SECRET_RESPONSE       RecvBuffer;
@@ -229,6 +233,7 @@ Tpm2PolicyOR (
   IN TPML_DIGEST              *HashList
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_POLICY_OR_COMMAND            SendBuffer;
   TPM2_POLICY_OR_RESPONSE           RecvBuffer;
@@ -294,6 +299,7 @@ Tpm2PolicyCommandCode (
   IN      TPM_CC                    Code
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_POLICY_COMMAND_CODE_COMMAND  SendBuffer;
   TPM2_POLICY_COMMAND_CODE_RESPONSE RecvBuffer;
@@ -350,6 +356,7 @@ Tpm2PolicyGetDigest (
      OUT  TPM2B_DIGEST              *PolicyHash
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_POLICY_GET_DIGEST_COMMAND    SendBuffer;
   TPM2_POLICY_GET_DIGEST_RESPONSE   RecvBuffer;

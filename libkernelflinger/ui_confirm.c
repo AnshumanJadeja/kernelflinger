@@ -33,6 +33,7 @@
 #include <ui.h>
 
 #include "lib.h"
+#include "log.h"
 
 #ifdef USE_POWER_BUTTON
 
@@ -48,6 +49,7 @@ static UINTN current = 1; /* dafault answer is No */
 static EFI_STATUS ui_confirm_draw_menu(ui_font_t *font, UINTN x, UINTN y,
 				       UINTN width, UINTN height)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color;
 	UINTN i, y1 = y;
@@ -78,6 +80,7 @@ static const ui_textline_t yes_no_text[] = {
 BOOLEAN ui_confirm(const ui_textline_t *text, UINTN width, UINTN height,
 		   UINTN x, UINTN y)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ui_events_t event;
 
 #ifdef USE_POWER_BUTTON

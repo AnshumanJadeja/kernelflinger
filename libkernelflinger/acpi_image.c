@@ -48,6 +48,7 @@
 #endif
 #include "protocol/AcpiTableProtocol.h"
 #include "security.h"
+#include "log.h"
 #include "targets.h"
 
 static struct ACPI_TABLE_LOADED {
@@ -61,16 +62,19 @@ static enum boot_target acpi_target = UNKNOWN_TARGET;
 
 VOID acpi_set_boot_target(enum boot_target target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	acpi_target = target;
 }
 
 static enum boot_target acpi_get_boot_target(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return acpi_target;
 }
 
 static UINT8 acpi_csum(VOID *base, UINT32 n)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 *p;
 	UINT8 sum;
 
@@ -87,6 +91,7 @@ static UINT8 acpi_csum(VOID *base, UINT32 n)
 
 EFI_STATUS acpi_image_get_length(const CHAR16 *label, struct ACPI_INFO **acpi_info)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 MediaId;
 	EFI_STATUS ret;
 	struct dt_table_header aosp_header;
@@ -159,6 +164,7 @@ EFI_STATUS acpi_image_get_length(const CHAR16 *label, struct ACPI_INFO **acpi_in
 
 static EFI_STATUS acpi_image_load_partition(const CHAR16 *label, VOID **image)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct gpt_partition_interface gpart;
 	VOID *acpiimage;
@@ -198,6 +204,7 @@ static EFI_STATUS acpi_image_load_partition(const CHAR16 *label, VOID **image)
 EFI_STATUS install_acpi_table(VOID *acpi_table, UINTN acpi_table_size,
 			      UINTN *tablekey)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct _EFI_ACPI_TABLE_PROTOCOL *acpiprotocol = NULL;
 	EFI_GUID guid = EFI_ACPI_TABLE_PROTOCOL_GUID;
@@ -220,6 +227,7 @@ EFI_STATUS install_acpi_table(VOID *acpi_table, UINTN acpi_table_size,
 
 static VOID acpi_add_table_index(UINTN index, enum acpi_src_type type)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct ACPI_TABLE_LOADED *tables = &loaded_table[type];
 	if (tables->count < ACPI_TABLE_MAX_LOAD_NUM) {
 		tables->index[tables->count] = index;
@@ -229,6 +237,7 @@ static VOID acpi_add_table_index(UINTN index, enum acpi_src_type type)
 
 CHAR8 *acpi_loaded_table_idx_to_string(enum acpi_src_type type)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct ACPI_TABLE_LOADED *tables = &loaded_table[type];
 	memset_s(loaded_idx_str, sizeof(loaded_idx_str), 0, sizeof(loaded_idx_str));
 	if (tables->count > 0)
@@ -247,6 +256,7 @@ CHAR8 *acpi_loaded_table_idx_to_string(enum acpi_src_type type)
 #if defined(USE_FIRSTSTAGE_MOUNT) && defined(AUTO_DISKBUS)
 static EFI_STATUS check_revise_acpi_table(CHAR8 *ssdt, UINTN ssdt_len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	struct ACPI_DESC_HEADER *header;
 
@@ -267,6 +277,7 @@ static EFI_STATUS check_revise_acpi_table(CHAR8 *ssdt, UINTN ssdt_len)
 /* Parse and install ACPI table concatenated one after the other. */
 EFI_STATUS install_acpi_table_from_boot_acpi(VOID *acpiimage, UINTN total_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (loaded_table[BOOT_ACPI].count > 0)
 		return EFI_SUCCESS;
 
@@ -309,6 +320,7 @@ EFI_STATUS install_acpi_table_from_boot_acpi(VOID *acpiimage, UINTN total_size)
 
 static EFI_STATUS acpi_image_parse_table(VOID *acpiimage, int is_acpio)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct dt_table_header *header = (struct dt_table_header *)(acpiimage);
 	struct dt_table_entry *entry;
 	struct ACPI_DESC_HEADER *acpi_header;
@@ -357,6 +369,7 @@ static EFI_STATUS acpi_image_parse_table(VOID *acpiimage, int is_acpio)
 
 static EFI_STATUS install_acpi_image_from_partition(int is_acpio)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	const CHAR16 *acpi_label;
 
@@ -386,6 +399,7 @@ static EFI_STATUS install_acpi_image_from_partition(int is_acpio)
 
 static EFI_STATUS check_install_acpi_image(VOID *image, int is_acpio)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	struct dt_table_header *aosp_header;
 	UINT32 magic;
@@ -418,6 +432,7 @@ static EFI_STATUS check_install_acpi_image(VOID *image, int is_acpio)
 EFI_STATUS install_acpi_table_from_partitions(VOID *image,
 					      const char *part_name)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int is_acpio;
 	enum boot_target target;
 
@@ -446,6 +461,7 @@ EFI_STATUS install_acpi_table_from_partitions(VOID *image,
 
 EFI_STATUS install_acpi_table_from_recovery_acpio(VOID *image)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 
 	target = acpi_get_boot_target();

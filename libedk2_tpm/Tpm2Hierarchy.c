@@ -16,10 +16,12 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER       Header;
   TPMI_RH_HIERARCHY_AUTH    AuthHandle;
   UINT32                    AuthSessionSize;
@@ -29,6 +31,7 @@ typedef struct {
 } TPM2_SET_PRIMARY_POLICY_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER       Header;
   UINT32                     AuthSessionSize;
   TPMS_AUTH_RESPONSE         AuthSession;
@@ -123,6 +126,7 @@ typedef struct {
   storage hierarchy (ownerPolicy), and and the endorsement hierarchy (endorsementPolicy).
 
   @param[in]  AuthHandle            TPM_RH_ENDORSEMENT, TPM_RH_OWNER or TPM_RH_PLATFORM+{PP} parameters to be validated
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in]  AuthSession           Auth Session context
   @param[in]  AuthPolicy            An authorization policy hash
   @param[in]  HashAlg               The hash algorithm to use for the policy
@@ -139,6 +143,7 @@ Tpm2SetPrimaryPolicy (
   IN  TPMI_ALG_HASH             HashAlg
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                                 Status;
   TPM2_SET_PRIMARY_POLICY_COMMAND            SendBuffer;
   TPM2_SET_PRIMARY_POLICY_RESPONSE           RecvBuffer;
@@ -223,6 +228,7 @@ Tpm2Clear (
   IN TPMS_AUTH_COMMAND         *AuthSession OPTIONAL
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_CLEAR_COMMAND                Cmd;
   TPM2_CLEAR_RESPONSE               Res;
@@ -298,6 +304,7 @@ Done:
   Disables and enables the execution of TPM2_Clear().
 
   @param[in] AuthHandle        TPM_RH_LOCKOUT or TPM_RH_PLATFORM+{PP}
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
   @param[in] Disable           YES if the disableOwnerClear flag is to be SET,
                                NO if the flag is to be CLEAR.
@@ -313,6 +320,7 @@ Tpm2ClearControl (
   IN TPMI_YES_NO               Disable
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_CLEAR_CONTROL_COMMAND        Cmd;
   TPM2_CLEAR_CONTROL_RESPONSE       Res;
@@ -407,6 +415,7 @@ Tpm2HierarchyChangeAuth (
   IN TPM2B_AUTH                *NewAuth
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                           Status;
   TPM2_HIERARCHY_CHANGE_AUTH_COMMAND   Cmd;
   TPM2_HIERARCHY_CHANGE_AUTH_RESPONSE  Res;
@@ -513,6 +522,7 @@ Tpm2ChangeEPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPM2_CHANGE_EPS_COMMAND   Cmd;
   TPM2_CHANGE_EPS_RESPONSE  Res;
@@ -599,6 +609,7 @@ Done:
   initialization value (the Empty Buffer).
 
   @param[in] AuthHandle        TPM_RH_PLATFORM+{PP}
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   @param[in] AuthSession       Auth Session context
 
   @retval EFI_SUCCESS      Operation completed successfully.
@@ -611,6 +622,7 @@ Tpm2ChangePPS (
   IN TPMS_AUTH_COMMAND         *AuthSession
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                Status;
   TPM2_CHANGE_PPS_COMMAND   Cmd;
   TPM2_CHANGE_PPS_RESPONSE  Res;
@@ -713,6 +725,7 @@ Tpm2HierarchyControl (
   IN TPMI_YES_NO               State
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                       Status;
   TPM2_HIERARCHY_CONTROL_COMMAND   Cmd;
   TPM2_HIERARCHY_CONTROL_RESPONSE  Res;

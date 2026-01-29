@@ -33,6 +33,7 @@
 #include <lib.h>
 
 #include "ioport.h"
+#include "log.h"
 
 static const char * const usage = "Usage:\n"
 	"  inb|inw|inl IOPORT\n"
@@ -40,6 +41,7 @@ static const char * const usage = "Usage:\n"
 
 static inline UINT16 inw(int port)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT16 val;
 	__asm__ __volatile__("inw %w1, %w0" : "=a"(val) : "Nd"(port));
 	return val;
@@ -47,6 +49,7 @@ static inline UINT16 inw(int port)
 
 static inline void outw(UINT16 val, int port)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	__asm__ __volatile__("outw %w0, %w1" : : "a"(val), "Nd"(port));
 }
 
@@ -58,6 +61,7 @@ static const CHAR16 *VALUE_FORMAT[] = {
 
 static EFI_STATUS ioport_main(INTN argc, const char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT64 ioport, data = 0;
 

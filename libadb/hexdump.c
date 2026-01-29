@@ -35,9 +35,11 @@
 #include <pae.h>
 
 #include "hexdump.h"
+#include "log.h"
 
 static EFI_STATUS hexdump_main(INTN argc, const char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	EFI_PHYSICAL_ADDRESS address, real;
 	UINT64 length;

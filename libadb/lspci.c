@@ -35,9 +35,12 @@
 #include "ioport.h"
 #include "lspci.h"
 #include "pci_class.h"
+#include "log.h"
 
 typedef union {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct {
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		UINT8 function : 3;
 		UINT8 device : 5;
 		UINT8 bus : 8;
@@ -60,12 +63,14 @@ typedef struct {
 
 static UINT32 pci_read_config32(pci_dev_t dev, UINT16 reg)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	outl(0x80000000 | dev.raw << 8 | (reg & ~3), 0xcf8);
 	return inl(0xcfc + (reg & 3));
 }
 
 static void pci_read_config(pci_dev_t dev, void *buf, UINT16 count)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < count; i += sizeof(UINT32))
@@ -93,6 +98,7 @@ static const struct {
 
 static EFI_STATUS lspci_main(INTN argc, const char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i, j;
 	pci_dev_t dev;
 	pci_header_t header;

@@ -40,6 +40,7 @@
 #include "usb.h"
 #include "protocol/UsbDeviceModeProtocol.h"
 #include "smbios.h"
+#include "log.h"
 
 #define CONFIG_COUNT            1
 #define INTERFACE_COUNT         1
@@ -88,6 +89,7 @@ typedef enum {
 
 static USB_STRING_DESCRIPTOR string_table[] = {
 	{ 2 + sizeof(LANG_EN_US)	, USB_DESC_TYPE_STRING, {LANG_EN_US} },
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	{ 2 + sizeof(STR_MANUFACTURER)	, USB_DESC_TYPE_STRING, STR_MANUFACTURER },
 	{ 2 + sizeof(STR_PRODUCT)	, USB_DESC_TYPE_STRING, STR_PRODUCT },
 	{ 2 + sizeof(STR_SERIAL)	, USB_DESC_TYPE_STRING, STR_SERIAL },
@@ -162,6 +164,7 @@ static USB_DEVICE_DESCRIPTOR device_descriptor = {
 
 EFI_STATUS usb_write(void *buf, UINT32 size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
@@ -180,6 +183,7 @@ EFI_STATUS usb_write(void *buf, UINT32 size)
 
 EFI_STATUS usb_read(void *buf, UINT32 size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	USB_DEVICE_IO_REQ ioReq;
 
@@ -205,6 +209,8 @@ static EFIAPI EFI_STATUS setup_handler(__attribute__((__unused__)) EFI_USB_DEVIC
 				       __attribute__((__unused__)) USB_DEVICE_IO_INFO *IoInfo)
 {
 
+debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
+
 	/* Does not handle any Class/Vendor specific setup requests */
 
 	return EFI_SUCCESS;
@@ -212,6 +218,7 @@ static EFIAPI EFI_STATUS setup_handler(__attribute__((__unused__)) EFI_USB_DEVIC
 
 static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS status = EFI_SUCCESS;
 
 	if (cfgVal == config_descriptor.config.ConfigurationValue) {
@@ -228,6 +235,7 @@ static EFIAPI EFI_STATUS config_handler(UINT8 cfgVal)
 
 EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!XferInfo->Buffer || XferInfo->Length == 0) {
 		error(L"Received an unexpected NULL or zero length buffer");
 		return EFI_INVALID_PARAMETER;
@@ -245,6 +253,7 @@ EFIAPI EFI_STATUS data_handler(EFI_USB_DEVICE_XFER_INFO *XferInfo)
 
 static void set_string16_table_line(UINTN line, CHAR16 *str)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size;
 
@@ -264,6 +273,7 @@ static void set_string16_table_line(UINTN line, CHAR16 *str)
 
 static void set_string_table_line(UINTN line, char *string)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *str;
 
 	str = stra_to_str((CHAR8 *)string);
@@ -278,6 +288,7 @@ static void set_string_table_line(UINTN line, char *string)
 
 static void set_manufacturer(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *manufacturer;
 
 	manufacturer = SMBIOS_GET_STRING(2, Manufacturer);
@@ -291,6 +302,7 @@ static void set_manufacturer(void)
 
 static void set_product(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *product;
 
 	product = SMBIOS_GET_STRING(2, ProductName);
@@ -304,6 +316,7 @@ static void set_product(void)
 
 static void set_serial_number(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *serial;
 
 	serial = get_serial_number();
@@ -320,6 +333,7 @@ static void init_driver_objs(UINT8 subclass,
 			     CHAR16 *str_configuration,
 			     CHAR16 *str_interface)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	config_descriptor.interface.InterfaceSubClass = subclass;
 	config_descriptor.interface.InterfaceProtocol = protocol;
 
@@ -361,6 +375,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 		     start_callback_t start_cb, data_callback_t rx_cb,
 		     data_callback_t tx_cb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!str_configuration || !str_interface || !start_cb || !rx_cb || !tx_cb)
@@ -425,6 +440,7 @@ EFI_STATUS usb_start(UINT8 subclass, UINT8 protocol,
 
 EFI_STATUS usb_stop(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = uefi_call_wrapper(usb_device->Stop, 1, usb_device);
@@ -452,5 +468,6 @@ EFI_STATUS usb_stop(void)
 
 EFI_STATUS usb_run(UINT32 *state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return uefi_call_wrapper(usb_device->Run, 2, usb_device, 1, state);
 }

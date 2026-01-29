@@ -15,6 +15,7 @@
  */
 
 #include "libxbc.h"
+#include "log.h"
 
 /*
  * Simple checksum for a buffer.
@@ -24,6 +25,7 @@
  * @return check sum result.
  */
 static uint32_t checksum(const unsigned char* const buffer, uint32_t size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint32_t sum = 0;
     for (uint32_t i = 0; i < size; i++) {
         sum += buffer[i];
@@ -39,6 +41,7 @@ static uint32_t checksum(const unsigned char* const buffer, uint32_t size) {
  * @return true if the trailer is present, false if not.
  */
 static BOOLEAN isTrailerPresent(uint64_t bootconfig_end_addr) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return !strncmp((CHAR8 *)(bootconfig_end_addr - BOOTCONFIG_MAGIC_SIZE),
                     BOOTCONFIG_MAGIC, BOOTCONFIG_MAGIC_SIZE);
 }
@@ -48,6 +51,7 @@ static BOOLEAN isTrailerPresent(uint64_t bootconfig_end_addr) {
  */
 int32_t addBootConfigParameters(char* params, uint32_t params_size,
     uint64_t bootconfig_start_addr, uint32_t bootconfig_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!params || !bootconfig_start_addr) {
         return -1;
     }
@@ -81,6 +85,7 @@ int32_t addBootConfigParameters(char* params, uint32_t params_size,
  */
 int32_t addBootConfigTrailer(uint64_t bootconfig_start_addr,
                             uint32_t bootconfig_size) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     if (!bootconfig_start_addr) {
         return -1;
     }

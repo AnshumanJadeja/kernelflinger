@@ -8,6 +8,7 @@
 
 #include "Base.h"
 #include "BaseIoLibIntrinsicInternal.h"
+#include "log.h"
 
 /**
   Reads a 64-bit I/O port.
@@ -30,6 +31,7 @@ IoRead64 (
 __attribute__((__unused__))  IN      UINTN                     Port
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (FALSE);
   return 0;
 }
@@ -57,6 +59,7 @@ __attribute__((__unused__))  IN      UINTN                     Port,
 __attribute__((__unused__))  IN      UINT64                    Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   ASSERT (FALSE);
   return 0;
 }
@@ -82,6 +85,7 @@ MmioRead8 (
   IN      UINTN                     Address
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             Value;
   BOOLEAN                           Flag;
 
@@ -118,6 +122,7 @@ MmioWrite8 (
   IN      UINT8                     Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   Flag = FilterBeforeMmIoWrite1 (FilterWidth8, Address, &Value);
@@ -152,6 +157,7 @@ MmioRead16_1 (
   IN      UINTN                     Address
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT16                            Value;
   BOOLEAN                           Flag;
 
@@ -190,6 +196,7 @@ MmioWrite16_1 (
   IN      UINT16                    Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 1) == 0);
@@ -226,6 +233,7 @@ MmioRead32 (
   IN      UINTN                     Address
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32                            Value;
   BOOLEAN                           Flag;
 
@@ -265,6 +273,7 @@ MmioWrite32 (
   IN      UINT32                    Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 3) == 0);
@@ -301,6 +310,7 @@ MmioRead64 (
   IN      UINTN                     Address
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT64                            Value;
   BOOLEAN                           Flag;
 
@@ -338,6 +348,7 @@ MmioWrite64 (
   IN      UINT64                    Value
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   BOOLEAN                           Flag;
 
   ASSERT ((Address & 7) == 0);

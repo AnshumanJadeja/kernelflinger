@@ -16,10 +16,12 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include <Tpm2CommandLib.h>
 #include <Tpm2DeviceLib.h>
 #include <Tpm2Help.h>
+#include "log.h"
 
 #pragma pack(1)
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_COMMAND_HEADER       Header;
   TPMI_DH_OBJECT            TpmKey;
   TPMI_DH_ENTITY            Bind;
@@ -31,6 +33,7 @@ typedef struct {
 } TPM2_START_AUTH_SESSION_COMMAND;
 
 typedef struct {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   TPM2_RESPONSE_HEADER      Header;
   TPMI_SH_AUTH_SESSION      SessionHandle;
   TPM2B_NONCE               NonceTPM;
@@ -69,6 +72,7 @@ Tpm2StartAuthSession (
      OUT  TPM2B_NONCE               *NonceTPM
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   TPM2_START_AUTH_SESSION_COMMAND   SendBuffer;
   TPM2_START_AUTH_SESSION_RESPONSE  RecvBuffer;

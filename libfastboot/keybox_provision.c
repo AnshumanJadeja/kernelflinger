@@ -32,6 +32,7 @@ typedef struct keybox_header {
 
 EFI_STATUS flash_keybox(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	uint64_t partoffset;
 	struct gpt_partition_interface gpart;

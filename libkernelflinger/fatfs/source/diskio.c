@@ -25,6 +25,7 @@ DSTATUS disk_status (
 		BYTE pdrv		/* Physical drive nmuber to identify the drive */
 		)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DSTATUS stat = STA_NOINIT ;
 	switch (pdrv) {
 		case DEV_NVME:
@@ -45,6 +46,7 @@ DSTATUS disk_initialize (
 		BYTE pdrv				/* Physical drive nmuber to identify the drive */
 		)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (pdrv) {	
 		case DEV_NVME:
 			return 0x0;
@@ -67,6 +69,7 @@ DRESULT disk_read (
 		UINT count		/* Number of sectors to read */
 		)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DRESULT ret = RES_OK;
 	UINT32 offset = 0;
 	offset += sector;
@@ -98,6 +101,7 @@ DRESULT disk_write (
 		UINT count			/* Number of sectors to write */
 		)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 offset = 0;
 	offset += sector;
 	offset = offset * 512;
@@ -128,6 +132,7 @@ DRESULT disk_ioctl (
 		void *buff		/* Buffer to send/receive control data */
 		)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DRESULT ret = RES_OK;
 	/* just make sure pass compile*/
 	if (cmd != 0 || buff == NULL) {

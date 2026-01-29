@@ -48,6 +48,7 @@
 #include "android.h"
 #include "slot.h"
 #include "timer.h"
+#include "log.h"
 #include "security.h"
 #include "security_interface.h"
 #ifdef RPMB_STORAGE
@@ -80,6 +81,7 @@ static CHAR8 cmd_buf[MAX_CMD_BUF];
 #ifdef CRASHMODE_USE_ADB
 static EFI_STATUS enter_crashmode(enum boot_target *target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 #ifdef USER
@@ -110,6 +112,7 @@ static EFI_STATUS enter_crashmode(enum boot_target *target)
 #ifndef __FORCE_FASTBOOT
 static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct bootloader_message bcb;
 	CHAR16 *target = NULL;
@@ -168,6 +171,7 @@ out:
 
 static EFI_STATUS process_bootimage(void *bootimage, UINTN imagesize)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VBDATA *param = NULL;
 	UINT8 boot_state = BOOT_STATE_GREEN;
@@ -305,6 +309,7 @@ fail:
 
 static EFI_STATUS enter_fastboot_mode(enum boot_target *target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -374,6 +379,7 @@ static union bootMode
 
 static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UINTN max_cmd_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	enum boot_target target = FASTBOOT;
 	static EFI_LOADED_IMAGE *limg;
@@ -418,66 +424,79 @@ static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UIN
 			RESET
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.boot_target=",
 			strlen((CHAR8 *)"ABL.boot_target="),
 			BOOT_TARGET
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.boot=",
 			strlen((CHAR8 *)"ABL.boot="),
 			BOOT
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"trusty.param_addr=",
 			strlen((CHAR8 *)"trusty.param_addr="),
 			TRUSTY_PARAM
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.secureboot=",
 			strlen((CHAR8 *)"ABL.secureboot="),
 			SECUREBOOT
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.bootloader=",
 			strlen((CHAR8 *)"androidboot.bootloader="),
 			BOOTVERSION
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.bootreason=",
 			strlen((CHAR8 *)"androidboot.bootreason="),
 			BOOTREASON
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"androidboot.serialno=",
 			strlen((CHAR8 *)"androidboot.serialno="),
 			SERIALNO
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"dev_sec_info.param_addr=",
 			strlen((CHAR8 *)"dev_sec_info.param_addr="),
 			DEV_SEC_INFO
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.svnseed=",
 			strlen((CHAR8 *)"ABL.svnseed="),
 			DEV_SEC_INFO
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ImageBootParamsAddr=",
 			strlen((CHAR8 *)"ImageBootParamsAddr="),
 			IMAGE_BOOT_PARAMS_ADDR
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"fw_boottsc=",
 			strlen("fw_boottsc="),
 			FIRMWARE_BOOTTIME
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.rpmb=",
 			strlen("ABL.rpmb="),
 			RPMB
 		},
 		{
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			(CHAR8 *)"ABL.status=",
 			strlen((CHAR8 *)"ABL.status="),
 			STATUS
@@ -663,6 +682,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 				VBDATA *vb_data,
 				CHAR8 *abl_cmd_line)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 #ifdef USER
 	/* per bootloaderequirements.pdf */
@@ -717,6 +737,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 
 EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	AvbOps *ops;
 	AvbSlotVerifyData *slot_data = NULL;
 #ifndef USE_SLOT
@@ -905,6 +926,7 @@ fail:
 #ifdef FASTBOOT_FOR_NON_ANDROID
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -927,6 +949,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	EFI_STATUS ret;
 

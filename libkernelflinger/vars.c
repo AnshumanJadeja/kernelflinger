@@ -42,6 +42,7 @@
 #include "storage.h"
 #include "security.h"
 #include "tpm2_security.h"
+#include "log.h"
 
 #define OFF_MODE_CHARGE		L"off-mode-charge"
 #define OEM_LOCK		L"OEMLock"
@@ -73,9 +74,12 @@
 
 const EFI_GUID fastboot_guid = { 0x1ac80a82, 0x4f0c, 0x456b,
 	{0x9a, 0x99, 0xde, 0xbe, 0xb4, 0x31, 0xfc, 0xc1} };
+	    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 /* Gummiboot's GUID, we use some of the same variables */
 const EFI_GUID loader_guid = { 0x4a67b082, 0x0a4c, 0x41cf,
 	{0xb6, 0xc7, 0x44, 0x0b, 0x29, 0xbb, 0x8c, 0x4f} };
+
+debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 static BOOLEAN provisioning_mode = FALSE;
 static enum device_state current_state = UNKNOWN_STATE;
@@ -105,6 +109,7 @@ static bool_value_t slot_fallback;
 
 CHAR16 *boot_state_to_string(UINT8 boot_state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	switch (boot_state) {
 	case BOOT_STATE_GREEN:
 		return L"green";
@@ -122,6 +127,7 @@ CHAR16 *boot_state_to_string(UINT8 boot_state)
 BOOLEAN get_current_boolean_var(const EFI_GUID *guid, CHAR16 *varname,
 				bool_value_t *cache, const BOOLEAN default_value)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size;
 	CHAR8 *data = NULL;
@@ -150,6 +156,7 @@ exit:
 EFI_STATUS set_boolean_var(const EFI_GUID *guid, CHAR16 *varname,
 			   bool_value_t *cache, BOOLEAN enabled, BOOLEAN runtime)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *val = (CHAR8 *)(enabled ? "1" : "0");
 	EFI_STATUS ret;
 
@@ -167,12 +174,14 @@ EFI_STATUS set_boolean_var(const EFI_GUID *guid, CHAR16 *varname,
 
 BOOLEAN get_off_mode_charge(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_boolean_var(&fastboot_guid, OFF_MODE_CHARGE,
 				       &off_mode_charge, TRUE);
 }
 
 EFI_STATUS set_off_mode_charge(BOOLEAN enabled)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	//set "runtime" as true, in case SAndroid 10 userspace fastboot HAL need to read it
 	return set_boolean_var(&fastboot_guid, OFF_MODE_CHARGE,
 			       &off_mode_charge, enabled, TRUE);
@@ -180,35 +189,41 @@ EFI_STATUS set_off_mode_charge(BOOLEAN enabled)
 
 BOOLEAN get_crash_event_menu(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_boolean_var(&fastboot_guid, CRASH_EVENT_MENU,
 				       &crash_event_menu, TRUE);
 }
 
 EFI_STATUS set_crash_event_menu(BOOLEAN enabled)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return set_boolean_var(&fastboot_guid, CRASH_EVENT_MENU,
 			       &crash_event_menu, enabled, FALSE);
 }
 
 BOOLEAN get_display_splash(void) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_boolean_var(&loader_guid, UI_DISPLAY_SPLASH,
 				       &ui_display_splash, TRUE);
 }
 
 BOOLEAN get_oemvars_update(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_boolean_var(&fastboot_guid, UPDATE_OEMVARS,
 				       &update_oemvars, TRUE);
 }
 
 EFI_STATUS set_oemvars_update(BOOLEAN enabled)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return set_boolean_var(&fastboot_guid, UPDATE_OEMVARS,
 			       &update_oemvars, enabled, FALSE);
 }
 
 BOOLEAN get_slot_fallback(void)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USER
 	return get_current_boolean_var(&fastboot_guid, SLOT_FALLBACK,
 				       &slot_fallback, TRUE);
@@ -219,6 +234,7 @@ BOOLEAN get_slot_fallback(void)
 
 EFI_STATUS set_slot_fallback(BOOLEAN enabled)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USER
 	return set_boolean_var(&fastboot_guid, SLOT_FALLBACK,
 			       &slot_fallback, enabled, FALSE);
@@ -230,12 +246,14 @@ EFI_STATUS set_slot_fallback(BOOLEAN enabled)
 
 static void set_provisioning_mode(BOOLEAN provisioning)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	provisioning_mode = provisioning;
 	current_state = provisioning ? UNLOCKED : LOCKED;
 }
 
 static EFI_STATUS read_device_state_efi(UINT8 *state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT8 *stored_state;
 	UINTN dsize;
@@ -271,6 +289,7 @@ out:
 
 static EFI_STATUS write_device_state_efi(UINT8 state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = set_efi_variable(&fastboot_guid, OEM_LOCK, sizeof(state), &state, TRUE, FALSE);
@@ -284,6 +303,7 @@ static EFI_STATUS write_device_state_efi(UINT8 state)
 
 enum device_state get_current_state(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT8 stored_state;
 	BOOLEAN enduser;
@@ -353,6 +373,7 @@ exit:
 
 EFI_STATUS set_current_state(enum device_state state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 stored_state;
 	EFI_STATUS ret = EFI_SUCCESS;
 
@@ -387,6 +408,7 @@ EFI_STATUS set_current_state(enum device_state state)
 
 EFI_STATUS refresh_current_state(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	current_state = UNKNOWN_STATE;
 	get_current_state();
 
@@ -395,6 +417,7 @@ EFI_STATUS refresh_current_state(void)
 
 BOOLEAN device_need_locked(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 stored_state;
 	EFI_STATUS ret = EFI_SUCCESS;
 
@@ -422,6 +445,7 @@ BOOLEAN device_need_locked(void)
 #ifndef USER
 EFI_STATUS reprovision_state_vars(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return del_efi_variable(&fastboot_guid, OEM_LOCK);
 }
 
@@ -438,6 +462,7 @@ static struct efivar_black_list {
 
 EFI_STATUS erase_efivars(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN bufsize, namesize;
 	CHAR16 *name;
@@ -508,26 +533,31 @@ exit:
 
 const char *get_current_state_string()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return STATE_DISPLAY[get_current_state() + 1].string;
 }
 
 EFI_GRAPHICS_OUTPUT_BLT_PIXEL *get_current_state_color()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return STATE_DISPLAY[get_current_state() + 1].color;
 }
 
 BOOLEAN device_is_unlocked()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_state() == UNLOCKED;
 }
 
 BOOLEAN device_is_locked()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_state() == LOCKED;
 }
 
 BOOLEAN device_is_provisioning(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* Force OEM_LOCK check if we haven't already */
 	get_current_state();
 
@@ -536,6 +566,7 @@ BOOLEAN device_is_provisioning(void)
 
 EFI_STATUS get_watchdog_status(UINT8 *counter, EFI_TIME *time)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_TIME *tmp;
 	UINTN size;
@@ -567,6 +598,7 @@ EFI_STATUS get_watchdog_status(UINT8 *counter, EFI_TIME *time)
 
 EFI_STATUS reset_watchdog_status(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = set_watchdog_counter(0);
@@ -578,6 +610,7 @@ EFI_STATUS reset_watchdog_status(VOID)
 
 EFI_STATUS set_watchdog_counter(UINT8 counter)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (counter == 0)
 		return del_efi_variable(&fastboot_guid, WDT_COUNTER);
 
@@ -587,6 +620,7 @@ EFI_STATUS set_watchdog_counter(UINT8 counter)
 
 EFI_STATUS set_watchdog_time_reference(EFI_TIME *time)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (time == NULL)
 		return del_efi_variable(&fastboot_guid, WDT_TIME_REF);
 
@@ -596,6 +630,7 @@ EFI_STATUS set_watchdog_time_reference(EFI_TIME *time)
 
 UINT8 get_watchdog_counter_max(VOID)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USER
 	EFI_STATUS ret;
 	UINT8 max;
@@ -609,18 +644,21 @@ UINT8 get_watchdog_counter_max(VOID)
 
 EFI_STATUS set_watchdog_counter_max(UINT8 max)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return set_efi_variable(&fastboot_guid, WDT_COUNTER_MAX,
 				sizeof(max), &max, TRUE, FALSE);
 }
 
 BOOLEAN get_disable_watchdog()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_current_boolean_var(&loader_guid, DISABLE_WDT,
 				       &disable_wdt, FALSE);
 }
 
 static void CDD_clean_string(char *buf)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *c;
 	int len;
 
@@ -670,6 +708,7 @@ static void CDD_clean_string(char *buf)
 
 char *get_property_bootloader(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char loader[ANDROID_PROP_VALUE_MAX];
 
 	if (!loader[0]) {
@@ -691,6 +730,7 @@ char *get_property_bootloader(void)
  * Force set some known-to-misbehave brands names to a good form */
 static void chop_brand_tail(char *brand)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	static char *BRANDS[] = {"intel", "asus"};
@@ -723,6 +763,7 @@ static void chop_brand_tail(char *brand)
 
 char *get_property_name(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char name[ANDROID_PROP_VALUE_MAX];
 
 	if (!name[0]) {
@@ -740,6 +781,7 @@ char *get_property_name(void)
  * board_vendor observed to be reasonable on sample of devices */
 char *get_property_brand(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char brand[ANDROID_PROP_VALUE_MAX];
 
 	if (!brand[0]) {
@@ -755,6 +797,7 @@ char *get_property_brand(void)
 
 char *get_property_model(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	/* FIXME This is supposed to be read from some non-standard
 	 * "board_name1" field, but without a specification we
 	 * can't do anything. Menwhile just return the device */
@@ -763,6 +806,7 @@ char *get_property_model(void)
 
 char *get_property_device(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char device[ANDROID_PROP_VALUE_MAX];
 	if (!device[0]) {
 		char board_name[ANDROID_PROP_VALUE_MAX];
@@ -790,6 +834,7 @@ char *get_property_device(void)
 
 char *get_device_id(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char deviceid[ANDROID_PROP_VALUE_MAX];
 	if (!deviceid[0]) {
 		efi_snprintf((CHAR8 *)deviceid, sizeof(deviceid),
@@ -801,12 +846,14 @@ char *get_device_id(void)
 #else
 char *get_device_id(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return "DEFAULT";
 }
 #endif
 
 char *get_serialno_var()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *data = NULL;
 	EFI_STATUS ret;
 	UINTN size = 0;
@@ -835,6 +882,7 @@ char *get_serialno_var()
  * ^[a-zA-Z0-9](6,20)$  */
 char *get_serial_number(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static char bios_serialno[SERIALNO_MAX_SIZE + 1];
 	static char serialno[SERIALNO_MAX_SIZE + 1];
@@ -901,12 +949,14 @@ bad:
 
 #ifdef USE_SBL
 const char *get_cmd_for_kernel(){
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return ewarg_getval(CMD_FOR_KERNEL);
 }
 #endif
 
 CHAR16 *get_reboot_reason()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static CHAR16 reboot_reason[REBOOT_REASON_MAX];
 	CHAR16 *rr;
 	EFI_STATUS ret;
@@ -931,6 +981,7 @@ CHAR16 *get_reboot_reason()
 
 EFI_STATUS set_reboot_reason(CHAR16 *reboot_reason)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (reboot_reason[0] == 0)
@@ -942,6 +993,7 @@ EFI_STATUS set_reboot_reason(CHAR16 *reboot_reason)
 
 BOOLEAN is_reboot_reason(CHAR16 *reason)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *rr = get_reboot_reason();
 
 	return rr && StrStr(rr, reason);
@@ -949,11 +1001,13 @@ BOOLEAN is_reboot_reason(CHAR16 *reason)
 
 VOID del_reboot_reason()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	del_efi_variable(&loader_guid, REBOOT_REASON);
 }
 
 BOOLEAN is_UEFI(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static bool_value_t val;
 	EFI_STATUS ret;
 	EFI_GUID EFIWRAPPER_GUID =
@@ -973,6 +1027,7 @@ BOOLEAN is_UEFI(VOID)
 
 EFI_STATUS read_efi_rollback_index(UINTN rollback_index_slot, uint64_t* out_rollback_index)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 name[32];
 	UINTN size;
@@ -1004,6 +1059,7 @@ EFI_STATUS read_efi_rollback_index(UINTN rollback_index_slot, uint64_t* out_roll
 
 EFI_STATUS write_efi_rollback_index(UINTN rollback_index_slot, uint64_t rollback_index)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 name[32];
 
@@ -1020,18 +1076,21 @@ EFI_STATUS write_efi_rollback_index(UINTN rollback_index_slot, uint64_t rollback
 
 EFI_STATUS set_efi_loaded_slot(UINT8 slot)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return set_efi_variable(&fastboot_guid, LOADED_SLOT,
 				sizeof(slot), &slot, FALSE, FALSE);
 }
 
 EFI_STATUS get_efi_loaded_slot(UINT8 *slot)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_efi_variable_byte(&fastboot_guid, LOADED_SLOT,
 				slot);
 }
 
 EFI_STATUS set_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS error)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 name[32];
 
 	SPrint(name, sizeof(name), LOADED_SLOT_FAILED, slot);
@@ -1041,6 +1100,7 @@ EFI_STATUS set_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS error)
 
 EFI_STATUS get_efi_loaded_slot_failed(UINT8 slot, EFI_STATUS *error)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 name[32];
 	UINTN size;

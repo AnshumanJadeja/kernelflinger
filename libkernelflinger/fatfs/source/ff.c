@@ -283,6 +283,7 @@
 #error FF_FS_LOCK must be 0 at read-only configuration
 #endif
 typedef struct {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATFS* fs;		/* Object ID 1, volume (NULL:blank entry) */
 	DWORD clu;		/* Object ID 2, containing directory (0:root) */
 	DWORD ofs;		/* Object ID 3, offset in the directory */
@@ -618,6 +619,7 @@ static const BYTE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
 
 static WORD ld_word (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WORD rv;
 
 	rv = ptr[1];
@@ -627,6 +629,7 @@ static WORD ld_word (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 
 static DWORD ld_dword (const BYTE* ptr)	/* Load a 4-byte little-endian word */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD rv;
 
 	rv = ptr[3];
@@ -639,6 +642,7 @@ static DWORD ld_dword (const BYTE* ptr)	/* Load a 4-byte little-endian word */
 #if FF_FS_EXFAT
 static QWORD ld_qword (const BYTE* ptr)	/* Load an 8-byte little-endian word */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	QWORD rv;
 
 	rv = ptr[7];
@@ -656,12 +660,14 @@ static QWORD ld_qword (const BYTE* ptr)	/* Load an 8-byte little-endian word */
 #if !FF_FS_READONLY
 static void st_word (BYTE* ptr, WORD val)	/* Store a 2-byte word in little-endian */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val;
 }
 
 static void st_dword (BYTE* ptr, DWORD val)	/* Store a 4-byte word in little-endian */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
@@ -671,6 +677,7 @@ static void st_dword (BYTE* ptr, DWORD val)	/* Store a 4-byte word in little-end
 #if FF_FS_EXFAT
 static void st_qword (BYTE* ptr, QWORD val)	/* Store an 8-byte word in little-endian */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
 	*ptr++ = (BYTE)val; val >>= 8;
@@ -692,6 +699,7 @@ static void st_qword (BYTE* ptr, QWORD val)	/* Store an 8-byte word in little-en
 /* Test if the byte is DBC 1st byte */
 static int dbc_1st (BYTE c)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if FF_CODE_PAGE == 0		/* Variable code page */
 	if (DbcTbl && c >= DbcTbl[0]) {
 		if (c <= DbcTbl[1]) return 1;					/* 1st byte range 1 */
@@ -712,6 +720,7 @@ static int dbc_1st (BYTE c)
 /* Test if the byte is DBC 2nd byte */
 static int dbc_2nd (BYTE c)
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if FF_CODE_PAGE == 0		/* Variable code page */
 	if (DbcTbl && c >= DbcTbl[4]) {
 		if (c <= DbcTbl[5]) return 1;					/* 2nd byte range 1 */
@@ -738,6 +747,7 @@ static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on
 	const TCHAR** str		/* Pointer to pointer to TCHAR string in configured encoding */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD uc;
 	const TCHAR *p = *str;
 
@@ -809,6 +819,7 @@ static UINT put_utf (	/* Returns number of encoding units written (0:buffer over
 	UINT szb	/* Size of the buffer */
 )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if FF_LFN_UNICODE == 1	/* UTF-16 output */
 	WCHAR hs, wc;
 
@@ -898,6 +909,7 @@ static int lock_volume (	/* 1:Ok, 0:timeout */
 	int syslock				/* System lock required */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rv;
 
 
@@ -924,6 +936,7 @@ static void unlock_volume (
 	FRESULT res		/* Result code to be returned */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (fs && res != FR_NOT_ENABLED && res != FR_INVALID_DRIVE && res != FR_TIMEOUT) {
 #if FF_FS_LOCK
 		if (SysLock == 2 && SysLockVolume == fs->ldrv) {	/* Unlock system if it has been locked by this task */
@@ -949,6 +962,7 @@ static FRESULT chk_share (	/* Check if the file can be accessed */
 	int acc			/* Desired access type (0:Read mode open, 1:Write mode open, 2:Delete or rename) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, be;
 
 	/* Search open object table for the object */
@@ -973,6 +987,7 @@ static FRESULT chk_share (	/* Check if the file can be accessed */
 
 static int enq_share (void)	/* Check if an entry is available for a new object */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i;
 
 	for (i = 0; i < FF_FS_LOCK && Files[i].fs; i++) ;	/* Find a free entry */
@@ -985,6 +1000,7 @@ static UINT inc_share (	/* Increment object open counter and returns its index (
 	int acc		/* Desired access (0:Read, 1:Write, 2:Delete/Rename) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i;
 
 
@@ -1015,6 +1031,7 @@ static FRESULT dec_share (	/* Decrement object open counter */
 	UINT i			/* Semaphore index (1..) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT n;
 	FRESULT res;
 
@@ -1039,6 +1056,7 @@ static void clear_share (	/* Clear all lock entries of the volume */
 	FATFS* fs
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i;
 
 	for (i = 0; i < FF_FS_LOCK; i++) {
@@ -1058,6 +1076,7 @@ static FRESULT sync_window (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs			/* Filesystem object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res = FR_OK;
 
 
@@ -1086,6 +1105,7 @@ static FRESULT move_window (	/* Returns FR_OK or FR_DISK_ERR */
 	LBA_t sect		/* Sector LBA to make appearance in the fs->win[] */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res = FR_OK;
 
 
@@ -1116,6 +1136,7 @@ static FRESULT sync_fs (	/* Returns FR_OK or FR_DISK_ERR */
 	FATFS* fs		/* Filesystem object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 
 
@@ -1154,6 +1175,7 @@ static LBA_t clst2sect (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
 	DWORD clst		/* Cluster# to be converted */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	clst -= 2;		/* Cluster number is origin from 2 */
 	if (clst >= fs->n_fatent - 2) return 0;		/* Is it invalid cluster number? */
 	return fs->database + (LBA_t)fs->csize * clst;	/* Start sector number of the cluster */
@@ -1171,6 +1193,7 @@ static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFF
 	DWORD clst		/* Cluster number to get the value */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT wc, bc;
 	DWORD val;
 	FATFS *fs = obj->fs;
@@ -1249,6 +1272,7 @@ static FRESULT put_fat (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD val		/* New value to be set to the entry */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT bc;
 	BYTE *p;
 	FRESULT res = FR_INT_ERR;
@@ -1314,6 +1338,7 @@ static DWORD find_bitmap (	/* 0:Not found, 2..:Cluster block found, 0xFFFFFFFF:D
 	DWORD ncl	/* Number of contiguous clusters to find (1..) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE bm, bv;
 	UINT i;
 	DWORD val, scl, ctr;
@@ -1355,6 +1380,7 @@ static FRESULT change_bitmap (
 	int bv		/* bit value to be set (0 or 1) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE bm;
 	UINT i;
 	LBA_t sect;
@@ -1388,6 +1414,7 @@ static FRESULT fill_first_frag (
 	FFOBJID* obj	/* Pointer to the corresponding object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	DWORD cl, n;
 
@@ -1413,6 +1440,7 @@ static FRESULT fill_last_frag (
 	DWORD term		/* Value to set the last FAT entry */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 
 
@@ -1439,6 +1467,7 @@ static FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD pclst			/* Previous cluster of clst (0 if entire chain) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res = FR_OK;
 	DWORD nxt;
 	FATFS *fs = obj->fs;
@@ -1533,6 +1562,7 @@ static DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:D
 	DWORD clst			/* Cluster# to stretch, 0:Create a new chain */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD cs, ncl, scl;
 	FRESULT res;
 	FATFS *fs = obj->fs;
@@ -1636,6 +1666,7 @@ static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 	FSIZE_t ofs		/* File offset to be converted to cluster# */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD cl, ncl;
 	DWORD *tbl;
 	FATFS *fs = fp->obj.fs;
@@ -1667,6 +1698,7 @@ static FRESULT dir_clear (	/* Returns FR_OK or FR_DISK_ERR */
 	DWORD clst		/* Directory table to clear */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	LBA_t sect;
 	UINT n, szb;
 	BYTE *ibuf;
@@ -1706,6 +1738,7 @@ static FRESULT dir_sdi (	/* FR_OK(0):succeeded, !=0:error */
 	DWORD ofs		/* Offset of directory table */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD csz, clst;
 	FATFS *fs = dp->obj.fs;
 
@@ -1760,6 +1793,7 @@ static FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DEN
 	int stretch				/* 0: Do not stretch table, 1: Stretch table if needed */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD ofs, clst;
 	FATFS *fs = dp->obj.fs;
 
@@ -1821,6 +1855,7 @@ static FRESULT dir_alloc (	/* FR_OK(0):succeeded, !=0:error */
 	UINT n_ent				/* Number of contiguous entries to allocate */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	UINT n;
 	FATFS *fs = dp->obj.fs;
@@ -1863,6 +1898,7 @@ static DWORD ld_clust (	/* Returns the top cluster value of the SFN entry */
 	const BYTE* dir		/* Pointer to the key entry */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD cl;
 
 	cl = ld_word(dir + DIR_FstClusLO);
@@ -1881,6 +1917,7 @@ static void st_clust (
 	DWORD cl	/* Value to be set */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	st_word(dir + DIR_FstClusLO, (WORD)cl);
 	if (fs->fs_type == FS_FAT32) {
 		st_word(dir + DIR_FstClusHI, (WORD)(cl >> 16));
@@ -1900,6 +1937,7 @@ static int cmp_lfn (		/* 1:matched, 0:not matched */
 	BYTE* dir				/* Pointer to the directory entry containing the part of LFN */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, s;
 	WCHAR wc, uc;
 
@@ -1936,6 +1974,7 @@ static int pick_lfn (	/* 1:succeeded, 0:buffer overflow or invalid LFN entry */
 	BYTE* dir			/* Pointer to the LFN entry */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, s;
 	WCHAR wc, uc;
 
@@ -1976,6 +2015,7 @@ static void put_lfn (
 	BYTE sum			/* Checksum of the corresponding SFN */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, s;
 	WCHAR wc;
 
@@ -2013,6 +2053,7 @@ static void gen_numname (
 	UINT seq			/* Sequence number */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE ns[8], c;
 	UINT i, j;
 	WCHAR wc;
@@ -2037,6 +2078,7 @@ static void gen_numname (
 	/* Make suffix (~ + hexadecimal) */
 	i = 7;
 	do {
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		c = (BYTE)((seq % 16) + '0'); seq /= 16;
 		if (c > '9') c += 7;
 		ns[i--] = c;
@@ -2067,10 +2109,12 @@ static BYTE sum_sfn (
 	const BYTE* dir		/* Pointer to the SFN entry */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE sum = 0;
 	UINT n = 11;
 
 	do {
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		sum = (sum >> 1) + (sum << 7) + *dir++;
 	} while (--n);
 	return sum;
@@ -2089,6 +2133,7 @@ static WORD xdir_sum (	/* Get checksum of the directoly entry block */
 	const BYTE* dir		/* Directory entry block to be calculated */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, szblk;
 	WORD sum;
 
@@ -2110,6 +2155,7 @@ static WORD xname_sum (	/* Get check sum (to be used as hash) of the file name *
 	const WCHAR* name	/* File name to be calculated */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WCHAR chr;
 	WORD sum = 0;
 
@@ -2129,6 +2175,7 @@ static DWORD xsum32 (	/* Returns 32-bit checksum */
 	DWORD sum			/* Previous sum value */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	sum = ((sum & 1) ? 0x80000000 : 0) + (sum >> 1) + dat;
 	return sum;
 }
@@ -2144,6 +2191,7 @@ static FRESULT load_xdir (	/* FR_INT_ERR: invalid entry block */
 	DIR* dp					/* Reading directory object pointing top of the entry block to load */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	UINT i, sz_ent;
 	BYTE *dirb = dp->obj.fs->dirbuf;	/* Pointer to the on-memory directory entry block 85+C0+C1s */
@@ -2196,6 +2244,7 @@ static void init_alloc_info (
 	FFOBJID* obj	/* Object allocation information to be initialized */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	obj->sclust = ld_dword(fs->dirbuf + XDIR_FstClus);		/* Start cluster */
 	obj->objsize = ld_qword(fs->dirbuf + XDIR_FileSize);	/* Size */
 	obj->stat = fs->dirbuf[XDIR_GenFlags] & 2;				/* Allocation status */
@@ -2214,6 +2263,7 @@ static FRESULT load_obj_xdir (
 	const FFOBJID* obj	/* Object with its containing directory information */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 
 	/* Open object containing directory */
@@ -2242,6 +2292,7 @@ static FRESULT store_xdir (
 	DIR* dp				/* Pointer to the directory object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	UINT nent;
 	BYTE *dirb = dp->obj.fs->dirbuf;	/* Pointer to the directory entry block 85+C0+C1s */
@@ -2275,6 +2326,7 @@ static void create_xdir (
 	const WCHAR* lfn	/* Pointer to the object name */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i;
 	BYTE nc1, nlen;
 	WCHAR wc;
@@ -2321,6 +2373,7 @@ static FRESULT dir_read (
 	int vol			/* Filtered by 0:file/directory or 1:volume label */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res = FR_NO_FILE;
 	FATFS *fs = dp->obj.fs;
 	BYTE attr, b;
@@ -2398,6 +2451,7 @@ static FRESULT dir_find (	/* FR_OK(0):succeeded, !=0:error */
 	DIR* dp					/* Pointer to the directory object with the file name */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs = dp->obj.fs;
 	BYTE c;
@@ -2487,6 +2541,7 @@ static FRESULT dir_register (	/* FR_OK:succeeded, FR_DENIED:no free entry or too
 	DIR* dp						/* Target directory with object name to be created */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs = dp->obj.fs;
 #if FF_USE_LFN		/* LFN configuration */
@@ -2593,6 +2648,7 @@ static FRESULT dir_remove (	/* FR_OK:Succeeded, FR_DISK_ERR:A disk error */
 	DIR* dp					/* Directory object pointing the entry to be removed */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs = dp->obj.fs;
 #if FF_USE_LFN		/* LFN configuration */
@@ -2640,6 +2696,7 @@ static void get_fileinfo (
 	FILINFO* fno		/* Pointer to the file information to be filled */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT si, di;
 #if FF_USE_LFN
 	BYTE lcf;
@@ -2784,6 +2841,7 @@ static DWORD get_achar (	/* Get a character and advance ptr */
 	const TCHAR** ptr		/* Pointer to pointer to the ANSI/OEM or Unicode string */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	DWORD chr;
 
 
@@ -2818,6 +2876,7 @@ static int pattern_match (	/* 0:mismatched, 1:matched */
 	UINT recur			/* Recursion count */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const TCHAR *pptr;
 	const TCHAR *nptr;
 	DWORD pchr, nchr;
@@ -2870,6 +2929,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 	const TCHAR** path			/* Pointer to pointer to the segment in the path string */
 )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if FF_USE_LFN		/* LFN configuration */
 	BYTE b, cf;
 	WCHAR wc;
@@ -2952,6 +3012,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 				wc = ff_uni2oem(wc, CODEPAGE);			/* Unicode ==> ANSI/OEM code */
 				if (wc & 0x80) wc = ExCvt[wc & 0x7F];	/* Convert extended character to upper (SBCS) */
 			} else {		/* In DBCS cfg */
+				debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 				wc = ff_uni2oem(ff_wtoupper(wc), CODEPAGE);	/* Unicode ==> Up-convert ==> ANSI/OEM code */
 			}
 #elif FF_CODE_PAGE < 900	/* In SBCS cfg */
@@ -3074,6 +3135,7 @@ static FRESULT follow_path (	/* FR_OK(0): successful, !=0: error code */
 	const TCHAR* path			/* Full-path string to find a file or directory */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	BYTE ns;
 	FATFS *fs = dp->obj.fs;
@@ -3159,6 +3221,7 @@ static int get_ldnumber (	/* Returns logical drive number (-1:invalid drive numb
 	const TCHAR** path		/* Pointer to pointer to the path name */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const TCHAR *tp;
 	const TCHAR *tt;
 	TCHAR tc;
@@ -3243,6 +3306,7 @@ static DWORD crc32 (	/* Returns next CRC value */
 	BYTE d				/* A byte to be processed */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE b;
 
 
@@ -3260,6 +3324,7 @@ static int test_gpt_header (	/* 0:Invalid, 1:Valid */
 	const BYTE* gpth			/* Pointer to the GPT header */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i;
 	DWORD bcc, hlen;
 
@@ -3286,6 +3351,7 @@ static DWORD make_rand (
 	UINT n			/* Data length */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT r;
 
 
@@ -3313,6 +3379,7 @@ static UINT check_fs (	/* 0:FAT/FAT32 VBR, 1:exFAT VBR, 2:Not FAT and valid BS, 
 	LBA_t sect			/* Sector to load and check if it is an FAT-VBR or not */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	WORD w, sign;
 	BYTE b;
 
@@ -3356,6 +3423,7 @@ static UINT find_volume (	/* Returns BS status found in the hosting drive */
 	UINT part		/* Partition to fined = 0:find as SFD and partitions, >0:forced partition number */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT fmt, i;
 	DWORD mbr_pt[4];
 
@@ -3419,6 +3487,7 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 	BYTE mode					/* Desiered access mode to check write protection */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int vol;
 	FATFS *fs;
 	DSTATUS stat;
@@ -3654,6 +3723,7 @@ static FRESULT validate (	/* Returns FR_OK or FR_INVALID_OBJECT */
 	FATFS** rfs				/* Pointer to pointer to the owner filesystem object to return */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res = FR_INVALID_OBJECT;
 
 	if (obj && obj->fs && obj->fs->fs_type && obj->id == obj->fs->id) {	/* Test if the object is valid */
@@ -3699,6 +3769,7 @@ FRESULT f_mount (
 	BYTE opt			/* Mount option: 0=Do not mount (delayed mount), 1=Mount immediately */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FATFS *cfs;
 	int vol;
 	FRESULT res;
@@ -3762,6 +3833,7 @@ FRESULT f_open (
 	BYTE mode			/* Access mode and open mode flags */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	DIR dj;
 	FATFS *fs;
@@ -3808,6 +3880,7 @@ FRESULT f_open (
 				if (dj.obj.attr & (AM_RDO | AM_DIR)) {	/* Cannot overwrite it (R/O or DIR) */
 					res = FR_DENIED;
 				} else {
+					debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					if (mode & FA_CREATE_NEW) res = FR_EXIST;	/* Cannot create as new file */
 				}
 			}
@@ -3959,6 +4032,7 @@ FRESULT f_read (
 	UINT* br	/* Number of bytes read */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD clst;
@@ -4065,6 +4139,7 @@ FRESULT f_write (
 	UINT* bw			/* Number of bytes written */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD clst;
@@ -4183,6 +4258,7 @@ FRESULT f_sync (
 	FIL* fp		/* Open file to be synced */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD tm;
@@ -4265,6 +4341,7 @@ FRESULT f_close (
 	FIL* fp		/* Open file to be closed */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 
@@ -4303,6 +4380,7 @@ FRESULT f_chdrive (
 	const TCHAR* path		/* Drive number to set */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int vol;
 
 
@@ -4320,6 +4398,7 @@ FRESULT f_chdir (
 	const TCHAR* path	/* Pointer to the directory path */
 )
 {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #if FF_STR_VOLUME_ID == 2
 	UINT i;
 #endif
@@ -4383,6 +4462,7 @@ FRESULT f_getcwd (
 	UINT len		/* Size of buff in unit of TCHAR */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	DIR dj;
 	FATFS *fs;
@@ -4485,6 +4565,7 @@ FRESULT f_lseek (
 	FSIZE_t ofs		/* File pointer from top of file */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD clst, bcs;
@@ -4649,6 +4730,7 @@ FRESULT f_opendir (
 	const TCHAR* path	/* Pointer to the directory path */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DEF_NAMBUF
@@ -4714,6 +4796,7 @@ FRESULT f_closedir (
 	DIR *dp		/* Pointer to the directory object to be closed */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 
@@ -4745,6 +4828,7 @@ FRESULT f_readdir (
 	FILINFO* fno		/* Pointer to file information to return */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DEF_NAMBUF
@@ -4781,6 +4865,7 @@ FRESULT f_findnext (
 	FILINFO* fno	/* Pointer to the file information structure */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 
 
@@ -4808,6 +4893,7 @@ FRESULT f_findfirst (
 	const TCHAR* pattern	/* Pointer to the matching pattern */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 
 
@@ -4833,6 +4919,7 @@ FRESULT f_stat (
 	FILINFO* fno		/* Pointer to file information to return */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	DIR dj;
 	DEF_NAMBUF
@@ -4869,6 +4956,7 @@ FRESULT f_getfree (
 	FATFS** fatfs		/* Pointer to return pointer to corresponding filesystem object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD nfree, clst, stat;
@@ -4963,6 +5051,7 @@ FRESULT f_truncate (
 	FIL* fp		/* Pointer to the file object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD ncl;
@@ -5013,6 +5102,7 @@ FRESULT f_unlink (
 	const TCHAR* path		/* Pointer to the file or directory path */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj, sdj;
@@ -5107,6 +5197,7 @@ FRESULT f_mkdir (
 	const TCHAR* path		/* Pointer to the directory path */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj;
@@ -5192,6 +5283,7 @@ FRESULT f_rename (
 	const TCHAR* path_new	/* Pointer to the new name */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR djn = {0}, djo = {0};
@@ -5303,6 +5395,7 @@ FRESULT f_chmod (
 	BYTE mask			/* Attribute mask to change */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj;
@@ -5349,6 +5442,7 @@ FRESULT f_utime (
 	const FILINFO* fno	/* Pointer to the timestamp to be set */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj;
@@ -5397,6 +5491,7 @@ FRESULT f_getlabel (
 	DWORD* vsn			/* Variable to store the volume serial number */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj;
@@ -5496,6 +5591,7 @@ FRESULT f_setlabel (
 	const TCHAR* label	/* Volume label to set with heading logical drive number */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DIR dj;
@@ -5622,6 +5718,7 @@ FRESULT f_expand (
 	BYTE opt		/* Operation mode 0:Find and prepare or 1:Find and allocate */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD n, clst, stcl, scl, ncl, tcl, lclst;
@@ -5719,6 +5816,7 @@ FRESULT f_forward (
 	UINT* bf						/* Pointer to number of bytes forwarded */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FRESULT res;
 	FATFS *fs;
 	DWORD clst;
@@ -5797,6 +5895,7 @@ static FRESULT create_partition (
 	BYTE *buf			/* Working buffer for a sector */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT i, cy;
 	LBA_t sz_drv;
 	DWORD sz_drv32, nxt_alloc32, sz_part32;
@@ -5940,6 +6039,7 @@ FRESULT f_mkfs (
 	UINT len				/* Size of working buffer [byte] */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};	/* Cluster size boundary for FAT volume (4Ks unit) */
 	static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};	/* Cluster size boundary for FAT32 volume (128Ks unit) */
 	static const MKFS_PARM defopt = {FM_ANY, 0, 0, 0, 0};	/* Default parameter */
@@ -6145,6 +6245,7 @@ FRESULT f_mkfs (
 		sect = b_data; nsect = (szb_bit + ss - 1) / ss;	/* Start of bitmap and number of bitmap sectors */
 		nbit = clen[0] + clen[1] + clen[2];				/* Number of clusters in-use by system (bitmap, up-case and root-dir) */
 		do {
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			memset(buf, 0, sz_buf * ss);				/* Initialize bitmap buffer */
 			for (i = 0; nbit != 0 && i / 8 < sz_buf * ss; buf[i / 8] |= 1 << (i % 8), i++, nbit--) ;	/* Mark used clusters */
 			n = (nsect > sz_buf) ? sz_buf : nsect;		/* Write the buffered data */
@@ -6443,6 +6544,7 @@ FRESULT f_fdisk (
 	void* work			/* Pointer to the working buffer (null: use heap memory) */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	BYTE *buf = (BYTE*)work;
 	DSTATUS stat;
 	FRESULT res;
@@ -6483,6 +6585,7 @@ TCHAR* f_gets (
 	FIL* fp			/* Pointer to the file object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int nc = 0;
 	TCHAR *p = buff;
 	BYTE s[4];
@@ -6615,6 +6718,7 @@ TCHAR* f_gets (
 /* Output buffer and work area */
 
 typedef struct {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	FIL *fp;		/* Ptr to the writing file */
 	int idx, nchr;	/* Write index of buf[] (-1:error), number of encoding units written */
 #if FF_USE_LFN && FF_LFN_UNICODE == 1
@@ -6631,6 +6735,7 @@ typedef struct {
 
 static void putc_bfd (putbuff* pb, TCHAR c)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT n;
 	int i, nc;
 #if FF_USE_LFN && FF_LFN_UNICODE
@@ -6671,6 +6776,7 @@ static void putc_bfd (putbuff* pb, TCHAR c)
 			if (((BYTE)c & 0xF8) == 0xF0) pb->ct = 3;	/* 4-byte sequence? */
 			return;										/* Wrong leading byte (discard it) */
 		} else {				/* In the multi-byte sequence */
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			if (((BYTE)c & 0xC0) != 0x80) {	/* Broken sequence? */
 				pb->ct = 0; continue;		/* Discard the sequense */
 			}
@@ -6762,6 +6868,7 @@ static void putc_bfd (putbuff* pb, TCHAR c)
 
 static int putc_flush (putbuff* pb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT nw;
 
 	if (   pb->idx >= 0	/* Flush buffered characters to the file */
@@ -6775,6 +6882,7 @@ static int putc_flush (putbuff* pb)
 
 static void putc_init (putbuff* pb, FIL* fp)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	memset(pb, 0, sizeof (putbuff));
 	pb->fp = fp;
 }
@@ -6786,6 +6894,7 @@ int f_putc (
 	FIL* fp		/* Pointer to the file object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	putbuff pb;
 
 
@@ -6806,6 +6915,7 @@ int f_puts (
 	FIL* fp				/* Pointer to the file object */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	putbuff pb;
 
 
@@ -6825,6 +6935,7 @@ int f_puts (
 
 static int ilog10 (double n)	/* Calculate log10(n) in integer output */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int rv = 0;
 
 	while (n >= 10) {	/* Decimate digit in right shift */
@@ -6847,6 +6958,7 @@ static int ilog10 (double n)	/* Calculate log10(n) in integer output */
 
 static double i10x (int n)	/* Calculate 10^n in integer input */
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	double rv = 1;
 
 	while (n > 0) {		/* Left shift */
@@ -6874,6 +6986,7 @@ static void ftoa (
 	TCHAR fmt	/* Notation */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int d;
 	int e = 0, m = 0;
 	char sign = 0;
@@ -6950,6 +7063,7 @@ int f_printf (
 	...					/* Optional arguments... */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list arp;
 	putbuff pb;
 	UINT i, j, w, f, r;
@@ -7116,6 +7230,7 @@ FRESULT f_setcp (
 	WORD cp		/* Value to be set as active code page */
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static const WORD       validcp[22] = {  437,   720,   737,   771,   775,   850,   852,   855,   857,   860,   861,   862,   863,   864,   865,   866,   869,   932,   936,   949,   950, 0};
 	static const BYTE *const tables[22] = {Ct437, Ct720, Ct737, Ct771, Ct775, Ct850, Ct852, Ct855, Ct857, Ct860, Ct861, Ct862, Ct863, Ct864, Ct865, Ct866, Ct869, Dc932, Dc936, Dc949, Dc950, 0};
 	UINT i;

@@ -20,6 +20,7 @@
 #include <IoLib.h>
 #include <RegisterFilterLib.h>
 #include "lib.h"
+#include "log.h"
 
 typedef enum {
   PtpInterfaceTis,
@@ -52,6 +53,7 @@ Tpm2IsPtpPresence (
   IN VOID *Reg
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT8                             RegRead;
 
   RegRead = MmioRead8 ((UINTN)Reg);
@@ -83,6 +85,7 @@ PtpCrbWaitRegisterBits (
   IN      UINT32                    TimeOut
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   UINT32                            RegRead;
   UINT32                            WaitTime;
 
@@ -111,6 +114,7 @@ PtpCrbRequestUseTpm (
   IN      PTP_CRB_REGISTERS_PTR      CrbReg
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   UINT32                            LocalityState;
 
@@ -160,6 +164,7 @@ PtpCrbTpmCommand (
   IN OUT UINT32                     *SizeOut
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_STATUS                        Status;
   UINT32                            Index;
   UINT32                            TpmOutSize;
@@ -331,6 +336,7 @@ Tpm2GetPtpInterface (
   IN VOID *Register
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_CRB_INTERFACE_IDENTIFIER  InterfaceId;
   PTP_FIFO_INTERFACE_CAPABILITY InterfaceCapability;
 
@@ -367,6 +373,7 @@ DumpPtpInfo (
   IN VOID *Register
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_CRB_INTERFACE_IDENTIFIER  InterfaceId;
   PTP_FIFO_INTERFACE_CAPABILITY InterfaceCapability;
   UINT8                         StatusEx;
@@ -458,6 +465,7 @@ Tpm2SubmitCommand (
   IN UINT8             *OutputParameterBlock
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
@@ -497,6 +505,7 @@ Tpm2RequestUseTpm (
   VOID
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
@@ -523,6 +532,7 @@ IsSupportedTpmPresent (
   VOID
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE  PtpInterface;
 
   PtpInterface = Tpm2GetPtpInterface ((VOID *) (UINTN) PcdGet64 (PcdTpmBaseAddress));
@@ -552,6 +562,7 @@ UpdateAcpiInterfaceInfo (
   IN EFI_TPM2_ACPI_TABLE *Tpm2Acpi
   )
 {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   PTP_INTERFACE_TYPE              PtpInterface;
   EFI_TPM2_ACPI_CONTROL_AREA     *ControlArea;
 

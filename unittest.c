@@ -41,6 +41,7 @@
 #include "unittest.h"
 #include "blobstore.h"
 #include "watchdog.h"
+#include "log.h"
 
 /*
  * This is the hardware second timeout value
@@ -49,6 +50,7 @@
 
 static VOID test_watchdog(VOID)
 {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT32 timeout = 30;
 
@@ -69,6 +71,7 @@ static VOID test_watchdog(VOID)
 
 static VOID test_keys(VOID)
 {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const UINTN wait_s = 10;
         UINTN i;
         ui_events_t event;
@@ -89,6 +92,7 @@ static UINT8 fake_hash[] = {0x12, 0x34, 0x56, 0x78, 0x90, 0xAB};
 
 static VOID test_ux(VOID)
 {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         /* TODO: some method of programmatically verifying that these work */
         ux_prompt_user(RED_STATE_CODE, TRUE, BOOT_STATE_RED, NULL, 0);
         ux_prompt_user(RED_STATE_CODE, FALSE, BOOT_STATE_RED, NULL, 0);
@@ -120,6 +124,7 @@ static struct test_suite {
 
 VOID unittest_main(CHAR16 *testname)
 {
+        debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         BOOLEAN found = FALSE;
         UINTN i;
 
