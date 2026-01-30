@@ -35,6 +35,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include "timer.h"
+#include "log.h"
 
 #define BOOT_STAGE_FIRMWARE "FWS"
 #define BOOT_STAGE_OSLOADER_INIT "LIS"
@@ -63,6 +64,7 @@ typedef union
 static uint64_t __attribute__((unused,always_inline))
 __RDMSR (unsigned idx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	msr_t msr;
 
 	asm volatile ("rdmsr" : "=a" (msr.lo), "=d" (msr.hi) : "c" (idx));
@@ -72,6 +74,7 @@ __RDMSR (unsigned idx)
 static uint64_t __attribute__((unused,always_inline))
 __RDTSC (void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t lo, hi;
 
 	asm volatile ("rdtsc" : "=a" (lo), "=d" (hi));
@@ -85,6 +88,7 @@ uint64_t rdtsc(void) {
 /* return mhz */
 uint32_t get_cpu_freq(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t cpu_freq;
 	uint32_t max_nb_ratio;
 	msr_t platform_info;
@@ -98,6 +102,7 @@ uint32_t get_cpu_freq(void)
 
 uint32_t get_tsc_mhz(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint32_t tsc_mhz = 0;
 	uint32_t reg[4] = {0};
 
@@ -111,6 +116,7 @@ uint32_t get_tsc_mhz(void)
 
 uint32_t boottime_in_msec(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	uint64_t tick, bt_us;
 	uint32_t bt_ms;
 	uint32_t tsc_mhz;
@@ -130,6 +136,7 @@ uint32_t boottime_in_msec(void)
 
 void set_boottime_stamp(int num)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if ((num < 0) || (num >= TM_POINT_LAST) || (time_stamp == FALSE))
 		return;
 

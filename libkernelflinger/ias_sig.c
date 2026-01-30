@@ -33,6 +33,7 @@
 #include <openssl/obj_mac.h>
 
 #include "lib.h"
+#include "log.h"
 
 #define IASS_MAGIC		0x53534149 /* "IASS" */
 #define IASS_VERSION		1
@@ -77,6 +78,7 @@ typedef struct ias_sig {
 EFI_STATUS decode_boot_signature(const unsigned char *data, long size,
 				 struct boot_signature *bs)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	ias_sig_t *sig = (ias_sig_t *)data;
 	UINTN len;

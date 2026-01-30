@@ -64,6 +64,7 @@ struct blobstore {
 
 unsigned int hash_blob_key(char *key, enum blobtype type, unsigned int hsize)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned int hash_val;
 
 	/* based on libcutils hashmapHash() algorithm */
@@ -78,6 +79,7 @@ unsigned int hash_blob_key(char *key, enum blobtype type, unsigned int hsize)
  * checks out */
 struct blobstore *blobstore_get(void *mem, unsigned int size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct blobstore *bs;
 
 	bs = (struct blobstore *)mem;
@@ -106,6 +108,7 @@ struct blobstore *blobstore_get(void *mem, unsigned int size)
 int blobstore_get_item(struct blobstore *bs, char *key, enum blobtype type,
 		       void **data, unsigned int *size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	unsigned char *start;
 	unsigned int hash;
 	unsigned int offset;

@@ -35,6 +35,7 @@
 #include "rpmb_storage.h"
 #include "life_cycle.h"
 #include "security.h"
+#include "log.h"
 
 #ifdef RPMB_STORAGE
 
@@ -73,6 +74,7 @@ typedef struct _seed_entry {
 
 EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	image_boot_param_t *image_boot_param = (image_boot_param_t *)boot_param;
 	seed_list_t *SeedListCmdlinePtr = NULL;
 	seed_entry_t *SeedEntryData = NULL;
@@ -142,6 +144,7 @@ EFI_STATUS parse_rpmb_key_from_boot_param(IN VOID * boot_param)
 
 EFI_STATUS set_device_security_info(IN VOID * vsbl_cmdline_seed_rpmb)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT32 *size_structure = NULL;
 	EFI_STATUS ret = EFI_SUCCESS;
 
@@ -164,12 +167,14 @@ EFI_STATUS set_device_security_info(IN VOID * vsbl_cmdline_seed_rpmb)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID * security_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 	EFI_STATUS ret;
 	UINT8 value;
@@ -207,6 +212,7 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
 	debug(L"Setting platform secure boot to %d", secure);
