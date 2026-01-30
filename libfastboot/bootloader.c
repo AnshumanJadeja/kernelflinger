@@ -39,6 +39,7 @@
 #include "text_parser.h"
 #include "uefi_utils.h"
 #include "slot.h"
+#include "log.h"
 
 #define ESP_TMP_PART		ESP_LABEL L"2"
 #define BOOTLOADER_TMP_PART	BOOTLOADER_LABEL L"2"
@@ -60,6 +61,7 @@ static UINTN load_option_nb;
 
 static void free_load_options()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	if (!load_options || load_options == DEFAULT_LOAD_OPTIONS)
@@ -131,6 +133,7 @@ static EFI_STATUS add_load_option(CHAR8 *description, CHAR8 *path, CHAR8 *opt_pa
 
 static EFI_STATUS parse_line(char *line, VOID *context _unused)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *description = (CHAR8 *)line;
 	CHAR8 *path;
 	CHAR8 *opt_params;
@@ -152,6 +155,7 @@ static EFI_STATUS parse_line(char *line, VOID *context _unused)
 
 static EFI_STATUS read_load_options(EFI_HANDLE handle)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_FILE_IO_INTERFACE *file_io_interface;
 	VOID *data;
@@ -200,6 +204,7 @@ static EFI_STATUS read_load_options(EFI_HANDLE handle)
 static EFI_STATUS flash_efi_partition(CHAR16 *label, CHAR16 *tmp_part,
 		CHAR16 *uefi_load_path, BOOLEAN is_load_options, VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret, erase_ret;
 	EFI_HANDLE handle;
 	UINTN i;
@@ -268,6 +273,7 @@ exit:
  */
 static EFI_STATUS flash_bootloader_verify(CHAR16 *label, VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID type;
 	EFI_STATUS ret;
 
@@ -287,17 +293,20 @@ static EFI_STATUS flash_bootloader_verify(CHAR16 *label, VOID *data, UINTN size)
  */
 EFI_STATUS flash_esp(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_efi_partition(ESP_LABEL, ESP_TMP_PART,
 				DEFAULT_UEFI_LOAD_PATH, TRUE, data, size);
 }
 
 EFI_STATUS flash_bootloader_a(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_bootloader_verify(BOOTLOADER_A_LABEL, data, size);
 }
 
 EFI_STATUS flash_bootloader_b(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return flash_bootloader_verify(BOOTLOADER_B_LABEL, data, size);
 }
 
@@ -308,6 +317,7 @@ EFI_STATUS flash_bootloader_b(VOID *data, UINTN size)
  */
 EFI_STATUS flash_bootloader(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID type;
 	CHAR16 *label;

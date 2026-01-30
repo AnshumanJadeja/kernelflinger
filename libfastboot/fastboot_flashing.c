@@ -41,11 +41,13 @@
 #include "intel_variables.h"
 #include "android.h"
 #include "tpm2_security.h"
+#include "log.h"
 
 static cmdlist_t cmdlist;
 
 EFI_STATUS fastboot_flashing_publish(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef FASTBOOT_FOR_NON_ANDROID
 	return EFI_SUCCESS;
 #endif
@@ -64,6 +66,7 @@ EFI_STATUS fastboot_flashing_publish(void)
 
 EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	/* "Eng" builds skip all these security policies */
@@ -177,6 +180,7 @@ EFI_STATUS change_device_state(enum device_state new_state, BOOLEAN interactive)
 
 static BOOLEAN is_already_in_state(enum device_state state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (get_current_state() == state && !device_is_provisioning()) {
 		error(L"Device is already in the required state.");
 		fastboot_okay("");
@@ -200,6 +204,7 @@ static void cmd_lock(__attribute__((__unused__)) INTN argc,
 
 static BOOLEAN frp_allows_unlock()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINT8 persist_byte;
 	struct gpt_partition_interface gparti;
 	EFI_STATUS ret;
@@ -234,6 +239,7 @@ enum unlock_ability {
 
 static enum unlock_ability get_unlock_ability(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (device_is_provisioning())
 		return UNLOCK_ALLOWED;
 
@@ -268,6 +274,7 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 #endif
 		change_device_state(UNLOCKED, TRUE);
 	} else {
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 /*#ifdef USER
 		fastboot_fail("Unlocking device not allowed");
 #else*/
@@ -275,6 +282,7 @@ static void cmd_unlock(__attribute__((__unused__)) INTN argc,
 		if (user_build) {
 			fastboot_fail("Unlocking device not allowed");
 		} else {
+			debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 			fastboot_info("Unlock protection is set");
 			fastboot_info("Unlocking anyway since this is not a User build");
 			change_device_state(UNLOCKED, TRUE);
@@ -309,6 +317,7 @@ static void cmd_get_unlock_ability(__attribute__((__unused__)) INTN argc,
 
 static void cmd_flashing(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (argc < 2) {
 		fastboot_fail("Invalid parameter");
 		return;
@@ -353,5 +362,6 @@ EFI_STATUS fastboot_flashing_init(void)
 
 void fastboot_flashing_free()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_cmdlist_unregister(&cmdlist);
 }
