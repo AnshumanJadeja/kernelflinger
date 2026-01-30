@@ -38,6 +38,7 @@
 #include "uefi_utils.h"
 #include "security_interface.h"
 #include "crashdump.h"
+#include "log.h"
 
 BOOLEAN tee_tpm = 0;
 BOOLEAN andr_tpm = 0;
@@ -54,11 +55,13 @@ static UINT64 cur_offset;
 
 void __attribute__((weak)) part_select(int num)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	(void)num;
 }
 
 EFI_STATUS flash_write(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!gparti.bio)
@@ -84,6 +87,7 @@ EFI_STATUS flash_write(VOID *data, UINTN size)
 
 EFI_STATUS flash_write_as_block(VOID *data, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 *aligned_buf;
 	VOID *buf;
@@ -115,6 +119,7 @@ out:
 
 EFI_STATUS crashdump_to_partition(EFI_GUID * uuid)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN nr_entries, key, entry_sz;
 	CHAR8 *mem_entries;
@@ -231,6 +236,7 @@ err:
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef __CRASH_DUMP
 	EFI_GUID dump_partition =  { 0xCAB9B00C, 0xCC1B, 0x4C0F, {0xB9, 0x32, 0x82, 0x92, 0x0D, 0xA5, 0x22, 0x51} };
 #endif

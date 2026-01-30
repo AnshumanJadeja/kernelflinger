@@ -37,6 +37,7 @@
 #include <smbios.h>
 
 #include "tcp.h"
+#include "log.h"
 
 /* TCP/IP structures  */
 static EFI_HANDLE tcp_handle;
@@ -84,6 +85,7 @@ static struct rx {
 
 static EFI_STATUS request_data(token_t *token, UINT32 max_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN size = min(max_size, (UINT32)RX_FRAG_SIZE);
 	EFI_TCP4_RECEIVE_DATA *data = token->token.Packet.RxData;
@@ -111,6 +113,7 @@ static EFI_STATUS request_data(token_t *token, UINT32 max_size)
 static void EFIAPI data_sent(__attribute__((__unused__)) EFI_EVENT evt,
 			     void *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	token_t *token = (token_t *)ctx;
 	EFI_TCP4_TRANSMIT_DATA *data = token->token.Packet.TxData;
 
@@ -127,6 +130,7 @@ static void EFIAPI data_sent(__attribute__((__unused__)) EFI_EVENT evt,
 
 static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	token_t *token = (token_t *)ctx;
 	EFI_TCP4_RECEIVE_DATA *data = token->token.Packet.RxData;
@@ -178,6 +182,7 @@ static void EFIAPI data_received(__attribute__((__unused__)) EFI_EVENT evt, void
 static void EFIAPI connection_accepted(__attribute__((__unused__)) EFI_EVENT evt,
 				       void *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_TCP4_LISTEN_TOKEN *token = (EFI_TCP4_LISTEN_TOKEN *)ctx;
 	EFI_STATUS ret;
 
@@ -226,6 +231,7 @@ static void EFIAPI connection_closed(__attribute__((__unused__)) EFI_EVENT evt,
 
 static void init_rx_tx_structures()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < MAX_TOKEN; i++) {
@@ -315,6 +321,7 @@ transmit:
 
 void close_events()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -407,6 +414,7 @@ EFI_STATUS tcp_start(UINT32 port, start_callback_t start_cb,
 		     data_callback_t rx_cb, data_callback_t tx_cb,
 		     EFI_IPv4_ADDRESS *station_address)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID tcp_srv_binding_guid = EFI_TCP4_SERVICE_BINDING_PROTOCOL;
 	EFI_HANDLE *handles;
 	UINTN nb_handle = 0;
@@ -488,6 +496,7 @@ err:
 
 EFI_STATUS tcp_write(void *buf, UINT32 size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	token_t *token;
 	EFI_TCP4_TRANSMIT_DATA *data;
@@ -514,6 +523,7 @@ EFI_STATUS tcp_write(void *buf, UINT32 size)
 
 EFI_STATUS tcp_read(void *buf, UINT32 size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
@@ -539,6 +549,7 @@ EFI_STATUS tcp_read(void *buf, UINT32 size)
 
 EFI_STATUS tcp_stop(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN index;
 
@@ -617,6 +628,7 @@ EFI_STATUS tcp_stop(void)
 EFI_STATUS tcp_run(UINT32 *state)
 
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!tcp_connection)
 		return EFI_SUCCESS;
 	if (state)
