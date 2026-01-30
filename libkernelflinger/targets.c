@@ -32,6 +32,7 @@
 
 #include <lib.h>
 #include <targets.h>
+#include "log.h"
 
 static struct target {
         enum boot_target bt;
@@ -60,6 +61,7 @@ static struct target {
 
 static struct target *find_entry(enum boot_target bt)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         UINTN i;
 
         for (i = 0; i < ARRAY_SIZE(TARGETS); i++)
@@ -71,6 +73,7 @@ static struct target *find_entry(enum boot_target bt)
 
 const CHAR16 *boot_target_name(enum boot_target bt)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         struct target *target = find_entry(bt);
         return target ? target->name : NULL;
 }
@@ -97,6 +100,7 @@ enum boot_target name_to_boot_target(const CHAR16 *str)
 
 EFI_STATUS reboot_to_target(enum boot_target bt, EFI_RESET_TYPE type)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const CHAR16 *name;
 
         if (bt == POWER_OFF) {

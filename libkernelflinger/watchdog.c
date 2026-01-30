@@ -34,6 +34,7 @@
 #include <lib.h>
 #include "watchdog.h"
 #include "protocol/tco_protocol.h"
+#include "log.h"
 
 #define TCO_OPT_DISABLED "iTCO_wdt.force_no_reboot=1"
 
@@ -55,6 +56,7 @@ BOOLEAN watchdog_disabled_from_cmdline(CHAR8 *cmdline)
 
 EFI_STATUS start_watchdog(UINT32 seconds)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_TCO_RESET_PROTOCOL *tco;
         EFI_STATUS ret;
 

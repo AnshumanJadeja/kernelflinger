@@ -32,6 +32,7 @@
 
 #include <lib.h>
 #include "storage.h"
+#include "log.h"
 
 #ifndef MSG_VIRTUAL_MEDIA_DP
 #define MSG_VIRTUAL_MEDIA_DP	0x20
@@ -39,6 +40,7 @@
 
 static EFI_DEVICE_PATH *get_virtual_media_device_path(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p))
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		    && DevicePathSubType(p) == MSG_VIRTUAL_MEDIA_DP)
@@ -76,6 +78,7 @@ static EFI_STATUS virtual_media_check_logical_unit(EFI_DEVICE_PATH *p, logical_u
 
 static BOOLEAN is_virtual_media(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_virtual_media_device_path(p) != NULL;
 }
 

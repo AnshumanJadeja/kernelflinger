@@ -69,6 +69,7 @@
 #include "lib.h"
 #include "timer.h"
 #include "vars.h"
+#include "log.h"
 
 
 EFI_HANDLE g_parent_image;

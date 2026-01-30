@@ -32,6 +32,7 @@
 
 #include "ivshmem.h"
 #include "qnx_guest_shm.h"
+#include "log.h"
 
 #define PCI_MAX_DEV_NUM     32
 #define PCI_MAX_FUNC_NUM    8

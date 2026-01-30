@@ -40,10 +40,12 @@
 #include "lib.h"
 #include "protocol/AcpiTableProtocol.h"
 #include "storage.h"
+#include "log.h"
 
 #ifdef AUTO_DISKBUS
 static CHAR8 csum(void *base, UINTN n)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *p;
 	CHAR8 sum;
 	UINTN bytesDone;
@@ -61,6 +63,7 @@ static CHAR8 csum(void *base, UINTN n)
 
 EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const CHAR8 *pattern = (CHAR8 *)"/0000:00:ff.ff/";
 	const UINTN diskbus_sufix_len = 6; /* Sample: "ff.ff/" or "ff.f//" */
 	UINTN pattern_len;
@@ -121,6 +124,7 @@ EFI_STATUS revise_diskbus_from_ssdt(CHAR8 *ssdt, UINTN ssdt_len)
 
 EFI_STATUS install_firststage_mount_aml(enum boot_target target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR8 *ssdt;
 	UINTN ssdt_len;

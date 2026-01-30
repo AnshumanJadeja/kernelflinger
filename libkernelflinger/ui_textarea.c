@@ -37,6 +37,7 @@
 #include <lib.h>
 
 #include "ui.h"
+#include "log.h"
 
 static EFI_STATUS ui_textarea_allocate_blt(ui_textarea_t *textarea)
 {

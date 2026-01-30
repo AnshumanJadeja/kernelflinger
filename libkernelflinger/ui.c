@@ -36,6 +36,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include <ui.h>
+#include "log.h"
 
 #define NOT_READY_USECS	(100 * 1000)
 

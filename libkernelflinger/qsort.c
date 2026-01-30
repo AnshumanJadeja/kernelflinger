@@ -28,6 +28,7 @@
  */
 
 #include <lib.h>
+#include "log.h"
 
 static __inline char *med3(char *, char *, char *, int (*)(const void *, const void *));
 static __inline void swapfunc(char *, char *, size_t, int);
@@ -79,6 +80,7 @@ med3(char *a, char *b, char *c, int (*cmp)(const void *, const void *))
 void
 qsort(void *aa, size_t n, size_t es, int (*cmp)(const void *, const void *))
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *pa, *pb, *pc, *pd, *pl, *pm, *pn;
 	int cmp_result, swaptype, swap_cnt;
 	size_t d, r;

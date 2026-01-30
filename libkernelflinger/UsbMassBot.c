@@ -18,6 +18,7 @@ WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #include "UsbIo.h"
 #include "protocol/DevicePath.h"
 #include "UsbMassBot.h"
+#include "log.h"
 
 static
 EFI_STATUS
@@ -26,6 +27,7 @@ UsbClearEndpointStall (
   IN UINT8 Address
   )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_USB_DEVICE_REQUEST    Request;
   EFI_STATUS                Status;
   UINT32                    CmdResult;
@@ -72,6 +74,7 @@ UsbBotInit (
   OUT VOID                      **Context OPTIONAL
   )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_PROTOCOL              *UsbBot;
   EFI_USB_INTERFACE_DESCRIPTOR  *Interface;
   EFI_USB_ENDPOINT_DESCRIPTOR   EndPoint;
@@ -184,6 +187,7 @@ UsbBotSendCommand (
   IN UINT8                    Lun
   )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_CBW               Cbw;
   EFI_STATUS                Status;
   UINT32                    Result;
@@ -265,6 +269,7 @@ UsbBotDataTransfer (
   IN UINT32                   Timeout
   )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   EFI_USB_ENDPOINT_DESCRIPTOR *Endpoint;
   EFI_STATUS                  Status;
   UINT32                      Result;
@@ -497,6 +502,7 @@ UsbBotResetDevice (
   IN  BOOLEAN                 ExtendedVerification
   )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   USB_BOT_PROTOCOL        *UsbBot;
   EFI_USB_DEVICE_REQUEST  Request;
   EFI_STATUS              Status;
