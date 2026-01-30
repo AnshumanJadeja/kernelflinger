@@ -36,6 +36,7 @@
 #include "timer.h"
 #include "acpi.h"
 #include "libavb.h"
+#include "log.h"
 //Global AvbOps data structure
 static AvbOps *ops = NULL;
 
@@ -58,6 +59,7 @@ AvbOps *avb_init(void)
 
 bool avb_update_stored_rollback_indexes_for_slot(AvbOps* ops, AvbSlotVerifyData* slot_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         int n;
 
         for (n = 0; n < AVB_MAX_NUMBER_OF_ROLLBACK_INDEX_LOCATIONS; n++) {
@@ -109,6 +111,7 @@ EFI_STATUS prepend_slot_command_line(CHAR16 **cmdline16,
         enum boot_target boot_target,
         VBDATA *vb_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
 #ifndef DYNAMIC_PARTITIONS
         EFI_GUID system_uuid;
@@ -153,6 +156,7 @@ EFI_STATUS prepend_slot_command_line(CHAR16 **cmdline16,
 
 UINTN get_vb_cmdlen(VBDATA *vb_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (vb_data && vb_data->cmdline)
                 return strlen(vb_data->cmdline);
         return 0;
@@ -160,6 +164,7 @@ UINTN get_vb_cmdlen(VBDATA *vb_data)
 
 char *get_vb_cmdline(VBDATA *vb_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         return vb_data->cmdline;
 }
 
@@ -168,6 +173,7 @@ EFI_STATUS android_query_image_from_avb_result(
                 IN const char *label,
                 OUT VOID **image)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         AvbPartitionData *pdata = NULL;
 
         for (size_t n = 0; n < slot_data->num_loaded_partitions; ++n) {
@@ -193,6 +199,7 @@ EFI_STATUS get_avb_flow_result(
                 IN AvbABFlowResult flow_result,
                 IN OUT UINT8 *boot_state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (!slot_data || !boot_state)
                 return EFI_INVALID_PARAMETER;
 
@@ -239,6 +246,7 @@ EFI_STATUS get_avb_result(
                 IN AvbSlotVerifyResult verify_result,
                 IN OUT UINT8 *boot_state)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         if (!slot_data || !boot_state)
                 return EFI_INVALID_PARAMETER;
 
@@ -280,6 +288,7 @@ EFI_STATUS get_avb_result(
 
 EFI_STATUS android_install_acpi_table_avb(AvbSlotVerifyData *slot_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         const char *acpi_part_names[] = {
 #ifdef USE_ACPI
                 "acpi",
@@ -330,6 +339,7 @@ EFI_STATUS android_image_load_partition_avb(
                 IN OUT UINT8* boot_state,
                 AvbSlotVerifyData **slot_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret = EFI_SUCCESS;
         AvbOps *ops;
         const char *slot_suffix = "";
@@ -404,6 +414,7 @@ EFI_STATUS android_image_load_partition_avb_ab(
                 IN OUT UINT8* boot_state,
                 AvbSlotVerifyData **slot_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef USE_SLOT
         return android_image_load_partition_avb(label, bootimage_p, boot_state, slot_data);
 #else

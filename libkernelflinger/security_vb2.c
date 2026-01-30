@@ -31,10 +31,12 @@
  */
 #include "security.h"
 #include "security_vb2.h"
+#include "log.h"
 
 EFI_STATUS rot_pub_key_sha256(IN VBDATA *vb_data,
                         OUT UINT8 **hash_p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	const uint8_t *vbmeta_pub_key;
 	UINTN vbmeta_pub_key_len;

@@ -36,6 +36,7 @@
 #include "protocol/NvmExpressHci.h"
 #include "protocol/DevicePath.h"
 #include "protocol/NvmExpressPassthru.h"
+#include "log.h"
 
 #define EFI_TIMER_PERIOD_SECONDS(Seconds)     ((UINT64)(Seconds) * 10000000)
 #define NVME_GENERIC_TIMEOUT                  (EFI_TIMER_PERIOD_SECONDS(5))
@@ -60,6 +61,7 @@ typedef struct {
 
 EFI_STATUS get_nvme_passthru(EFI_DEVICE_PATH *FilePath, VOID **Interface)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_GUID gEfiNvmExpressPassThruProtocolGuid = EFI_NVM_EXPRESS_PASS_THRU_PROTOCOL_GUID;
 	EFI_STATUS              Status;
 	EFI_HANDLE              Device;
@@ -78,6 +80,7 @@ EFI_STATUS get_nvme_passthru(EFI_DEVICE_PATH *FilePath, VOID **Interface)
 
 static NVME_NAMESPACE_DEVICE_PATH *get_nvme_device_path(EFI_DEVICE_PATH *p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	for (; !IsDevicePathEndType(p); p = NextDevicePathNode(p)) {
 		if (DevicePathType(p) == MESSAGING_DEVICE_PATH
 		   && DevicePathSubType(p) == MSG_NVME_NAMESPACE_DP)
@@ -89,6 +92,7 @@ static NVME_NAMESPACE_DEVICE_PATH *get_nvme_device_path(EFI_DEVICE_PATH *p)
 
 static BOOLEAN is_nvme_supported_write_zeros(EFI_NVM_EXPRESS_PASS_THRU_PROTOCOL *NvmePassthru)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	NVME_ADMIN_CONTROLLER_DATA CtrlData;
 
 	EFI_NVM_EXPRESS_PASS_THRU_COMMAND_PACKET CommandPacket;
@@ -135,6 +139,7 @@ EFI_STATUS nvme_erase_blocks_impl(
 	UINT32 Blocks
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_NVM_EXPRESS_PASS_THRU_COMMAND_PACKET CommandPacket;
 	EFI_NVM_EXPRESS_COMMAND                  Command;
 	EFI_NVM_EXPRESS_COMPLETION               Completion;
@@ -181,6 +186,7 @@ static EFI_STATUS nvme_erase_blocks(
 	EFI_LBA end
 )
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_NVM_EXPRESS_PASS_THRU_PROTOCOL *NvmePassthru;
 	NVME_NAMESPACE_DEVICE_PATH *nvme_dp;
 	EFI_DEVICE_PATH *dp;
@@ -232,6 +238,7 @@ static EFI_STATUS nvme_erase_blocks(
 
 static EFI_STATUS nvme_check_logical_unit(ATTR_UNUSED EFI_DEVICE_PATH *p, logical_unit_t log_unit)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return log_unit == LOGICAL_UNIT_USER ? EFI_SUCCESS : EFI_UNSUPPORTED;
 }
 

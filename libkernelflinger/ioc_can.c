@@ -36,9 +36,11 @@
 #include <lib.h>
 #include "ioc_can.h"
 #include "ioc_uart_protocol.h"
+#include "log.h"
 
 EFI_STATUS notify_ioc_ready()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;
 	IOC_UART_PROTOCOL *iocprotocol = NULL;
@@ -60,6 +62,7 @@ EFI_STATUS notify_ioc_ready()
 
 EFI_STATUS set_suppress_heart_beat_timeout(UINT32 timeout)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	IOC_UART_PROTOCOL *iocprotocol = NULL;
 	EFI_GUID guid = EFI_IOC_UART_PROTOCOL_GUID;

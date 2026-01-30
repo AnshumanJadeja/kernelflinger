@@ -36,6 +36,7 @@
 #include "protocol.h"
 #include "protocol/GpioProtocol.h"
 #include "smbios.h"
+#include "log.h"
 
 EFI_GUID gEDKIIGPIOProtocolGuid = EDKII_GPIO_PROTOCOL_GUID;
 
@@ -59,6 +60,7 @@ static EDKII_GPIO_PROTOCOL *get_gpio_device()
 /* get max GPIO count */
 EFI_STATUS gpio_get_max_count(UINT32 *count)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -75,6 +77,7 @@ EFI_STATUS gpio_get_max_count(UINT32 *count)
 /* get gpio pin mode */
 EFI_STATUS get_gpio_pin_mode(UINT32 PinNum, PAD_MODE *mode)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -91,6 +94,7 @@ EFI_STATUS get_gpio_pin_mode(UINT32 PinNum, PAD_MODE *mode)
 /* set gpio pin mode */
 EFI_STATUS set_gpio_pin_mode(UINT32 PinNum, PAD_MODE mode)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -107,6 +111,7 @@ EFI_STATUS set_gpio_pin_mode(UINT32 PinNum, PAD_MODE mode)
 /* get gpio pin direction */
 EFI_STATUS get_gpio_pin_dir(UINT32 PinNum, GPIO_DIRECTION *dir)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -123,6 +128,7 @@ EFI_STATUS get_gpio_pin_dir(UINT32 PinNum, GPIO_DIRECTION *dir)
 /* set gpio pin direction */
 EFI_STATUS set_gpio_pin_dir(UINT32 PinNum, GPIO_DIRECTION dir)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -139,6 +145,7 @@ EFI_STATUS set_gpio_pin_dir(UINT32 PinNum, GPIO_DIRECTION dir)
 /* get gpio pin level */
 EFI_STATUS get_gpio_pin_level(UINT32 PinNum, GPIO_LEVEL *level)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 
@@ -155,6 +162,7 @@ EFI_STATUS get_gpio_pin_level(UINT32 PinNum, GPIO_LEVEL *level)
 /* set gpio pin level */
 EFI_STATUS set_gpio_pin_level(UINT32 PinNum, GPIO_LEVEL level)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         EDKII_GPIO_PROTOCOL *gpio_device = NULL;
 

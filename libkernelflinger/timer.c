@@ -35,6 +35,7 @@
 #include <efilib.h>
 #include <lib.h>
 #include "timer.h"
+#include "log.h"
 
 #define BOOT_STAGE_FIRMWARE "FWS"
 #define BOOT_STAGE_OSLOADER_INIT "LIS"

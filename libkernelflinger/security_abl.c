@@ -37,6 +37,7 @@
 #include "rpmb_storage.h"
 #include "life_cycle.h"
 #include "security.h"
+#include "log.h"
 
 #ifdef RPMB_STORAGE
 #define SECURITY_ABL_SEED_LEN 32
@@ -63,6 +64,7 @@
 
 EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_STATUS ret;
         UINT8 serial[MMC_PROD_NAME_WITH_PSN_LEN] = {0};
         char *serialno;
@@ -102,6 +104,7 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
  EFI_STATUS set_device_security_info(IN VOID *security_data)
  {
+ 	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
  	EFI_STATUS ret;
 	device_sec_info_t *dev_sec;
 	UINT8 rpmb_key[SECURITY_ABL_SEED_MAX_ENTRIES * RPMB_KEY_SIZE];
@@ -142,12 +145,14 @@ EFI_STATUS derive_rpmb_key_with_seed(IN VOID *seed, OUT VOID *rpmb_key)
 
 EFI_STATUS set_device_security_info(__attribute__((unused)) IN VOID *security_data)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return EFI_UNSUPPORTED;
 }
 #endif
 
 BOOLEAN is_platform_secure_boot_enabled(VOID)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
         EFI_STATUS ret;
         UINT8 value;
@@ -186,6 +191,7 @@ BOOLEAN is_eom_and_secureboot_enabled(VOID)
 
 EFI_STATUS set_platform_secure_boot(UINT8 secure)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
         EFI_GUID global_guid = EFI_GLOBAL_VARIABLE;
 
         debug(L"Setting abl secure boot to %d", secure);
