@@ -36,6 +36,7 @@
  */
 
 #include "avb_sha.h"
+#include "log.h"
 
 #define SHFR(x, n) (x >> n)
 #define ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
@@ -113,6 +114,7 @@ static const uint32_t sha256_k[64] = {
 
 /* SHA-256 implementation */
 void avb_sha256_init(AvbSHA256Ctx* ctx) {
+    debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef UNROLL_LOOPS
   int i;
   for (i = 0; i < 8; i++) {
@@ -136,6 +138,7 @@ void avb_sha256_init(AvbSHA256Ctx* ctx) {
 static void SHA256_transform(AvbSHA256Ctx* ctx,
                              const uint8_t* message,
                              size_t block_nb) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t w[64];
   uint32_t wv[8];
   uint32_t t1, t2;
@@ -333,6 +336,7 @@ static void SHA256_transform(AvbSHA256Ctx* ctx,
 }
 
 void avb_sha256_update(AvbSHA256Ctx* ctx, const uint8_t* data, size_t len) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t block_nb;
   size_t new_len, rem_len, tmp_len;
   const uint8_t* shifted_data;
@@ -364,6 +368,7 @@ void avb_sha256_update(AvbSHA256Ctx* ctx, const uint8_t* data, size_t len) {
 }
 
 uint8_t* avb_sha256_final(AvbSHA256Ctx* ctx) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t block_nb;
   size_t pm_len;
   uint64_t len_b;

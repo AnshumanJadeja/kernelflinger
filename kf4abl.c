@@ -62,6 +62,7 @@
 #include "storage.h"
 #include "acpi.h"
 #include "ux.h"
+#include "log.h"
 
 typedef union {
 	uint32_t raw;
@@ -80,6 +81,7 @@ static CHAR8 cmd_buf[MAX_CMD_BUF];
 #ifdef CRASHMODE_USE_ADB
 static EFI_STATUS enter_crashmode(enum boot_target *target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 #ifdef USER
@@ -110,6 +112,7 @@ static EFI_STATUS enter_crashmode(enum boot_target *target)
 #ifndef __FORCE_FASTBOOT
 static enum boot_target check_bcb(CHAR16 **target_path, BOOLEAN *oneshot)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct bootloader_message bcb;
 	CHAR16 *target = NULL;
@@ -168,6 +171,7 @@ out:
 
 static EFI_STATUS process_bootimage(void *bootimage, UINTN imagesize)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VBDATA *param = NULL;
 	UINT8 boot_state = BOOT_STATE_GREEN;
@@ -305,6 +309,7 @@ fail:
 
 static EFI_STATUS enter_fastboot_mode(enum boot_target *target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -374,6 +379,7 @@ static union bootMode
 
 static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UINTN max_cmd_size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	enum boot_target target = FASTBOOT;
 	static EFI_LOADED_IMAGE *limg;
@@ -389,6 +395,7 @@ static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UIN
 
 	enum CmdType
 	{
+		debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 		RESET,
 		BOOT_TARGET,
 		BOOT,
@@ -572,6 +579,7 @@ static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UIN
 #endif //RPMB_STORAGE
 				/* Parse "ABL.secureboot=x" */
 				case SECUREBOOT: {
+					debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT8 val;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
 					val = (UINT8)strtoul((char *)nptr, 0, 10);
@@ -583,10 +591,13 @@ static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UIN
 
 				/* Parse "ABL.status=x" */
 				case STATUS: {
+					debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					union
 					{
+						debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 						struct
 						{
+							debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 							UINT32 secure_boot:1;
 							UINT32 measured_boot:1;
 							UINT32 dci_debug_npk:1;
@@ -605,6 +616,7 @@ static enum boot_target check_command_line(EFI_HANDLE image, CHAR8 *cmd_buf, UIN
 
 				/* Parse "fw_boottsc=xxxxx" */
 				case FIRMWARE_BOOTTIME: {
+					debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 					UINT64 VALUE;
 					UINT32 cpu_khz;
 					nptr = (CHAR8 *)(arg8 + CmdlineArray[j].length);
@@ -663,6 +675,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 				VBDATA *vb_data,
 				CHAR8 *abl_cmd_line)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 #ifdef USER
 	/* per bootloaderequirements.pdf */
@@ -717,6 +730,7 @@ static EFI_STATUS start_boot_image(VOID *bootimage, UINT8 boot_state,
 
 EFI_STATUS avb_boot_android(enum boot_target boot_target, CHAR8 *abl_cmd_line)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	AvbOps *ops;
 	AvbSlotVerifyData *slot_data = NULL;
 #ifndef USE_SLOT
@@ -905,6 +919,7 @@ fail:
 #ifdef FASTBOOT_FOR_NON_ANDROID
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	void *efiimage, *bootimage;
 	UINTN imagesize;
@@ -927,6 +942,7 @@ EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 
 EFI_STATUS efi_main(EFI_HANDLE image, EFI_SYSTEM_TABLE *sys_table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	enum boot_target target;
 	EFI_STATUS ret;
 

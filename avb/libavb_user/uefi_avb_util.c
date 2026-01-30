@@ -23,12 +23,14 @@
  */
 
 #include "uefi_avb_util.h"
+#include "log.h"
 
 bool uefi_avb_utf8_to_ucs2(const uint8_t* utf8_data,
                            size_t utf8_num_bytes,
                            uint16_t* ucs2_data,
                            size_t ucs2_data_capacity_num_bytes,
                            size_t* out_ucs2_data_num_bytes) {
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t i8 = 0;
   uint32_t i2 = 0;
 

@@ -39,6 +39,7 @@
 #endif
 #include "reader.h"
 #include "sparse_format.h"
+#include "log.h"
 
 /* Memory dump shared functions.  These functions do not make any
    dynamic memory allocation to avoid RAM corruption during the
@@ -64,6 +65,7 @@ typedef struct memory_priv {
 
 static EFI_STATUS get_sorted_memory_map(memory_t *mem)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 descr_ver;
 	UINTN key, memmap_sz;
@@ -163,6 +165,7 @@ static EFI_STATUS memory_read_current(memory_t *mem, unsigned char **buf, UINT64
 
 static void memory_close(reader_ctx_t *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	((memory_t *)ctx->private)->is_in_used = FALSE;
 #ifndef __LP64__
 	pae_exit();
@@ -174,6 +177,7 @@ static void memory_close(reader_ctx_t *ctx)
 #define MAX_CHUNK_SIZE		(((UINT64)1 << (SIZEOF_TOTALSZ * 8)) - EFI_PAGE_SIZE)
 
 static struct ram_priv {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	memory_t m;
 
 	/* Sparse format */
@@ -236,6 +240,7 @@ static EFI_STATUS ram_add_chunk(reader_ctx_t *ctx, struct ram_priv *priv, UINT16
 
 static EFI_STATUS ram_build_chunks(reader_ctx_t *ctx, void *priv_p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct ram_priv *priv = priv_p;
 	EFI_STATUS ret = EFI_SUCCESS;
 	UINT16 type;
@@ -322,11 +327,13 @@ err:
 
 static EFI_STATUS ram_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return memory_open(ctx, &ram_priv.m, ram_build_chunks, argc, argv);
 }
 
 static EFI_STATUS ram_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct ram_priv *priv;
 	struct chunk_header *chunk;
 
@@ -369,6 +376,7 @@ static EFI_STATUS ram_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 /* VMCore reader */
 #pragma pack(1)
 enum elf_ident {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EI_MAG0,		/* File identification */
 	EI_MAG1,
 	EI_MAG2,
@@ -492,6 +500,7 @@ static struct vmcore_priv {
 static EFI_STATUS vmcore_build_header(reader_ctx_t *ctx, void *priv_p)
 
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct vmcore_priv *priv = priv_p;
 	UINTN i;
 	EFI_MEMORY_DESCRIPTOR *entry;
@@ -558,11 +567,13 @@ static EFI_STATUS vmcore_build_header(reader_ctx_t *ctx, void *priv_p)
 
 static EFI_STATUS vmcore_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return memory_open(ctx, &vmcore_priv.m, vmcore_build_header, argc, argv);
 }
 
 static EFI_STATUS vmcore_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct vmcore_priv *priv = ctx->private;
 
 	/* First byte, send the ELF headers */
@@ -604,6 +615,7 @@ static EFI_STATUS vmcore_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *le
 #define PART_READER_BUF_SIZE (10 * 1024 * 1024)
 
 struct part_priv {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct gpt_partition_interface gparti;
 	BOOLEAN need_more_data;
 	unsigned char buf[PART_READER_BUF_SIZE];
@@ -674,16 +686,19 @@ err:
 
 static EFI_STATUS part_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _part_open(ctx, argc, argv, LOGICAL_UNIT_USER);
 }
 
 static EFI_STATUS factory_part_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return _part_open(ctx, argc, argv, LOGICAL_UNIT_FACTORY);
 }
 
 static EFI_STATUS part_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct part_priv *priv = ctx->private;
 
@@ -713,6 +728,7 @@ static EFI_STATUS part_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 /* ACPI table reader */
 static EFI_STATUS acpi_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct ACPI_DESC_HEADER *table;
 
@@ -735,6 +751,7 @@ static EFI_STATUS acpi_open(reader_ctx_t *ctx, UINTN argc, char **argv)
 /* EFI variable reader */
 static EFI_STATUS efivar_find(CHAR16 *varname, EFI_GUID *guid_p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN bufsize, namesize;
 	CHAR16 *name;
@@ -878,6 +895,7 @@ static EFI_STATUS mbr_open(reader_ctx_t *ctx, UINTN argc,
 /* GPT-HEADER and GPT-FACTORY-HEADER */
 static EFI_STATUS _gpt_header_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN size;
 	EFI_STATUS ret;
 
@@ -914,6 +932,7 @@ static EFI_STATUS gpt_factory_header_open(reader_ctx_t *ctx, UINTN argc,
 /* GPT-PARTS and GPT-FACTORY-PARTS */
 static EFI_STATUS _gpt_parts_open(reader_ctx_t *ctx, logical_unit_t log_unit)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN size;
 	EFI_STATUS ret;
 
@@ -979,6 +998,7 @@ static EFI_STATUS bert_region_open(reader_ctx_t *ctx, UINTN argc,
 
 static EFI_STATUS bert_region_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct BERT_TABLE *bert_table = ctx->private;
 
 	/* First byte, send the BERR magic */
@@ -1011,6 +1031,7 @@ static void free_private(reader_ctx_t *ctx)
 }
 
 struct reader {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const char *name;
 	EFI_STATUS (*open)(reader_ctx_t *ctx, UINTN argc, char **argv);
 	EFI_STATUS (*read)(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len);
@@ -1034,6 +1055,7 @@ struct reader {
 
 EFI_STATUS reader_open(reader_ctx_t *ctx, char *args)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	INTN argc;
 	UINTN i;
@@ -1085,6 +1107,7 @@ EFI_STATUS reader_read(reader_ctx_t *ctx, unsigned char **buf, UINT64 *len)
 
 void reader_close(reader_ctx_t *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!ctx || !ctx->reader)
 		return;
 
