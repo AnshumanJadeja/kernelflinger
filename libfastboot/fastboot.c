@@ -59,6 +59,7 @@
 #include "timer.h"
 #include "android.h"
 #include "libavb_ab/libavb_ab.h"
+#include "log.h"
 
 /* size of "INFO" "OKAY" or "FAIL" */
 #define CODE_LENGTH 4
@@ -118,6 +119,7 @@ static const char *flash_locked_whitelist[] = {
 
 #define PRINT_INTERVAL (3)
 void printProgress(int done, int total) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
 	static BOOLEAN print_start = FALSE;
 	static int dot = 0;
@@ -175,6 +177,7 @@ struct download_buffer *fastboot_download_buffer(void)
 
 EFI_STATUS fastboot_set_command_buffer(char *buffer, UINTN size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!buffer)
 		return EFI_INVALID_PARAMETER;
 
@@ -186,6 +189,7 @@ EFI_STATUS fastboot_set_command_buffer(char *buffer, UINTN size)
 
 EFI_STATUS fastboot_register_into(cmdlist_t *list, struct fastboot_cmd *cmd)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	cmdlist_t node;
 
 	if (!list || !cmd)
@@ -205,11 +209,13 @@ EFI_STATUS fastboot_register_into(cmdlist_t *list, struct fastboot_cmd *cmd)
 
 EFI_STATUS fastboot_register(struct fastboot_cmd *cmd)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return fastboot_register_into(&cmdlist, cmd);
 }
 
 void fastboot_cmdlist_unregister(cmdlist_t *list)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	cmdlist_t next, node;
 
 	if (!list)
@@ -235,6 +241,7 @@ struct fastboot_var *fastboot_getvar(const char *name)
 
 static struct fastboot_var *fastboot_getvar_or_create(const char *name)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_var *var;
 	UINTN size;
 
@@ -261,6 +268,7 @@ static struct fastboot_var *fastboot_getvar_or_create(const char *name)
 
 static void delete_var_starting_with(const char *prefix)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_var *var;
 	struct fastboot_var *old_varlist;
 	struct fastboot_var *next;
@@ -281,6 +289,7 @@ static void delete_var_starting_with(const char *prefix)
 
 static void fastboot_unpublish_all()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_var *next, *var;
 
 	for (var = varlist; var; var = next) {
@@ -309,6 +318,7 @@ EFI_STATUS fastboot_publish_dynamic(const char *name, const char *(get_value)(vo
 
 EFI_STATUS fastboot_publish(const char *name, const char *value)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_var *var;
 	UINTN valuelen;
 
@@ -335,6 +345,7 @@ EFI_STATUS fastboot_publish(const char *name, const char *value)
 
 static const char *get_ptype_str(EFI_GUID *guid)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static const struct part_type {
 		const char *type;
 		const EFI_GUID guid;
@@ -353,6 +364,7 @@ static const char *get_ptype_str(EFI_GUID *guid)
 
 static const char *get_psize_str(UINT64 size)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char part_size[MAX_VARIABLE_LENGTH];
 	int len;
 
@@ -366,6 +378,7 @@ static const char *get_psize_str(UINT64 size)
 
 static EFI_STATUS publish_part(CHAR16 *part_name, UINT64 size, EFI_GUID *guid)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct descriptor {
 		const char *name;
 		const char *value;
@@ -414,6 +427,7 @@ static EFI_STATUS publish_part(CHAR16 *part_name, UINT64 size, EFI_GUID *guid)
 
 const char* fastboot_slot_get_active()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const char* p = slot_get_active();
 	if (p == NULL) {
 		return p;
@@ -426,6 +440,7 @@ const char* fastboot_slot_get_active()
 
 static int can_erase_or_flash_partition(CHAR16 *label)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct AvbABOps ab_ops;
 	AvbOps *ops;
 	int ret = 1;
@@ -454,6 +469,7 @@ static int can_erase_or_flash_partition(CHAR16 *label)
 
 static EFI_STATUS publish_slots(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct descriptor {
 		char *name;
 		const char *(*get_value)(const char *suffix);
@@ -515,6 +531,7 @@ static EFI_STATUS publish_slots(void)
 
 static EFI_STATUS publish_partsize(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	struct gpt_partition_interface *gparti = NULL;
 	UINTN part_count;
@@ -559,6 +576,7 @@ out:
 
 static const char *get_battery_voltage_var()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	int len;
 	static char battery_voltage[30]; /* Enough space for %dmV format */
@@ -584,6 +602,7 @@ static const char *get_battery_voltage_var()
 
 static const char *get_battery_soc_ok_var()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	static char *battery_soc_ok;
 	UINTN voltage;
@@ -599,6 +618,7 @@ static const char *get_battery_soc_ok_var()
 
 static const char *get_erase_block_size_var()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char erase_block_size[MAX_VARIABLE_LENGTH];
 	int len;
 	UINTN blocksize;
@@ -620,6 +640,7 @@ static const char *get_erase_block_size_var()
 
 static const char *get_logical_block_size_var()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static char logical_block_size[MAX_VARIABLE_LENGTH];
 	int len;
 	UINTN blocksize;
@@ -642,6 +663,7 @@ static const char *get_logical_block_size_var()
 
 static EFI_STATUS fastboot_build_ack_msg(char *msg, const char *code, const char *fmt, va_list ap)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *response;
 	int len;
 
@@ -660,6 +682,7 @@ static EFI_STATUS fastboot_build_ack_msg(char *msg, const char *code, const char
 
 void fastboot_ack(const char *code, const char *fmt, va_list ap)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static CHAR8 msg[MAGIC_LENGTH];
 	EFI_STATUS ret;
 
@@ -725,6 +748,7 @@ EFI_STATUS fastboot_info_long_string(char *str, VOID *context _unused)
 
 void fastboot_info(const char *fmt, ...)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -734,6 +758,7 @@ void fastboot_info(const char *fmt, ...)
 
 void fastboot_fail(const char *fmt, ...)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -746,6 +771,7 @@ void fastboot_fail(const char *fmt, ...)
 
 void fastboot_okay(const char *fmt, ...)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list ap;
 
 	va_start(ap, fmt);
@@ -758,6 +784,7 @@ void fastboot_okay(const char *fmt, ...)
 
 static void flush_tx_buffer(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	struct fastboot_tx_buffer *msg;
 	static CHAR8 buf[sizeof(msg->msg)];
@@ -790,6 +817,7 @@ static BOOLEAN is_in_white_list(const CHAR8 *key, const char **white_list)
 
 EFI_STATUS refresh_partition_var(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	delete_var_starting_with("partition-");
@@ -812,6 +840,7 @@ EFI_STATUS refresh_partition_var(void)
 
 static void cmd_flash(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *label;
 
@@ -868,6 +897,7 @@ static void cmd_flash(INTN argc, CHAR8 **argv)
 
 static void cmd_erase(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	CHAR16 *label;
 
@@ -927,6 +957,7 @@ static void cmd_boot(__attribute__((__unused__)) INTN argc,
 
 static const char *fastboot_var_value(struct fastboot_var *var)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	const char *value;
 
 	if (!var->get_value)
@@ -946,6 +977,7 @@ static const char *fastboot_var_value(struct fastboot_var *var)
 
 static void cmd_getvar(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_var *var;
 	if (argc != 2) {
 		fastboot_fail("Invalid parameter");
@@ -968,6 +1000,7 @@ static void cmd_getvar(INTN argc, CHAR8 **argv)
 
 void fastboot_reboot(enum boot_target target, CHAR16 *msg)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = fastboot_stop(NULL, NULL, 0, target);
 	if (EFI_ERROR(ret)) {
 		fastboot_fail("Failed to stop transport");
@@ -1057,6 +1090,7 @@ out:
 
 static void cmd_set_active(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!use_slot()) {
@@ -1084,6 +1118,7 @@ static void cmd_set_active(INTN argc, CHAR8 **argv)
 
 static struct fastboot_cmd *get_cmd(cmdlist_t list, const char *name)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	cmdlist_t node;
 
 	if (!name || !list)
@@ -1098,11 +1133,13 @@ static struct fastboot_cmd *get_cmd(cmdlist_t list, const char *name)
 
 struct fastboot_cmd *fastboot_get_root_cmd(const char *name)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return get_cmd(cmdlist, name);
 }
 
 void fastboot_run_cmd(cmdlist_t list, const char *name, INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	struct fastboot_cmd *cmd;
 
 	debug(L"get command '%a'", name);
@@ -1124,16 +1161,19 @@ void fastboot_run_cmd(cmdlist_t list, const char *name, INTN argc, CHAR8 **argv)
 
 void fastboot_run_root_cmd(const char *name, INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_run_cmd(cmdlist, name, argc, argv);
 }
 
 static void fastboot_read_command(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	transport_read(command_buffer, command_buffer_size);
 }
 
 static void cmd_download(INTN argc, CHAR8 **argv)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static CHAR8 response[MAGIC_LENGTH];
 	EFI_STATUS ret;
 	int len;
@@ -1174,6 +1214,7 @@ static void cmd_download(INTN argc, CHAR8 **argv)
 
 static void worker_download(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	ret = transport_read(dl.data, dl.size);
@@ -1212,6 +1253,7 @@ static unsigned last_received_len;
 #define DATA_PROGRESS_THRESHOLD (5 * 1024 * 1024)
 static void fastboot_run_command()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #define MAX_ARGS 16
 	EFI_STATUS ret;
 	CHAR8 *argv[MAX_ARGS];
@@ -1236,6 +1278,7 @@ static void fastboot_run_command()
 
 static void fastboot_process_rx(void *buf, unsigned len)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR8 *s;
 
 	switch (fastboot_state) {
@@ -1268,6 +1311,7 @@ static void fastboot_process_rx(void *buf, unsigned len)
 
 static void fastboot_start_callback(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	fastboot_state = next_state;
 	fastboot_read_command();
 }
@@ -1317,6 +1361,7 @@ static struct fastboot_cmd COMMANDS[] = {
 
 static EFI_STATUS fastboot_init()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 	char download_max_str[30];
@@ -1454,6 +1499,7 @@ static enum boot_target fastboot_target;
 EFI_STATUS fastboot_start(void **bootimage, void **efiimage, UINTN *imagesize,
 			  enum boot_target *target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINT32 state  = 1;
 	UINT64 tsc_total, tsc_end;
@@ -1548,6 +1594,7 @@ exit:
 EFI_STATUS fastboot_stop(void *bootimage, void *efiimage, UINTN imagesize,
 			 enum boot_target target)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	VOID *imgbuffer = NULL;
 
@@ -1578,6 +1625,7 @@ EFI_STATUS fastboot_stop(void *bootimage, void *efiimage, UINTN imagesize,
 
 void fastboot_free()
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (dl.data) {
 		FreePool(dl.data);
 		dl.data = NULL;

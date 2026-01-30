@@ -39,11 +39,13 @@
 #include "fastboot_oem.h"
 #include "smbios.h"
 #include "intel_variables.h"
+#include "log.h"
 
 /* "secureboot": Indicates whether UEFI Secure Boot is enabled. This
    is a pre-requisite for Verified Boot.  */
 static EFI_STATUS publish_secureboot(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return fastboot_publish("secureboot",
 				is_platform_secure_boot_enabled() ? "yes" : "no" );
 }
@@ -51,6 +53,7 @@ static EFI_STATUS publish_secureboot(void)
 /* "product-name": Reports "product_name" field in DMI.  */
 static EFI_STATUS publish_product_name(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return fastboot_publish("product-name",
 				SMBIOS_GET_STRING(1, ProductName));
 }
@@ -61,6 +64,7 @@ static EFI_STATUS publish_product_name(void)
 static char firmware_str[128];
 static EFI_STATUS publish_firmware(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int len;
 
 	len = efi_snprintf((CHAR8 *)firmware_str, sizeof(firmware_str) - 1,
@@ -97,6 +101,7 @@ static EFI_STATUS publish_boot_state(void)
  * "verified" */
 static EFI_STATUS publish_device_state(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return fastboot_publish("device-state", get_current_state_string());
 }
 
@@ -105,6 +110,7 @@ static EFI_STATUS publish_device_state(void)
 static char board_str[128];
 static EFI_STATUS publish_board(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	int len;
 
 	len = efi_snprintf((CHAR8 *)board_str, sizeof(board_str),
@@ -121,6 +127,7 @@ static EFI_STATUS publish_board(void)
 /* "serialno": The device serial number. */
 static EFI_STATUS publish_serialno(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *serial = get_serial_number();
 	return fastboot_publish("serialno", serial ? serial : "N/A");
 }
@@ -137,6 +144,7 @@ static EFI_STATUS (*PUBLISH_FUNCTION[])(void) = {
 
 EFI_STATUS publish_intel_variables(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	UINTN i;
 
