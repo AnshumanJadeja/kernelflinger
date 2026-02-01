@@ -566,6 +566,7 @@ void slot_set_active_cached(const char *suffix)
 
 EFI_STATUS slot_init_use_misc(void)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 
 	if (!use_slot())
