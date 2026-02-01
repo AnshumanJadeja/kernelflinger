@@ -24,8 +24,10 @@
 
 #include "avb_footer.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_footer_validate_and_byteswap(const AvbFooter* src, AvbFooter* dest) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_memcpy(dest, src, sizeof(AvbFooter));
 
   dest->version_major = avb_be32toh(dest->version_major);

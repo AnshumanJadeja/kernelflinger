@@ -44,6 +44,7 @@
 
 #include "avb_sysdeps.h"
 #include "avb_util.h"
+#include "log.h"
 
 /* Code taken from FreeBSD 8 */
 
@@ -100,6 +101,7 @@ static uint32_t iavb_crc32_tab[] = {
  */
 
 static uint32_t iavb_crc32(uint32_t crc_in, const uint8_t* buf, int size) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const uint8_t* p = buf;
   uint32_t crc;
 

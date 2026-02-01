@@ -26,6 +26,7 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_version.h"
+#include "log.h"
 
 #define NUM_GUIDS 3
 
@@ -38,6 +39,7 @@ char* avb_sub_cmdline(AvbOps* ops,
                       const char* ab_suffix,
                       bool using_boot_for_vbmeta,
                       const AvbCmdlineSubstList* additional_substitutions) {
+                      	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char* part_name_str[NUM_GUIDS] = {"system", "boot", "vbmeta"};
   const char* replace_str[NUM_GUIDS] = {"$(ANDROID_SYSTEM_PARTUUID)",
                                         "$(ANDROID_BOOT_PARTUUID)",
@@ -129,6 +131,7 @@ fail:
 static int cmdline_append_option(AvbSlotVerifyData* slot_data,
                                  const char* key,
                                  const char* value) {
+                                 	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t offset, key_len, value_len;
   char* new_cmdline;
 
@@ -169,6 +172,7 @@ static int cmdline_append_option(AvbSlotVerifyData* slot_data,
  */
 static size_t uint64_to_base10(uint64_t value,
                                char digits[AVB_MAX_DIGITS_UINT64]) {
+                               	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char rev_digits[AVB_MAX_DIGITS_UINT64];
   size_t n, num_digits;
 
@@ -190,6 +194,7 @@ static int cmdline_append_version(AvbSlotVerifyData* slot_data,
                                   const char* key,
                                   uint64_t major_version,
                                   uint64_t minor_version) {
+                                  	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char major_digits[AVB_MAX_DIGITS_UINT64];
   char minor_digits[AVB_MAX_DIGITS_UINT64];
   char combined[AVB_MAX_DIGITS_UINT64 * 2 + 1];
@@ -208,6 +213,7 @@ static int cmdline_append_version(AvbSlotVerifyData* slot_data,
 static int cmdline_append_uint64_base10(AvbSlotVerifyData* slot_data,
                                         const char* key,
                                         uint64_t value) {
+                                        	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char digits[AVB_MAX_DIGITS_UINT64];
   uint64_to_base10(value, digits);
   return cmdline_append_option(slot_data, key, digits);
@@ -217,6 +223,7 @@ static int cmdline_append_hex(AvbSlotVerifyData* slot_data,
                               const char* key,
                               const uint8_t* data,
                               size_t data_len) {
+                              	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   int ret;
   char* hex_data = avb_bin2hex(data, data_len);
   if (hex_data == NULL) {
@@ -234,6 +241,7 @@ AvbSlotVerifyResult avb_append_options(
     AvbAlgorithmType algorithm_type,
     AvbHashtreeErrorMode hashtree_error_mode,
     AvbHashtreeErrorMode resolved_hashtree_error_mode) {
+    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbSlotVerifyResult ret;
   const char* verity_mode;
   bool is_device_unlocked;
@@ -404,10 +412,12 @@ out:
 }
 
 AvbCmdlineSubstList* avb_new_cmdline_subst_list() {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   return (AvbCmdlineSubstList*)avb_calloc(sizeof(AvbCmdlineSubstList));
 }
 
 void avb_free_cmdline_subst_list(AvbCmdlineSubstList* cmdline_subst) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t i;
   for (i = 0; i < cmdline_subst->size; ++i) {
     avb_free(cmdline_subst->tokens[i]);
@@ -422,6 +432,7 @@ AvbSlotVerifyResult avb_add_root_digest_substitution(
     const uint8_t* digest,
     size_t digest_size,
     AvbCmdlineSubstList* out_cmdline_subst) {
+    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   const char* kDigestSubPrefix = "$(AVB_";
   const char* kDigestSubSuffix = "_ROOT_DIGEST)";
   size_t part_name_len = avb_strlen(part_name);
