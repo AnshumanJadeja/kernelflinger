@@ -25,8 +25,10 @@
 #include "avb_util.h"
 
 #include <stdarg.h>
+#include "log.h"
 
 uint32_t avb_be32toh(uint32_t in) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t* d = (uint8_t*)&in;
   uint32_t ret;
   ret = ((uint32_t)d[0]) << 24;
@@ -117,6 +119,7 @@ bool avb_safe_add_to(uint64_t* value, uint64_t value_to_add) {
 }
 
 bool avb_safe_add(uint64_t* out_result, uint64_t a, uint64_t b) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t dummy;
   if (out_result == NULL) {
     out_result = &dummy;
@@ -174,6 +177,7 @@ bool avb_str_concat(char* buf,
                     size_t str1_len,
                     const char* str2,
                     size_t str2_len) {
+                    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t combined_len;
 
   if (!avb_safe_add(&combined_len, str1_len, str2_len)) {
@@ -203,6 +207,7 @@ void* avb_malloc(size_t size) {
 }
 
 void* avb_calloc(size_t size) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   void* ret = avb_malloc(size);
   if (ret == NULL) {
     return NULL;
@@ -213,6 +218,7 @@ void* avb_calloc(size_t size) {
 }
 
 char* avb_strdup(const char* str) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t len = avb_strlen(str);
   char* ret = avb_malloc(len + 1);
   if (ret == NULL) {
@@ -253,6 +259,7 @@ const char* avb_strstr(const char* haystack, const char* needle) {
 const char* avb_strv_find_str(const char* const* strings,
                               const char* str,
                               size_t str_size) {
+                              	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t n;
   for (n = 0; strings[n] != NULL; n++) {
     if (avb_strlen(strings[n]) == str_size &&
@@ -264,6 +271,7 @@ const char* avb_strv_find_str(const char* const* strings,
 }
 
 char* avb_replace(const char* str, const char* search, const char* replace) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   char* ret = NULL;
   size_t ret_len = 0;
   size_t search_len, replace_len;
@@ -343,6 +351,7 @@ out:
 #define AVB_STRDUPV_MAX_NUM_STRINGS 32
 
 char* avb_strdupv(const char* str, ...) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   va_list ap;
   const char* strings[AVB_STRDUPV_MAX_NUM_STRINGS];
   size_t lengths[AVB_STRDUPV_MAX_NUM_STRINGS];
@@ -388,6 +397,7 @@ out:
 }
 
 const char* avb_basename(const char* str) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   int64_t n;
   size_t len;
 
@@ -403,6 +413,7 @@ const char* avb_basename(const char* str) {
 }
 
 void avb_uppercase(char* str) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   size_t i;
   for (i = 0; str[i] != '\0'; ++i) {
     if (str[i] <= 0x7A && str[i] >= 0x61) {

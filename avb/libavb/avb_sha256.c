@@ -36,6 +36,7 @@
  */
 
 #include "avb_sha.h"
+#include "log.h"
 
 #define SHFR(x, n) (x >> n)
 #define ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
@@ -113,6 +114,7 @@ static const uint32_t sha256_k[64] = {
 
 /* SHA-256 implementation */
 void avb_sha256_init(AvbSHA256Ctx* ctx) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifndef UNROLL_LOOPS
   int i;
   for (i = 0; i < 8; i++) {

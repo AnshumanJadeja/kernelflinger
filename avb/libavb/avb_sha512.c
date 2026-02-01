@@ -36,6 +36,7 @@
  */
 
 #include "avb_sha.h"
+#include "log.h"
 
 #define SHFR(x, n) (x >> n)
 #define ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
@@ -132,6 +133,7 @@ static const uint64_t sha512_k[80] = {
 /* SHA-512 implementation */
 
 void avb_sha512_init(AvbSHA512Ctx* ctx) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 #ifdef UNROLL_LOOPS_SHA512
   ctx->h[0] = sha512_h0[0];
   ctx->h[1] = sha512_h0[1];

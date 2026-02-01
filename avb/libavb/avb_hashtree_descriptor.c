@@ -24,9 +24,11 @@
 
 #include "avb_hashtree_descriptor.h"
 #include "avb_util.h"
+#include "log.h"
 
 bool avb_hashtree_descriptor_validate_and_byteswap(
     const AvbHashtreeDescriptor* src, AvbHashtreeDescriptor* dest) {
+    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t expected_size;
 
   avb_memcpy(dest, src, sizeof(AvbHashtreeDescriptor));

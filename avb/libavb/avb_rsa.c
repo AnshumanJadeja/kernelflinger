@@ -36,6 +36,7 @@
 #include "avb_sha.h"
 #include "avb_util.h"
 #include "avb_vbmeta_image.h"
+#include "log.h"
 
 typedef struct IAvbKey {
   unsigned int len; /* Length of n[] in number of uint32_t */
@@ -45,6 +46,7 @@ typedef struct IAvbKey {
 } IAvbKey;
 
 static IAvbKey* iavb_parse_key_data(const uint8_t* data, size_t length) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   AvbRSAPublicKeyHeader h;
   IAvbKey* key = NULL;
   size_t expected_length;
@@ -104,11 +106,13 @@ fail:
 }
 
 static void iavb_free_parsed_key(IAvbKey* key) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   avb_free(key);
 }
 
 /* a[] -= mod */
 static void subM(const IAvbKey* key, uint32_t* a) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   int64_t A = 0;
   uint32_t i;
   for (i = 0; i < key->len; ++i) {
@@ -138,6 +142,7 @@ static void montMulAdd(const IAvbKey* key,
                        uint32_t* c,
                        const uint32_t a,
                        const uint32_t* b) {
+                       	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint64_t A = (uint64_t)a * b[0] + c[0];
   uint32_t d0 = (uint32_t)A * key->n0inv;
   uint64_t B = (uint64_t)d0 * key->n[0] + (uint32_t)A;
@@ -160,6 +165,7 @@ static void montMulAdd(const IAvbKey* key,
 
 /* montgomery c[] = a[] * b[] / R % mod */
 static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t i;
   for (i = 0; i < key->len; ++i) {
     c[i] = 0;
@@ -173,6 +179,7 @@ static void montMul(const IAvbKey* key, uint32_t* c, uint32_t* a, uint32_t* b) {
  * Input and output big-endian byte array in inout.
  */
 static void modpowF4(const IAvbKey* key, uint8_t* inout) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint32_t* a = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
   uint32_t* aaR = (uint32_t*)avb_malloc(key->len * sizeof(uint32_t));
@@ -236,6 +243,7 @@ bool avb_rsa_verify(const uint8_t* key,
                     size_t hash_num_bytes,
                     const uint8_t* padding,
                     size_t padding_num_bytes) {
+                    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
   uint8_t* buf = NULL;
   IAvbKey* parsed_key = NULL;
   bool success = false;
