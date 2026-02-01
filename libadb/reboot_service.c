@@ -34,9 +34,11 @@
 
 #include "adb_socket.h"
 #include "service.h"
+#include "log.h"
 
 static EFI_STATUS reboot_service_open(const char *arg, void **context)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *target = NULL;
 
 	if (!arg || !context)
@@ -62,6 +64,7 @@ static EFI_STATUS reboot_service_open(const char *arg, void **context)
 
 static EFI_STATUS reboot_service_ready(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
@@ -72,6 +75,7 @@ static EFI_STATUS reboot_service_ready(asock_t s)
 
 static EFI_STATUS reboot_service_close(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!asock_context(s))
 		return EFI_INVALID_PARAMETER;
 
@@ -82,6 +86,7 @@ static EFI_STATUS reboot_service_close(asock_t s)
 
 static EFI_STATUS reboot_service_okay(__attribute__((__unused__)) asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	error(L"reboot_service does not support OKAY message");
 	return EFI_UNSUPPORTED;
 }

@@ -34,9 +34,11 @@
 #include <acpi.h>
 
 #include "lsacpi.h"
+#include "log.h"
 
 static void print_table(struct ACPI_DESC_HEADER *table)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	ss_printf(L"%c%c%c%c  0x%08x  %5d\n",
 		  table->signature[0], table->signature[1],
 		  table->signature[2], table->signature[3],
