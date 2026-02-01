@@ -584,6 +584,7 @@ static AvbSlotVerifyResult load_and_verify_vbmeta(
   bool is_main_vbmeta;
   bool is_vbmeta_partition;
   AvbVBMetaData* vbmeta_image_data = NULL;
+  debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 
   ret = AVB_SLOT_VERIFY_RESULT_OK;
 
@@ -661,9 +662,11 @@ static AvbSlotVerifyResult load_and_verify_vbmeta(
 
   vbmeta_buf = avb_malloc(vbmeta_size);
   if (vbmeta_buf == NULL) {
+    debug(L"vbmeta_buf is NULL");
     ret = AVB_SLOT_VERIFY_RESULT_ERROR_OOM;
     goto out;
   }
+  debug(L"vbmeta_buf = %p", vbmeta_buf);
 
   if (vbmeta_offset != 0) {
     avb_debugv("Loading vbmeta struct in footer from partition '",
