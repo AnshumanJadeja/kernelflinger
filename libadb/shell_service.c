@@ -43,6 +43,7 @@
 #include "lsacpi.h"
 #include "lspartition.h"
 #include "lspci.h"
+#include "log.h"
 
 #define MAX_ARGS	8
 
@@ -74,6 +75,7 @@ static shcmd_t *SHCMD[] = {
 
 static void free_shell_ctx(shell_ctx_t *ctx)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	if (!ctx)
 		return;
 	if (ctx->arg)
@@ -85,6 +87,7 @@ static void free_shell_ctx(shell_ctx_t *ctx)
 
 static shcmd_t *get_command(const char *name)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	UINTN i;
 
 	for (i = 0; i < ARRAY_SIZE(SHCMD); i++)
@@ -96,6 +99,7 @@ static shcmd_t *get_command(const char *name)
 
 static EFI_STATUS shell_service_open(const char *arg, void **ctx_p)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_INVALID_PARAMETER;
 	shell_ctx_t *ctx;
 
@@ -147,6 +151,7 @@ err:
 static asock_t current_socket;
 static EFI_STATUS shell_service_ready(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret = EFI_SUCCESS;
 	shell_ctx_t *ctx = asock_context(s);
 
@@ -168,12 +173,14 @@ static EFI_STATUS shell_service_ready(asock_t s)
 
 static EFI_STATUS shell_service_close(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	free_shell_ctx(asock_context(s));
 	return EFI_SUCCESS;
 }
 
 static EFI_STATUS shell_service_okay(asock_t s)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	return asock_send_close(s);
 }
 
@@ -253,6 +260,7 @@ static shcmd_t list_shcmd = {
    socket once the command has exited (end of its main function). */
 EFI_STATUS ss_printf(const CHAR16 *fmt, ...)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	va_list args;
 	UINTN length;
 	CHAR16 buf16[BUFFER_SIZE];
@@ -289,6 +297,7 @@ err:
 
 EFI_STATUS ss_read_number(const char *arg, const char *name, UINT64 *value)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	char *endptr;
 
 	if (!arg || !name || !value)
@@ -307,6 +316,7 @@ EFI_STATUS ss_read_number(const char *arg, const char *name, UINT64 *value)
 
 static CHAR16 *get_address_format(EFI_PHYSICAL_ADDRESS address)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	static CHAR16 fmt[8];
 	UINTN i;
 
@@ -320,6 +330,7 @@ static CHAR16 *get_address_format(EFI_PHYSICAL_ADDRESS address)
 void ss_hexdump(unsigned char *buf, UINTN length,
 		EFI_PHYSICAL_ADDRESS address, BOOLEAN canonical)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	CHAR16 *addr_fmt;
 	char ascii[PRINT_SIZE + 1] = { '\0' };
 	unsigned char *cur, *end;
@@ -362,6 +373,7 @@ void ss_hexdump(unsigned char *buf, UINTN length,
 #ifndef __LP64__
 EFI_STATUS ss_pae_map(EFI_PHYSICAL_ADDRESS *address, UINT64 length)
 {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
 	EFI_STATUS ret;
 	unsigned char *to;
 	EFI_MEMORY_DESCRIPTOR *map;
