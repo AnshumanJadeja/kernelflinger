@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <trusty/trusty_dev.h>
+#include "log.h"
 
 /*
  * TIPC defines physical address bits 47:12, memory type and cache
@@ -46,6 +47,7 @@
  */
 __attribute__((weak))
 int qltipc_x86_get_mapping(uint64_t va, uint64_t* pa, uint64_t* flags) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     *pa = va;
 
     *flags = NS_MEM_TYPE_UNCACHED << NS_PHYS_MEM_WIDTH_SHIFT;

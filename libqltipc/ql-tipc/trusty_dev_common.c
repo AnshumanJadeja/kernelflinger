@@ -29,6 +29,7 @@
 #include <trusty/trusty_dev.h>
 #include <trusty/trusty_mem.h>
 #include <trusty/util.h>
+#include "log.h"
 
 struct trusty_dev;
 
@@ -47,6 +48,7 @@ static int32_t trusty_fast_call32(struct trusty_dev* dev,
                                   uint32_t a0,
                                   uint32_t a1,
                                   uint32_t a2) {
+                                  	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(dev);
     trusty_assert(SMC_IS_FASTCALL(smcnr));
 
@@ -58,6 +60,7 @@ static unsigned long trusty_std_call_inner(struct trusty_dev* dev,
                                            unsigned long a0,
                                            unsigned long a1,
                                            unsigned long a2) {
+                                           	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     unsigned long ret;
     int retry = 5;
 
@@ -84,6 +87,7 @@ static unsigned long trusty_std_call_helper(struct trusty_dev* dev,
                                             unsigned long a0,
                                             unsigned long a1,
                                             unsigned long a2) {
+                                            	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     unsigned long ret;
     unsigned long irq_state;
 
@@ -106,6 +110,7 @@ static int32_t trusty_std_call32(struct trusty_dev* dev,
                                  uint32_t a0,
                                  uint32_t a1,
                                  uint32_t a2) {
+                                 	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     int ret;
 
     trusty_assert(dev);
@@ -142,6 +147,7 @@ static int trusty_call32_mem_buf_id(struct trusty_dev* dev,
                                     uint32_t smcnr,
                                     trusty_shared_mem_id_t buf_id,
                                     uint32_t size) {
+                                    	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(dev);
 
     if (SMC_IS_FASTCALL(smcnr)) {
@@ -156,6 +162,7 @@ static int trusty_call32_mem_buf_id(struct trusty_dev* dev,
 int trusty_dev_init_ipc(struct trusty_dev* dev,
                         trusty_shared_mem_id_t buf_id,
                         uint32_t buf_size) {
+                        	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_CREATE_QL_DEV,
                                     buf_id, buf_size);
 }
@@ -163,6 +170,7 @@ int trusty_dev_init_ipc(struct trusty_dev* dev,
 int trusty_dev_exec_ipc(struct trusty_dev* dev,
                         trusty_shared_mem_id_t buf_id,
                         uint32_t buf_size) {
+                        	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_HANDLE_QL_DEV_CMD,
                                     buf_id, buf_size);
 }
@@ -170,6 +178,7 @@ int trusty_dev_exec_ipc(struct trusty_dev* dev,
 int trusty_dev_exec_fc_ipc(struct trusty_dev* dev,
                            trusty_shared_mem_id_t buf_id,
                            uint32_t buf_size) {
+                           	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_call32_mem_buf_id(dev, SMC_FC_HANDLE_QL_TIPC_DEV_CMD, buf_id,
                                     buf_size);
 }
@@ -177,11 +186,13 @@ int trusty_dev_exec_fc_ipc(struct trusty_dev* dev,
 int trusty_dev_shutdown_ipc(struct trusty_dev* dev,
                             trusty_shared_mem_id_t buf_id,
                             uint32_t buf_size) {
+                            	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     return trusty_call32_mem_buf_id(dev, SMC_SC_TRUSTY_IPC_SHUTDOWN_QL_DEV,
                                     buf_id, buf_size);
 }
 
 static int trusty_init_api_version(struct trusty_dev* dev) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     uint32_t api_version;
 
     api_version = trusty_fast_call32(dev, SMC_FC_API_VERSION,
@@ -301,6 +312,7 @@ err_version:
 }
 
 int trusty_dev_shutdown(struct trusty_dev* dev) {
+	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     trusty_assert(dev);
 
     if (dev->ffa_tx) {
@@ -319,6 +331,7 @@ int trusty_dev_share_memory(struct trusty_dev* dev,
                             trusty_shared_mem_id_t* idp,
                             struct ns_mem_page_info* pinfo,
                             size_t page_count) {
+                            	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct smc_ret8 smc_ret;
     struct ffa_mtd* mtd = dev->ffa_tx;
     size_t comp_mrd_offset = offsetof(struct ffa_mtd, emad[1]);
@@ -364,6 +377,7 @@ int trusty_dev_share_memory(struct trusty_dev* dev,
 
 int trusty_dev_reclaim_memory(struct trusty_dev* dev,
                               trusty_shared_mem_id_t id) {
+                              	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct smc_ret8 smc_ret;
 
     if (!dev->ffa_tx) {

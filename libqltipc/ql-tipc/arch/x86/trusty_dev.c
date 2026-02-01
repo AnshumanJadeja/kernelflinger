@@ -22,6 +22,7 @@
  */
 
 #include <trusty/smc.h>
+#include "log.h"
 
 #define SMC_VMCALL_ID 0x74727500
 
@@ -29,6 +30,7 @@ struct smc_ret8 smc8(unsigned long r0, unsigned long r1,
                      unsigned long r2, unsigned long r3,
                      unsigned long r4, unsigned long r5,
                      unsigned long r6, unsigned long r7) {
+                     	debug(L"INSTRUMENT:%a:%a", __FILE__, __func__);
     struct smc_ret8 ret;
     register unsigned long smc_id __asm__("rax") = SMC_VMCALL_ID;
     register unsigned long arg0 __asm__("rdi") = r0;
